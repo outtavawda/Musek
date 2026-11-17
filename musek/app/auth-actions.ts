@@ -136,3 +136,64 @@ export async function updateProfile(formData: FormData) {
 
   redirect("/profile?message=Profile%20saved%20successfully.");
 }
+
+export async function uploadProfilePhoto(formData: FormData) {
+  const supabase = createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const file = formData.get("photo");
+
+  if (!(file instanceof File) || file.size === 0) {
+    redirect("/profile?error=Please%20choose%20a%20photo.");
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+  if (!allowedTypes.includes(file.type)) {
+    redirect("/profile?error=Use%20a%20JPG%2C%20PNG%20or%20WebP%20image.");
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    redirect("/profile?error=Your%20photo%20must%20be%205MB%20or%20less.");
+  }
+
+  const extension = file.type === "image/png"
+    ? "png"
+    : file.type === "image/webp"
+    ? "webp"
+    : "jpg";
+
+  const filePath = `${user.id}/${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("profile-images")
+    .upload(filePath, file, {
+      contentType: file.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    redirect(`/profile?error=${encodeURIComponent(uploadError.message)}`);
+  }
+
+  const { data } = supabase.storage
+    .from("profile-images")
+    .getPublicUrl(filePath);
+
+  const { error: updateError } = await supabase
+    .from("user_profiles")
+    .upsert({
+      id: user.id,
+      avatar_url: data.publicUrl,
+      updated_at: new Date().toISOString()
+    });
+
+  if (updateError) {
+    redirect(`/profile?error=${encodeURIComponent(updateError.message)}`);
+  }
+
+  redirect("/profile?message=Profile%20photo%20uploaded%20successfully.");
+}
