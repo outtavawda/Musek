@@ -19,7 +19,7 @@ export default async function ProfilePage({
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("user_profiles")
     .select(`
       display_name,
@@ -35,6 +35,10 @@ export default async function ProfilePage({
     `)
     .eq("id", user.id)
     .maybeSingle();
+
+  if (profileError) {
+    console.error("Profile loading error:", profileError.message);
+  }
 
   const accountType =
     profile?.account_type ||
@@ -121,6 +125,12 @@ export default async function ProfilePage({
         </div>
 
         <form action={updateProfile} className="form">
+          <input
+            type="hidden"
+            name="avatar_url"
+            value={profile?.avatar_url || ""}
+          />
+
           <label>
             Display name
             <input
