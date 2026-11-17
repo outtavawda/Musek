@@ -14,6 +14,8 @@ export default function UploadForm({ userId }: { userId: string }) {
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const form = event.currentTarget;
     setMessage("");
 
     if (!title.trim()) {
@@ -37,7 +39,10 @@ export default function UploadForm({ userId }: { userId: string }) {
     const allowedExtensions = ["mp3", "wav", "m4a"];
     const extension = audio.name.split(".").pop()?.toLowerCase() || "";
 
-    if (!allowedTypes.includes(audio.type) && !allowedExtensions.includes(extension)) {
+    if (
+      !allowedTypes.includes(audio.type) &&
+      !allowedExtensions.includes(extension)
+    ) {
       setMessage("Please upload an MP3, WAV or M4A file.");
       return;
     }
@@ -75,7 +80,10 @@ export default function UploadForm({ userId }: { userId: string }) {
         });
 
       if (databaseError) {
-        await supabase.storage.from("music-tracks").remove([filePath]);
+        await supabase.storage
+          .from("music-tracks")
+          .remove([filePath]);
+
         throw databaseError;
       }
 
@@ -83,12 +91,16 @@ export default function UploadForm({ userId }: { userId: string }) {
       setGenre("");
       setDescription("");
       setAudio(null);
-      event.currentTarget.reset();
+      form.reset();
 
-      setMessage("Your song was uploaded successfully and saved as a draft.");
+      setMessage(
+        "Your song was uploaded successfully and saved as a draft."
+      );
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Something went wrong during upload."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong during upload."
       );
     } finally {
       setLoading(false);
@@ -105,7 +117,12 @@ export default function UploadForm({ userId }: { userId: string }) {
           onChange={(event) => setTitle(event.target.value)}
           maxLength={150}
           required
-          style={{ display: "block", width: "100%", padding: "12px", margin: "8px 0 20px" }}
+          style={{
+            display: "block",
+            width: "100%",
+            padding: "12px",
+            margin: "8px 0 20px"
+          }}
         />
       </label>
 
@@ -117,7 +134,12 @@ export default function UploadForm({ userId }: { userId: string }) {
           onChange={(event) => setGenre(event.target.value)}
           maxLength={80}
           placeholder="Reggae, Dancehall, Hip-Hop..."
-          style={{ display: "block", width: "100%", padding: "12px", margin: "8px 0 20px" }}
+          style={{
+            display: "block",
+            width: "100%",
+            padding: "12px",
+            margin: "8px 0 20px"
+          }}
         />
       </label>
 
@@ -128,7 +150,12 @@ export default function UploadForm({ userId }: { userId: string }) {
           onChange={(event) => setDescription(event.target.value)}
           maxLength={1000}
           rows={4}
-          style={{ display: "block", width: "100%", padding: "12px", margin: "8px 0 20px" }}
+          style={{
+            display: "block",
+            width: "100%",
+            padding: "12px",
+            margin: "8px 0 20px"
+          }}
         />
       </label>
 
@@ -137,9 +164,14 @@ export default function UploadForm({ userId }: { userId: string }) {
         <input
           type="file"
           accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4"
-          onChange={(event) => setAudio(event.target.files?.[0] || null)}
+          onChange={(event) =>
+            setAudio(event.target.files?.[0] || null)
+          }
           required
-          style={{ display: "block", margin: "12px 0 24px" }}
+          style={{
+            display: "block",
+            margin: "12px 0 24px"
+          }}
         />
       </label>
 
