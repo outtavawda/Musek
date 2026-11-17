@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import MusicLibrary from "./music-library";
 
 export default async function MyMusicPage() {
   const supabase = createClient();
@@ -32,6 +33,10 @@ export default async function MyMusicPage() {
     .eq("artist_id", user.id)
     .order("created_at", { ascending: false });
 
+  if (error) {
+    return <main><p>Unable to load music: {error.message}</p></main>;
+  }
+
   const songs = await Promise.all(
     (tracks || []).map(async (track) => {
       const { data } = await supabase.storage
@@ -46,13 +51,7 @@ export default async function MyMusicPage() {
   );
 
   return (
-    <main
-      style={{
-        maxWidth: "850px",
-        margin: "40px auto",
-        padding: "20px",
-      }}
-    >
+    <main style={{ maxWidth: "850px", margin: "40px auto", padding: "20px" }}>
       <h1>My Music</h1>
 
       <p>
@@ -66,42 +65,7 @@ export default async function MyMusicPage() {
 
       <hr />
 
-      {error ? (
-        <p>Unable to load your music: {error.message}</p>
-      ) : songs.length === 0 ? (
-        <p>You haven't uploaded any songs yet.</p>
-      ) : (
-        songs.map((song) => (
-          <section
-            key={song.id}
-            style={{
-              padding: "20px 0",
-              borderBottom: "1px solid #ccc",
-            }}
-          >
-            <h2>{song.title}</h2>
-
-            <p>Genre: {song.genre || "Not specified"}</p>
-
-            <p>{song.description}</p>
-
-            <p>
-              Status: <strong>{song.status}</strong>
-            </p>
-
-            {song.audioUrl ? (
-              <audio
-                controls
-                preload="none"
-                src={song.audioUrl}
-                style={{ width: "100%", maxWidth: "500px" }}
-              />
-            ) : (
-              <p>Audio preview is currently unavailable.</p>
-            )}
-          </section>
-        ))
-      )}
+      <MusicLibrary initialSongs={songs} userId={user.id} />
 
       <p style={{ marginTop: "30px" }}>
         <Link href="/dashboard">Back to Dashboard</Link>
