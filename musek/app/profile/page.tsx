@@ -2,16 +2,21 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateProfile, signOut } from "../auth-actions";
+import {
+  updateProfile,
+  uploadProfilePhoto,
+  signOut
+} from "../auth-actions";
 
 export default async function ProfilePage({
-  searchParams,
+  searchParams
 }: {
   searchParams?: { error?: string; message?: string };
 }) {
   const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
+
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
@@ -42,6 +47,7 @@ export default async function ProfilePage({
         <Link className="brand" href="/">
           MUSEK<span>.</span>
         </Link>
+
         <form action={signOut}>
           <button className="secondaryButton" type="submit">
             Log out
@@ -53,10 +59,6 @@ export default async function ProfilePage({
         <p className="eyebrow">YOUR MUSEK PROFILE</p>
         <h1>Edit profile</h1>
 
-        <p className="muted">
-          Customize your presence on MUSEK.
-        </p>
-
         {searchParams?.error && (
           <p className="notice error">{searchParams.error}</p>
         )}
@@ -64,6 +66,59 @@ export default async function ProfilePage({
         {searchParams?.message && (
           <p className="notice">{searchParams.message}</p>
         )}
+
+        <div style={{ marginBottom: "25px", textAlign: "center" }}>
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt="Your profile"
+              style={{
+                width: "130px",
+                height: "130px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                marginBottom: "12px"
+              }}
+            />
+          ) : (
+            <div style={{
+              width: "130px",
+              height: "130px",
+              borderRadius: "50%",
+              background: "#252525",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 12px",
+              fontSize: "42px"
+            }}>
+              👤
+            </div>
+          )}
+
+          <h2>Profile picture</h2>
+
+          <form
+            action={uploadProfilePhoto}
+            className="form"
+            encType="multipart/form-data"
+          >
+            <input
+              type="file"
+              name="photo"
+              accept="image/jpeg,image/png,image/webp"
+              required
+            />
+
+            <p className="muted small">
+              JPG, PNG or WebP. Maximum size 5 MB.
+            </p>
+
+            <button className="primaryButton" type="submit">
+              Upload Photo
+            </button>
+          </form>
+        </div>
 
         <form action={updateProfile} className="form">
           <label>
@@ -80,22 +135,11 @@ export default async function ProfilePage({
           </label>
 
           <label>
-            Profile picture URL
-            <input
-              name="avatar_url"
-              type="url"
-              placeholder="https://example.com/photo.jpg"
-              defaultValue={profile?.avatar_url || ""}
-            />
-          </label>
-
-          <label>
             Bio
             <textarea
               name="bio"
               rows={5}
               maxLength={500}
-              placeholder="Tell people about yourself..."
               defaultValue={profile?.bio || ""}
             />
           </label>
@@ -114,7 +158,6 @@ export default async function ProfilePage({
                 <input
                   name="artist_name"
                   defaultValue={profile?.artist_name || ""}
-                  placeholder="Your artist name"
                 />
               </label>
 
@@ -123,7 +166,7 @@ export default async function ProfilePage({
                 <input
                   name="genres"
                   defaultValue={(profile?.genres || []).join(", ")}
-                  placeholder="Reggae, Dancehall, Hip-Hop..."
+                  placeholder="Reggae, Dancehall, Hip-Hop"
                 />
               </label>
             </>
@@ -138,7 +181,6 @@ export default async function ProfilePage({
                 <input
                   name="label_name"
                   defaultValue={profile?.label_name || ""}
-                  placeholder="Your label name"
                 />
               </label>
             </>
