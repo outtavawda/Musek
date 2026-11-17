@@ -74,15 +74,19 @@ export default async function DiscoverPage() {
                   {profile.account_type === "artist" ? "ARTIST" : "RECORD LABEL"}
                 </p>
 
-                <h2>
+                
+<h2>
   {profile.account_type === "artist" ? (
     <Link href={`/artist/${profile.id}`}>
       {profile.artist_name || profile.display_name}
     </Link>
   ) : (
-    profile.label_name || profile.display_name
+    <Link href={`/label/${profile.id}`}>
+      {profile.label_name || profile.display_name}
+    </Link>
   )}
 </h2>
+
 
                 <p className="muted">{profile.bio || "No bio added yet."}</p>
 
