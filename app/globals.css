@@ -1,0 +1,25 @@
+/* MUSEK account pages - complements the existing dark MUSEK landing page */
+.authWrap { min-height: 100vh; display: grid; place-items: center; padding: 32px 18px; background: #090a0e; color: #f6f4f0; }
+.authCard, .contentPanel { width: 100%; max-width: 520px; padding: 38px; background: #12141b; border: 1px solid #292c35; border-radius: 12px; }
+.authCard h1, .contentPanel h1 { font-size: clamp(32px, 6vw, 48px); letter-spacing: -2px; margin: 14px 0; }
+.authCard .brand { display: inline-block; margin-bottom: 30px; font-size: 25px; font-weight: 900; color: #f6f4f0; text-decoration: none; }
+.authCard .brand span, .brand span { color: #c8ff4d; }
+.eyebrow { color: #c8ff4d; font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+.muted { color: #a5a6b0; line-height: 1.6; }
+.small { font-size: 13px; margin-top: 24px; }
+.small a { color: #c8ff4d; }
+.form { display: grid; gap: 18px; margin-top: 26px; }
+.form label { display: grid; gap: 8px; color: #dedee3; font-size: 13px; }
+.form input, .form textarea, .form select { width: 100%; padding: 13px 14px; border: 1px solid #393c47; border-radius: 6px; background: #0b0d12; color: #f6f4f0; font: inherit; }
+.form input:focus, .form textarea:focus, .form select:focus { outline: 2px solid #c8ff4d; border-color: transparent; }
+.primaryButton, .secondaryButton { cursor: pointer; border: 0; display: inline-flex; justify-content: center; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 6px; font-weight: 700; text-decoration: none; }
+.primaryButton { background: #c8ff4d; color: #11140a; }
+.secondaryButton { background: transparent; border: 1px solid #454751; color: #fff; }
+.notice { padding: 12px 14px; border-radius: 6px; background: #202a15; color: #d8ff9b; font-size: 13px; line-height: 1.5; }
+.notice.error { background: #321b20; color: #ffb6bf; }
+.pageWrap { min-height: 100vh; background: #090a0e; color: #f6f4f0; }
+.pageWrap .nav { max-width: 1120px; margin: auto; }
+.contentPanel { max-width: 900px; margin: 70px auto; }
+.contentPanel p { margin-bottom: 24px; }
+.profileCard { margin: 65px auto; }
+@media (max-width: 600px) { .authCard, .contentPanel { padding: 26px 20px; } .contentPanel { margin: 35px 16px; width: auto; } }
