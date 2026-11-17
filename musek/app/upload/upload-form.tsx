@@ -54,10 +54,11 @@ export default function UploadForm({ userId }: { userId: string }) {
 
     setLoading(true);
 
-    const supabase = createClient();
-    const filePath = `${userId}/${crypto.randomUUID()}.${extension}`;
-
     try {
+      const supabase = createClient();
+
+      const filePath = `${userId}/${crypto.randomUUID()}.${extension}`;
+
       const { error: uploadError } = await supabase.storage
         .from("music-tracks")
         .upload(filePath, audio, {
@@ -96,12 +97,20 @@ export default function UploadForm({ userId }: { userId: string }) {
       setMessage(
         "Your song was uploaded successfully and saved as a draft."
       );
-    } catch (error) {
-      setMessage(
-        error instanceof Error
+
+    } catch (error: unknown) {
+      console.error("MUSEK upload error:", error);
+
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string"
           ? error.message
-          : "Something went wrong during upload."
-      );
+          : "Unknown upload error.";
+
+      setMessage("Upload failed: " + errorMessage);
+
     } finally {
       setLoading(false);
     }
@@ -179,7 +188,11 @@ export default function UploadForm({ userId }: { userId: string }) {
         {loading ? "Uploading..." : "Upload Song"}
       </button>
 
-      {message && <p role="status">{message}</p>}
+      {message && (
+        <p role="status" style={{ marginTop: "15px" }}>
+          {message}
+        </p>
+      )}
     </form>
   );
 }
