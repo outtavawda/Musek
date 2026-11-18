@@ -24,13 +24,13 @@ export default async function FavoritesPage() {
     return (
       <main style={{ maxWidth: "900px", margin: "40px auto", padding: "20px" }}>
         <h1>My Favourites</h1>
-        <p>Could not load your favourite songs.</p>
+        <p>Could not load your favourite songs: {favoritesError.message}</p>
         <Link href="/dashboard">Back to Dashboard</Link>
       </main>
     );
   }
 
-  const trackIds = favorites?.map((item) => item.track_id) || [];
+  const trackIds = (favorites || []).map((item) => item.track_id);
 
   if (trackIds.length === 0) {
     return (
@@ -55,7 +55,7 @@ export default async function FavoritesPage() {
     return (
       <main style={{ maxWidth: "900px", margin: "40px auto", padding: "20px" }}>
         <h1>My Favourites</h1>
-        <p>Could not load your favourite music.</p>
+        <p>Could not load your favourite music: {tracksError.message}</p>
         <Link href="/dashboard">Back to Dashboard</Link>
       </main>
     );
@@ -71,7 +71,13 @@ export default async function FavoritesPage() {
     );
   }
 
-  const artistIds = [...new Set(tracks.map((track) => track.artist_id))];
+  const artistIds: string[] = [];
+
+  tracks.forEach((track) => {
+    if (!artistIds.includes(track.artist_id)) {
+      artistIds.push(track.artist_id);
+    }
+  });
 
   const { data: artists } = await supabase
     .from("user_profiles")
