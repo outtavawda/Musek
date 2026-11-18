@@ -22,6 +22,8 @@ export async function POST(request: Request) {
       !serviceKey ||
       !locationId
     ) {
+      console.error("Webhook configuration is incomplete.");
+
       return NextResponse.json(
         { error: "Webhook configuration is incomplete." },
         { status: 500 }
@@ -35,6 +37,10 @@ export async function POST(request: Request) {
     );
 
     if (!receivedSignature) {
+      console.error(
+        "Webhook rejected: Square signature header is missing."
+      );
+
       return NextResponse.json(
         { error: "Missing Square signature." },
         { status: 401 }
@@ -52,13 +58,28 @@ export async function POST(request: Request) {
       expectedBuffer.length !== receivedBuffer.length ||
       !timingSafeEqual(expectedBuffer, receivedBuffer)
     ) {
+      console.error(
+        "Webhook rejected: Square signature does not match."
+      );
+
       return NextResponse.json(
         { error: "Invalid Square signature." },
         { status: 401 }
       );
     }
 
-    const event = JSON.parse(rawBody);
+    let event;
+
+    try {
+      event = JSON.parse(rawBody);
+    } catch {
+      console.error("Webhook rejected: Invalid JSON payload.");
+
+      return NextResponse.json(
+        { error: "Invalid webhook payload." },
+        { status: 400 }
+      );
+    }
 
     if (event.type !== "payment.updated") {
       return NextResponse.json({ received: true });
@@ -67,6 +88,8 @@ export async function POST(request: Request) {
     const paymentId = event.data?.object?.payment?.id;
 
     if (!paymentId) {
+      console.error("Webhook payment ID is missing.");
+
       return NextResponse.json(
         { error: "Payment ID missing." },
         { status: 400 }
@@ -105,6 +128,15 @@ export async function POST(request: Request) {
       !payment?.id ||
       !Number.isInteger(payment?.amount_money?.amount)
     ) {
+      console.error(
+        "Payment not eligible for coin credit:",
+        {
+          status: payment?.status,
+          locationMatches: payment?.location_id === locationId,
+          currency: payment?.amount_money?.currency,
+        }
+      );
+
       return NextResponse.json({
         received: true,
         credited: false,
@@ -132,6 +164,8 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    console.log("Coin purchase successfully processed:", payment.id);
 
     return NextResponse.json({
       received: true,
