@@ -24,23 +24,43 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
 
   useEffect(() => {
     async function loadFavorites() {
-      const supabase = createClient();
+      try {
+        const supabase = createClient();
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-      if (!user) return;
+        if (authError) {
+          console.error("MUSEK login check error:", authError);
+          return;
+        }
 
-      setUserId(user.id);
+        if (!user) return;
 
-      const { data, error } = await supabase
-        .from("favorite_tracks")
-        .select("track_id")
-        .eq("user_id", user.id);
+        setUserId(user.id);
 
-      if (!error && data) {
+        const { data, error } = await supabase
+          .from("favorite_tracks")
+          .select("track_id")
+          .eq("user_id", user.id);
+
+        if (error) {
+          console.error("MUSEK load favourites error:", error);
+          setMessage("Could not load favourites: " + error.message);
+          return;
+        }
+
         setFavorites(data.map((item) => item.track_id));
+      } catch (error: unknown) {
+        console.error("MUSEK favourites loading error:", error);
+
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Could not load favourites."
+        );
       }
     }
 
@@ -56,10 +76,10 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
     setFavoriteLoading(true);
     setMessage("");
 
-    const supabase = createClient();
-    const alreadyFavorite = favorites.includes(songId);
-
     try {
+      const supabase = createClient();
+      const alreadyFavorite = favorites.includes(songId);
+
       if (alreadyFavorite) {
         const { error } = await supabase
           .from("favorite_tracks")
@@ -72,6 +92,7 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
         setFavorites((current) =>
           current.filter((id) => id !== songId)
         );
+
         setMessage("Song removed from favourites.");
       } else {
         const { error } = await supabase
@@ -83,15 +104,26 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
 
         if (error) throw error;
 
-        setFavorites((current) => [...current, songId]);
+        setFavorites((current) =>
+          current.includes(songId)
+            ? current
+            : [...current, songId]
+        );
+
         setMessage("Song added to favourites!");
       }
     } catch (error: unknown) {
-      setMessage(
-        error instanceof Error
+      console.error("MUSEK favourites error:", error);
+
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string"
           ? error.message
-          : "Could not update favourites."
-      );
+          : JSON.stringify(error);
+
+      setMessage("Favourite error: " + errorMessage);
     } finally {
       setFavoriteLoading(false);
     }
@@ -145,7 +177,9 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           >
             <strong>{song.title}</strong>
             <br />
-            <span>{song.artistName} · {song.genre || "Music"}</span>
+            <span>
+              {song.artistName} · {song.genre || "Music"}
+            </span>
           </button>
 
           <button
