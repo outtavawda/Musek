@@ -71,6 +71,10 @@ export default async function DashboardPage() {
             🎵 Discover Music
           </Link>
 
+          <Link className="secondaryButton" href="/favorites">
+            ❤️ My Favourites
+          </Link>
+
           <Link className="secondaryButton" href="/discover">
             Discover Artists
           </Link>
@@ -116,6 +120,10 @@ export default async function DashboardPage() {
           }}>
             <Link href="/discover-music">
               Listen to Music →
+            </Link>
+
+            <Link href="/favorites">
+              View My Favourites →
             </Link>
 
             <Link href="/discover">
