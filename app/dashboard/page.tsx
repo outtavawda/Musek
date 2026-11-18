@@ -45,20 +45,26 @@ export default async function DashboardPage() {
   const displayName =
     profile?.display_name ||
     user.user_metadata?.display_name ||
-    user.email;
+    user.email ||
+    "User";
 
-  const accountType =
+  // Check both profile and signup metadata.
+  const accountType = String(
     profile?.account_type ||
     user.user_metadata?.account_type ||
-    "fan";
+    "fan"
+  ).toLowerCase().trim();
+
+  // Show artist dashboard for artist accounts.
+  const isArtist = accountType === "artist";
 
   let wallet: Wallet | null = null;
   let tracks: Track[] = [];
   let playEvents: PlayEvent[] = [];
   let gifts: Gift[] = [];
-  let errors: string[] = [];
+  const errors: string[] = [];
 
-  if (accountType === "artist") {
+  if (isArtist) {
     const walletResult = await supabase
       .from("creator_wallets")
       .select("coin_balance, total_coins_received, total_earnings_cad")
@@ -68,7 +74,7 @@ export default async function DashboardPage() {
     if (walletResult.error) {
       errors.push("Wallet: " + walletResult.error.message);
     } else {
-      wallet = walletResult.data;
+      wallet = walletResult.data as Wallet | null;
     }
 
     const tracksResult = await supabase
@@ -114,12 +120,12 @@ export default async function DashboardPage() {
   }
 
   const totalPlays = tracks.reduce(
-    (sum, track) => sum + (track.play_count || 0),
+    (sum, track) => sum + Number(track.play_count || 0),
     0
   );
 
   const rankedTracks = [...tracks].sort(
-    (a, b) => (b.play_count || 0) - (a.play_count || 0)
+    (a, b) => Number(b.play_count || 0) - Number(a.play_count || 0)
   );
 
   const mostPlayedSong = rankedTracks[0];
@@ -132,6 +138,7 @@ export default async function DashboardPage() {
 
     const plays = playEvents.filter((event) => {
       const playedDate = new Date(event.played_at);
+
       return (
         playedDate.getMonth() === date.getMonth() &&
         playedDate.getFullYear() === date.getFullYear()
@@ -158,7 +165,7 @@ export default async function DashboardPage() {
   );
 
   const settledGiftCoins = gifts.reduce(
-    (sum, gift) => sum + gift.coins,
+    (sum, gift) => sum + Number(gift.coins || 0),
     0
   );
 
@@ -168,7 +175,9 @@ export default async function DashboardPage() {
   );
 
   const walletBalance = Number(wallet?.coin_balance || 0);
+  const totalCoinsReceived = Number(wallet?.total_coins_received || 0);
   const totalEarnings = Number(wallet?.total_earnings_cad || 0);
+
   const withdrawalMinimum = 100;
   const amountToMinimum = Math.max(
     0,
@@ -223,12 +232,20 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {accountType === "artist" && (
+        {isArtist && (
           <>
-            {/* ARTIST EARNINGS */}
+            {/* ARTIST WALLET */}
+
             <div style={{ marginTop: "40px" }}>
               <p className="eyebrow">ARTIST WALLET</p>
               <h2>Your Earnings</h2>
+
+              {!wallet && (
+                <p className="muted">
+                  Your artist wallet could not be loaded. Check the wallet
+                  error message below.
+                </p>
+              )}
 
               <div style={{
                 display: "grid",
@@ -252,9 +269,7 @@ export default async function DashboardPage() {
                   borderRadius: "12px"
                 }}>
                   <p className="eyebrow">TOTAL COINS RECEIVED</p>
-                  <h2>
-                    {(wallet?.total_coins_received || 0).toLocaleString()}
-                  </h2>
+                  <h2>{totalCoinsReceived.toLocaleString()}</h2>
                   <p className="muted">Coins</p>
                 </div>
 
@@ -264,9 +279,7 @@ export default async function DashboardPage() {
                   borderRadius: "12px"
                 }}>
                   <p className="eyebrow">RECORDED EARNINGS</p>
-                  <h2>
-                    CAD ${totalEarnings.toFixed(2)}
-                  </h2>
+                  <h2>CAD ${totalEarnings.toFixed(2)}</h2>
                 </div>
               </div>
 
@@ -316,6 +329,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* MUSIC ANALYTICS */}
+
             <div style={{ marginTop: "40px" }}>
               <p className="eyebrow">ARTIST ANALYTICS</p>
               <h2>Your Music Performance</h2>
@@ -455,11 +469,12 @@ export default async function DashboardPage() {
 
             {errors.length > 0 && (
               <div style={{ marginTop: "24px" }}>
-                <p className="muted">
-                  Some dashboard information could not be loaded:
-                </p>
+                <p className="eyebrow">DASHBOARD DATA ERRORS</p>
+
                 {errors.map((error, index) => (
-                  <p key={index} className="muted">{error}</p>
+                  <p key={index} className="muted">
+                    {error}
+                  </p>
                 ))}
               </div>
             )}
