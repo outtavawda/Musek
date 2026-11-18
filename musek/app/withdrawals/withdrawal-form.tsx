@@ -39,7 +39,6 @@ export default function WithdrawalForm({
     }
 
     if (
-      !Number.isFinite(requestedAmount) ||
       Math.round(requestedAmount * 100) !== requestedAmount * 100
     ) {
       setMessage("Enter an amount with no more than two decimal places.");
@@ -51,11 +50,8 @@ export default function WithdrawalForm({
       return;
     }
 
-    if (!requestKey) {
-      setMessage("Please try again in a moment.");
-      return;
-    }
-
+    const key = requestKey || crypto.randomUUID();
+    setRequestKey(key);
     setIsSubmitting(true);
 
     try {
@@ -68,7 +64,7 @@ export default function WithdrawalForm({
         "request_artist_withdrawal",
         {
           p_amount_cad: requestedAmount,
-          p_idempotency_key: requestKey,
+          p_idempotency_key: key,
         }
       );
 
@@ -82,12 +78,12 @@ export default function WithdrawalForm({
       );
 
       setAmount("");
-      setRequestKey(crypto.randomUUID());
+      setRequestKey("");
 
       router.refresh();
     } catch {
       setMessage(
-        "We could not confirm your request. Please try again using the same request session."
+        "We could not confirm your request. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -179,7 +175,7 @@ export default function WithdrawalForm({
               type="button"
               className="primaryButton"
               onClick={submitWithdrawal}
-              disabled={isSubmitting || !requestKey}
+              disabled={isSubmitting}
               style={{ marginTop: "16px" }}
             >
               {isSubmitting
@@ -190,10 +186,7 @@ export default function WithdrawalForm({
         )}
 
         {message && (
-          <p
-            role="status"
-            style={{ marginTop: "16px" }}
-          >
+          <p role="status" style={{ marginTop: "16px" }}>
             {message}
           </p>
         )}
@@ -235,9 +228,9 @@ export default function WithdrawalForm({
 
                 <p className="muted">
                   Requested:{" "}
-                  {new Date(
-                    withdrawal.created_at
-                  ).toLocaleDateString("en-CA")}
+                  {new Date(withdrawal.created_at).toLocaleDateString(
+                    "en-CA"
+                  )}
                 </p>
               </div>
             ))}
