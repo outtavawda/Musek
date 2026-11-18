@@ -62,7 +62,6 @@ export default async function DashboardPage() {
   let analyticsError = "";
 
   if (accountType === "artist") {
-    // Load artist wallet
     const { data: walletData, error: walletQueryError } =
       await supabase
         .from("creator_wallets")
@@ -80,7 +79,6 @@ export default async function DashboardPage() {
       walletError = "No artist wallet was found for this account.";
     }
 
-    // Load published songs
     const { data, error } = await supabase
       .from("music_tracks")
       .select("id, title, genre, play_count, status")
@@ -93,7 +91,6 @@ export default async function DashboardPage() {
       tracks = (data || []) as Track[];
     }
 
-    // Load monthly listening history
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
     sixMonthsAgo.setDate(1);
@@ -216,6 +213,15 @@ export default async function DashboardPage() {
           <Link className="secondaryButton" href="/profile">
             Edit My Profile
           </Link>
+
+          {accountType === "fan" && (
+            <Link
+              className="primaryButton"
+              href="/buy-coins"
+            >
+              🪙 Buy MUSEK Coins
+            </Link>
+          )}
 
           {accountType === "artist" && (
             <Link className="secondaryButton" href="/my-music">
