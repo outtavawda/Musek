@@ -12,10 +12,12 @@ const COIN_PACKAGES = {
   "1000": { coins: 1000, amount: 1000 },
 } as const;
 
+type PackageKey = keyof typeof COIN_PACKAGES;
+
 export async function POST(request: Request) {
   try {
-    // Confirm the fan is logged in.
     const supabase = createClient();
+
     const {
       data: { user },
       error: authError,
@@ -28,17 +30,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // Read the selected package.
     const body = await request.json();
-    const selectedPackage =
-      COIN_PACKAGES[String(body.package as string)];
 
-    if (!selectedPackage) {
+    const packageKey = String(body.package);
+
+    if (!Object.prototype.hasOwnProperty.call(
+      COIN_PACKAGES,
+      packageKey
+    )) {
       return NextResponse.json(
         { error: "Invalid coin package." },
         { status: 400 }
       );
     }
+
+    const selectedPackage =
+      COIN_PACKAGES[packageKey as PackageKey];
 
     const accessToken = process.env.SQUARE_ACCESS_TOKEN;
     const locationId = process.env.SQUARE_LOCATION_ID;
@@ -59,7 +66,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create a server-only Supabase client.
     const admin = createAdminClient(
       supabaseUrl,
       serviceKey,
@@ -73,13 +79,12 @@ export async function POST(request: Request) {
 
     const idempotencyKey = randomUUID();
 
-    // Create a Square-hosted Sandbox checkout.
     const squareResponse = await fetch(
       "https://connect.squareupsandbox.com/v2/online-checkout/payment-links",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
           "Square-Version": "2026-09-16",
         },
@@ -121,7 +126,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save the pending purchase before returning the checkout link.
     const { error: purchaseError } = await admin
       .from("coin_purchases")
       .insert({
