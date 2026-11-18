@@ -24,6 +24,8 @@ export default function MusicLibrary({
 }) {
   const [songs, setSongs] = useState(initialSongs);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
   const [description, setDescription] = useState("");
@@ -60,9 +62,7 @@ export default function MusicLibrary({
         .eq("id", songId)
         .eq("artist_id", userId);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       setSongs((currentSongs) =>
         currentSongs.map((song) =>
@@ -81,16 +81,71 @@ export default function MusicLibrary({
       setMessage("Song details updated successfully.");
     } catch (error: unknown) {
       const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "message" in error &&
-        typeof error.message === "string"
-          ? error.message
-          : "Unknown error.";
+        error instanceof Error ? error.message : "Unknown error.";
 
       setMessage("Could not update song: " + errorMessage);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function deleteSong(song: Song) {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete "${song.title}"? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(song.id);
+    setMessage("");
+
+    try {
+      const supabase = createClient();
+
+      // Delete the database record first.
+      const { data: deletedRows, error: databaseError } = await supabase
+        .from("music_tracks")
+        .delete()
+        .eq("id", song.id)
+        .eq("artist_id", userId)
+        .select("id");
+
+      if (databaseError) throw databaseError;
+
+      if (!deletedRows || deletedRows.length === 0) {
+        throw new Error(
+          "Song could not be deleted. Check your account permissions."
+        );
+      }
+
+      // Remove the audio file from private storage.
+      const { error: storageError } = await supabase.storage
+        .from("music-tracks")
+        .remove([song.audio_path]);
+
+      if (storageError) {
+        setMessage(
+          "Song record deleted, but its audio file could not be removed: " +
+            storageError.message
+        );
+      } else {
+        setMessage("Song and audio file deleted successfully.");
+      }
+
+      setSongs((currentSongs) =>
+        currentSongs.filter((item) => item.id !== song.id)
+      );
+
+      if (editingId === song.id) {
+        setEditingId(null);
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error.";
+
+      setMessage("Could not delete song: " + errorMessage);
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -169,8 +224,8 @@ export default function MusicLibrary({
 
                 <button
                   type="button"
-                  onClick={() => setEditingId(null)}
                   disabled={loading}
+                  onClick={() => setEditingId(null)}
                   style={{ marginLeft: "10px" }}
                 >
                   Cancel
@@ -182,6 +237,7 @@ export default function MusicLibrary({
 
                 <p>Genre: {song.genre || "Not specified"}</p>
                 <p>{song.description}</p>
+
                 <p>
                   Status: <strong>{song.status}</strong>
                 </p>
@@ -201,8 +257,26 @@ export default function MusicLibrary({
                   <button
                     type="button"
                     onClick={() => startEditing(song)}
+                    disabled={deletingId === song.id}
                   >
                     Edit Song
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => deleteSong(song)}
+                    disabled={deletingId === song.id}
+                    style={{
+                      marginLeft: "10px",
+                      backgroundColor: "#b91c1c",
+                      color: "white",
+                      padding: "8px 14px",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {deletingId === song.id ? "Deleting..." : "Delete Song"}
                   </button>
                 </p>
               </div>
@@ -211,7 +285,11 @@ export default function MusicLibrary({
         ))
       )}
 
-      {message && <p role="status">{message}</p>}
+      {message && (
+        <p role="status" style={{ marginTop: "15px" }}>
+          {message}
+        </p>
+      )}
     </div>
   );
 }
