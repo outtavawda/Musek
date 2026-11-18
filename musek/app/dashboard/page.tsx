@@ -264,9 +264,15 @@ export default async function DashboardPage() {
           </Link>
 
           {accountType === "fan" && (
-            <Link className="primaryButton" href="/buy-coins">
-              🪙 Buy MUSEK Coins
-            </Link>
+            <>
+              <Link className="primaryButton" href="/buy-coins">
+                🪙 Buy MUSEK Coins
+              </Link>
+
+              <Link className="secondaryButton" href="/gift-history">
+                🎁 Gift History
+              </Link>
+            </>
           )}
 
           {accountType === "artist" && (
@@ -329,16 +335,22 @@ export default async function DashboardPage() {
                 Your MUSEK Coins are platform credits used within MUSEK.
               </p>
 
-              <Link
-                className="primaryButton"
-                href="/buy-coins"
+              <div
                 style={{
-                  display: "inline-block",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "12px",
                   marginTop: "12px",
                 }}
               >
-                🪙 Buy More Coins
-              </Link>
+                <Link className="primaryButton" href="/buy-coins">
+                  🪙 Buy More Coins
+                </Link>
+
+                <Link className="secondaryButton" href="/gift-history">
+                  🎁 View Gift History
+                </Link>
+              </div>
             </div>
 
             <div style={{ marginTop: "28px" }}>
@@ -727,6 +739,12 @@ export default async function DashboardPage() {
             <Link href="/favorites">
               View My Favourites →
             </Link>
+
+            {accountType === "fan" && (
+              <Link href="/gift-history">
+                View Gift History →
+              </Link>
+            )}
 
             <Link href="/discover">
               Explore Artists →
