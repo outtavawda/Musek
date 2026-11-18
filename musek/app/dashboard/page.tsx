@@ -4,10 +4,20 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "../auth-actions";
 
+type Track = {
+  id: string;
+  title: string;
+  genre: string | null;
+  play_count: number | null;
+  status: string;
+};
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
@@ -33,6 +43,38 @@ export default async function DashboardPage() {
       : accountType === "label"
       ? "Record Label"
       : "Fan";
+
+  // Load only this artist's published songs.
+  let tracks: Track[] = [];
+  let analyticsError = "";
+
+  if (accountType === "artist") {
+    const { data, error } = await supabase
+      .from("music_tracks")
+      .select("id, title, genre, play_count, status")
+      .eq("artist_id", user.id)
+      .eq("status", "published");
+
+    if (error) {
+      console.error("MUSEK analytics error:", error);
+      analyticsError = error.message;
+    } else {
+      tracks = (data || []) as Track[];
+    }
+  }
+
+  const totalPlays = tracks.reduce(
+    (total, track) => total + (track.play_count || 0),
+    0
+  );
+
+  const publishedSongs = tracks.length;
+
+  const rankedTracks = [...tracks].sort(
+    (a, b) => (b.play_count || 0) - (a.play_count || 0)
+  );
+
+  const mostPlayedSong = rankedTracks[0];
 
   return (
     <main className="pageWrap">
@@ -83,6 +125,125 @@ export default async function DashboardPage() {
             Edit My Profile
           </Link>
         </div>
+
+        {accountType === "artist" && (
+          <div style={{ marginTop: "36px" }}>
+            <p className="eyebrow">ARTIST ANALYTICS</p>
+
+            <h2>Your Music Performance</h2>
+
+            {analyticsError ? (
+              <p className="muted">
+                Unable to load your analytics: {analyticsError}
+              </p>
+            ) : (
+              <>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                  gap: "14px",
+                  marginTop: "20px"
+                }}>
+                  <div style={{
+                    padding: "20px",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "12px"
+                  }}>
+                    <p className="eyebrow">TOTAL PLAYS</p>
+                    <h2 style={{ fontSize: "30px" }}>
+                      {totalPlays.toLocaleString()}
+                    </h2>
+                  </div>
+
+                  <div style={{
+                    padding: "20px",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "12px"
+                  }}>
+                    <p className="eyebrow">PUBLISHED SONGS</p>
+                    <h2 style={{ fontSize: "30px" }}>
+                      {publishedSongs}
+                    </h2>
+                  </div>
+
+                  <div style={{
+                    padding: "20px",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "12px"
+                  }}>
+                    <p className="eyebrow">TOP SONG PLAYS</p>
+                    <h2 style={{ fontSize: "30px" }}>
+                      {(mostPlayedSong?.play_count || 0).toLocaleString()}
+                    </h2>
+                  </div>
+                </div>
+
+                <div style={{
+                  marginTop: "24px",
+                  padding: "20px",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  borderRadius: "12px"
+                }}>
+                  <p className="eyebrow">MOST PLAYED SONG</p>
+
+                  <h3>
+                    {mostPlayedSong?.title || "No published songs yet"}
+                  </h3>
+
+                  {mostPlayedSong && (
+                    <p className="muted">
+                      {mostPlayedSong.play_count || 0} plays
+                    </p>
+                  )}
+                </div>
+
+                <div style={{ marginTop: "28px" }}>
+                  <p className="eyebrow">POPULARITY RANKING</p>
+
+                  <h2>Your Published Songs</h2>
+
+                  {rankedTracks.length === 0 ? (
+                    <p className="muted">
+                      You have not published any songs yet.
+                    </p>
+                  ) : (
+                    <div style={{ marginTop: "16px" }}>
+                      {rankedTracks.map((track, index) => (
+                        <div
+                          key={track.id}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "12px",
+                            padding: "14px",
+                            marginBottom: "10px",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            borderRadius: "10px"
+                          }}
+                        >
+                          <div>
+                            <strong>
+                              {index + 1}. {track.title}
+                            </strong>
+
+                            <p className="muted" style={{ margin: "5px 0 0" }}>
+                              {track.genre || "Music"}
+                            </p>
+                          </div>
+
+                          <strong>
+                            {(track.play_count || 0).toLocaleString()} plays
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         <div style={{
           marginTop: "32px",
