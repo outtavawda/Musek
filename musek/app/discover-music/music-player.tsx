@@ -218,7 +218,7 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           <audio
             key={selectedSong.id}
             controls
-            autoPlay
+            preload="none"
             src={selectedSong.audioUrl || undefined}
             onEnded={nextSong}
             style={{ width: "100%" }}
