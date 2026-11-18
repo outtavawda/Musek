@@ -16,6 +16,12 @@ type PlayEvent = {
   played_at: string;
 };
 
+type Wallet = {
+  coin_balance: number;
+  total_coins_received: number;
+  total_earnings_cad: number;
+};
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
@@ -48,11 +54,33 @@ export default async function DashboardPage() {
       ? "Record Label"
       : "Fan";
 
+  let wallet: Wallet | null = null;
+  let walletError = "";
+
   let tracks: Track[] = [];
   let playEvents: PlayEvent[] = [];
   let analyticsError = "";
 
   if (accountType === "artist") {
+    // Load artist wallet
+    const { data: walletData, error: walletQueryError } =
+      await supabase
+        .from("creator_wallets")
+        .select(
+          "coin_balance, total_coins_received, total_earnings_cad"
+        )
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (walletQueryError) {
+      walletError = walletQueryError.message;
+    } else if (walletData) {
+      wallet = walletData as Wallet;
+    } else {
+      walletError = "No artist wallet was found for this account.";
+    }
+
+    // Load published songs
     const { data, error } = await supabase
       .from("music_tracks")
       .select("id, title, genre, play_count, status")
@@ -65,6 +93,7 @@ export default async function DashboardPage() {
       tracks = (data || []) as Track[];
     }
 
+    // Load monthly listening history
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
     sixMonthsAgo.setDate(1);
@@ -103,15 +132,12 @@ export default async function DashboardPage() {
     date.setHours(0, 0, 0, 0);
     date.setMonth(date.getMonth() - (5 - index));
 
-    const month = date.getMonth();
-    const year = date.getFullYear();
-
     const plays = playEvents.filter((event) => {
       const playedDate = new Date(event.played_at);
 
       return (
-        playedDate.getMonth() === month &&
-        playedDate.getFullYear() === year
+        playedDate.getMonth() === date.getMonth() &&
+        playedDate.getFullYear() === date.getFullYear()
       );
     }).length;
 
@@ -133,6 +159,12 @@ export default async function DashboardPage() {
     (total, month) => total + month.plays,
     0
   );
+
+  const cardStyle = {
+    padding: "20px",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: "12px",
+  };
 
   return (
     <main className="pageWrap">
@@ -161,12 +193,14 @@ export default async function DashboardPage() {
           Welcome to MUSEK. Your music community starts here.
         </p>
 
-        <div style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "12px",
-          marginTop: "24px"
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "12px",
+            marginTop: "24px",
+          }}
+        >
           <Link className="primaryButton" href="/discover-music">
             🎵 Discover Music
           </Link>
@@ -182,10 +216,101 @@ export default async function DashboardPage() {
           <Link className="secondaryButton" href="/profile">
             Edit My Profile
           </Link>
+
+          {accountType === "artist" && (
+            <Link className="secondaryButton" href="/my-music">
+              🎧 My Music
+            </Link>
+          )}
         </div>
 
+        {/* ARTIST WALLET */}
         {accountType === "artist" && (
           <div style={{ marginTop: "36px" }}>
+            <p className="eyebrow">ARTIST EARNINGS</p>
+
+            <h2>My Artist Wallet</h2>
+
+            {walletError ? (
+              <p className="muted">
+                Unable to load wallet: {walletError}
+              </p>
+            ) : wallet ? (
+              <>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(150px, 1fr))",
+                    gap: "14px",
+                    marginTop: "20px",
+                  }}
+                >
+                  <div style={cardStyle}>
+                    <p className="eyebrow">COIN BALANCE</p>
+                    <h2 style={{ fontSize: "28px" }}>
+                      {Number(wallet.coin_balance).toLocaleString()}
+                    </h2>
+                    <p className="muted">Coins</p>
+                  </div>
+
+                  <div style={cardStyle}>
+                    <p className="eyebrow">COINS RECEIVED</p>
+                    <h2 style={{ fontSize: "28px" }}>
+                      {Number(
+                        wallet.total_coins_received
+                      ).toLocaleString()}
+                    </h2>
+                    <p className="muted">Lifetime coins received</p>
+                  </div>
+
+                  <div style={cardStyle}>
+                    <p className="eyebrow">LIFETIME EARNINGS</p>
+                    <h2 style={{ fontSize: "28px" }}>
+                      {Number(
+                        wallet.total_earnings_cad
+                      ).toLocaleString("en-CA", {
+                        style: "currency",
+                        currency: "CAD",
+                      })}
+                    </h2>
+                    <p className="muted">Recorded earnings</p>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    ...cardStyle,
+                    marginTop: "18px",
+                  }}
+                >
+                  <p className="eyebrow">ARTIST PAYOUT INFORMATION</p>
+
+                  <h3>Minimum withdrawal: $100 CAD</h3>
+
+                  <p className="muted">
+                    Artist withdrawals are subject to verification,
+                    available settled earnings, payout eligibility,
+                    fees and applicable compliance checks.
+                  </p>
+
+                  <p className="muted">
+                    Your lifetime earnings are not necessarily your
+                    available withdrawal balance.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="muted">
+                Your artist wallet has not been loaded.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ARTIST ANALYTICS */}
+        {accountType === "artist" && (
+          <div style={{ marginTop: "40px" }}>
             <p className="eyebrow">ARTIST ANALYTICS</p>
 
             <h2>Your Music Performance</h2>
@@ -196,39 +321,30 @@ export default async function DashboardPage() {
               </p>
             ) : (
               <>
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                  gap: "14px",
-                  marginTop: "20px"
-                }}>
-                  <div style={{
-                    padding: "20px",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: "12px"
-                  }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(150px, 1fr))",
+                    gap: "14px",
+                    marginTop: "20px",
+                  }}
+                >
+                  <div style={cardStyle}>
                     <p className="eyebrow">TOTAL PLAYS</p>
                     <h2 style={{ fontSize: "30px" }}>
                       {totalPlays.toLocaleString()}
                     </h2>
                   </div>
 
-                  <div style={{
-                    padding: "20px",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: "12px"
-                  }}>
+                  <div style={cardStyle}>
                     <p className="eyebrow">PUBLISHED SONGS</p>
                     <h2 style={{ fontSize: "30px" }}>
                       {publishedSongs}
                     </h2>
                   </div>
 
-                  <div style={{
-                    padding: "20px",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: "12px"
-                  }}>
+                  <div style={cardStyle}>
                     <p className="eyebrow">TOP SONG PLAYS</p>
                     <h2 style={{ fontSize: "30px" }}>
                       {(mostPlayedSong?.play_count || 0).toLocaleString()}
@@ -236,12 +352,7 @@ export default async function DashboardPage() {
                   </div>
                 </div>
 
-                <div style={{
-                  marginTop: "24px",
-                  padding: "20px",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  borderRadius: "12px"
-                }}>
+                <div style={{ ...cardStyle, marginTop: "24px" }}>
                   <p className="eyebrow">MOST PLAYED SONG</p>
 
                   <h3>
@@ -263,26 +374,25 @@ export default async function DashboardPage() {
                     Song plays recorded over the last six months.
                   </p>
 
-                  <div style={{
-                    padding: "20px",
-                    marginTop: "18px",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: "12px"
-                  }}>
-                    <p className="eyebrow">RECORDED PLAYS · SIX MONTHS</p>
+                  <div style={{ ...cardStyle, marginTop: "18px" }}>
+                    <p className="eyebrow">
+                      RECORDED PLAYS · SIX MONTHS
+                    </p>
 
                     <h2 style={{ fontSize: "30px" }}>
                       {totalMonthlyPlays.toLocaleString()}
                     </h2>
 
-                    <div style={{
-                      display: "flex",
-                      alignItems: "flex-end",
-                      justifyContent: "space-between",
-                      gap: "12px",
-                      height: "190px",
-                      marginTop: "24px"
-                    }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-end",
+                        justifyContent: "space-between",
+                        gap: "12px",
+                        height: "190px",
+                        marginTop: "24px",
+                      }}
+                    >
                       {monthlyStats.map((month) => (
                         <div
                           key={month.label}
@@ -293,28 +403,32 @@ export default async function DashboardPage() {
                             alignItems: "center",
                             justifyContent: "flex-end",
                             height: "100%",
-                            gap: "8px"
+                            gap: "8px",
                           }}
                         >
                           <strong style={{ fontSize: "12px" }}>
                             {month.plays}
                           </strong>
 
-                          <div style={{
-                            width: "100%",
-                            maxWidth: "48px",
-                            height: `${Math.max(
-                              (month.plays / highestMonthlyPlays) * 130,
-                              5
-                            )}px`,
-                            background: "#ffffff",
-                            borderRadius: "6px 6px 0 0"
-                          }} />
+                          <div
+                            style={{
+                              width: "100%",
+                              maxWidth: "48px",
+                              height: `${Math.max(
+                                (month.plays / highestMonthlyPlays) * 130,
+                                5
+                              )}px`,
+                              background: "#ffffff",
+                              borderRadius: "6px 6px 0 0",
+                            }}
+                          />
 
-                          <span style={{
-                            fontSize: "11px",
-                            color: "#aaaaaa"
-                          }}>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              color: "#aaaaaa",
+                            }}
+                          >
                             {month.label}
                           </span>
                         </div>
@@ -323,8 +437,8 @@ export default async function DashboardPage() {
                   </div>
 
                   <p className="muted" style={{ marginTop: "12px" }}>
-                    Monthly tracking starts from the date this feature was
-                    installed. Older plays are not included in this report.
+                    Monthly tracking starts from the date this feature
+                    was installed. Older plays are not included.
                   </p>
                 </div>
 
@@ -348,8 +462,9 @@ export default async function DashboardPage() {
                             gap: "12px",
                             padding: "14px",
                             marginBottom: "10px",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            borderRadius: "10px"
+                            border:
+                              "1px solid rgba(255,255,255,0.12)",
+                            borderRadius: "10px",
                           }}
                         >
                           <div>
@@ -357,7 +472,10 @@ export default async function DashboardPage() {
                               {index + 1}. {track.title}
                             </strong>
 
-                            <p className="muted" style={{ margin: "5px 0 0" }}>
+                            <p
+                              className="muted"
+                              style={{ margin: "5px 0 0" }}
+                            >
                               {track.genre || "Music"}
                             </p>
                           </div>
@@ -375,12 +493,13 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        <div style={{
-          marginTop: "32px",
-          padding: "20px",
-          borderRadius: "12px",
-          border: "1px solid rgba(255,255,255,0.12)"
-        }}>
+        {/* PROFILE STATUS */}
+        <div
+          style={{
+            ...cardStyle,
+            marginTop: "36px",
+          }}
+        >
           <p className="eyebrow">PROFILE STATUS</p>
 
           <h2>
@@ -396,19 +515,23 @@ export default async function DashboardPage() {
           </p>
         </div>
 
+        {/* EXPLORE MUSEK */}
         <div style={{ marginTop: "32px" }}>
           <p className="eyebrow">EXPLORE MUSEK</p>
           <h2>Your music community</h2>
 
           <p className="muted">
-            Discover artists, listen to published songs and explore record labels.
+            Discover artists, listen to published songs and explore
+            record labels.
           </p>
 
-          <div style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "16px"
-          }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "16px",
+            }}
+          >
             <Link href="/discover-music">
               Listen to Music →
             </Link>
@@ -420,6 +543,12 @@ export default async function DashboardPage() {
             <Link href="/discover">
               Explore Artists →
             </Link>
+
+            {accountType === "artist" && (
+              <Link href="/my-music">
+                Manage My Music →
+              </Link>
+            )}
           </div>
         </div>
       </section>
