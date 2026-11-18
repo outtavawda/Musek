@@ -67,8 +67,12 @@ export default async function DashboardPage() {
           gap: "12px",
           marginTop: "24px"
         }}>
-          <Link className="primaryButton" href="/discover">
-            Discover Artists ↗
+          <Link className="primaryButton" href="/discover-music">
+            🎵 Discover Music
+          </Link>
+
+          <Link className="secondaryButton" href="/discover">
+            Discover Artists
           </Link>
 
           <Link className="secondaryButton" href="/profile">
@@ -102,12 +106,22 @@ export default async function DashboardPage() {
           <h2>Your music community</h2>
 
           <p className="muted">
-            Discover artists and record labels from the MUSEK community.
+            Discover artists, listen to published songs and explore record labels.
           </p>
 
-          <Link href="/discover">
-            Explore the community →
-          </Link>
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "16px"
+          }}>
+            <Link href="/discover-music">
+              Listen to Music →
+            </Link>
+
+            <Link href="/discover">
+              Explore Artists →
+            </Link>
+          </div>
         </div>
       </section>
     </main>
