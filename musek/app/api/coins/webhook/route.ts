@@ -1,32 +1,18 @@
 
 import { NextResponse } from "next/server";
-import {
-  createHmac,
-  timingSafeEqual,
-} from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
-    const signatureKey =
-      process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
-
-    const notificationUrl =
-      process.env.SQUARE_WEBHOOK_NOTIFICATION_URL;
-
-    const accessToken =
-      process.env.SQUARE_ACCESS_TOKEN;
-
-    const supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-    const serviceKey =
-      process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    const locationId =
-      process.env.SQUARE_LOCATION_ID;
+    const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+    const notificationUrl = process.env.SQUARE_WEBHOOK_NOTIFICATION_URL;
+    const accessToken = process.env.SQUARE_ACCESS_TOKEN;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const locationId = process.env.SQUARE_LOCATION_ID;
 
     if (
       !signatureKey ||
@@ -42,7 +28,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Preserve the exact raw request body for signature verification.
     const rawBody = await request.text();
 
     const receivedSignature = request.headers.get(
@@ -56,23 +41,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify that this notification came from Square.
-    const expectedSignature = createHmac(
-      "sha256",
-      signatureKey
-    )
+    const expectedSignature = createHmac("sha256", signatureKey)
       .update(notificationUrl + rawBody)
       .digest("base64");
 
-    const expectedBuffer = Buffer.from(
-      expectedSignature,
-      "base64"
-    );
-
-    const receivedBuffer = Buffer.from(
-      receivedSignature,
-      "base64"
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, "base64");
+    const receivedBuffer = Buffer.from(receivedSignature, "base64");
 
     if (
       expectedBuffer.length !== receivedBuffer.length ||
@@ -86,7 +60,6 @@ export async function POST(request: Request) {
 
     const event = JSON.parse(rawBody);
 
-    // Only process completed payment updates.
     if (event.type !== "payment.updated") {
       return NextResponse.json({ received: true });
     }
@@ -100,9 +73,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ask Square directly for the payment details.
     const paymentResponse = await fetch(
-      `https://connect.squareupsandbox.com/v2/payments/${paymentId}`,
+      `https://connect.squareupsandbox.com/v2/payments/${encodeURIComponent(paymentId)}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -128,7 +100,7 @@ export async function POST(request: Request) {
     if (
       payment?.status !== "COMPLETED" ||
       payment?.location_id !== locationId ||
-      payment?.currency !== "CAD" ||
+      payment?.amount_money?.currency !== "CAD" ||
       !payment?.order_id ||
       !payment?.id ||
       !Number.isInteger(payment?.amount_money?.amount)
@@ -139,27 +111,18 @@ export async function POST(request: Request) {
       });
     }
 
-    // Use a server-only Supabase client.
-    const admin = createClient(
-      supabaseUrl,
-      serviceKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const admin = createClient(supabaseUrl, serviceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
-    // Credit coins only through the protected database function.
-    const { error } = await admin.rpc(
-      "credit_coin_purchase",
-      {
-        p_square_order_id: payment.order_id,
-        p_square_payment_id: payment.id,
-        p_amount_cents: payment.amount_money.amount,
-      }
-    );
+    const { error } = await admin.rpc("credit_coin_purchase", {
+      p_square_order_id: payment.order_id,
+      p_square_payment_id: payment.id,
+      p_amount_cents: payment.amount_money.amount,
+    });
 
     if (error) {
       console.error("Coin credit failed:", error);
