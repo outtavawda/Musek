@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import MusicPlayer from "../../discover-music/music-player";
+import SendGift from "./send-gift";
 
 export default async function ArtistPage({
   params,
@@ -116,6 +117,9 @@ export default async function ArtistPage({
             </a>
           </p>
         )}
+
+        {/* SEND GIFT */}
+        <SendGift artistId={artist.id} />
 
         <div style={{ marginTop: "30px" }}>
           <p className="eyebrow">ARTIST MUSIC</p>
