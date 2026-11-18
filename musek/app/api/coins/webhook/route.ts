@@ -24,6 +24,18 @@ function signatureMatches(
   );
 }
 
+function getQueryParameterNames(url: URL): string[] {
+  const names: string[] = [];
+
+  url.searchParams.forEach((_value, key) => {
+    if (!names.includes(key)) {
+      names.push(key);
+    }
+  });
+
+  return names.sort();
+}
+
 export async function POST(request: Request) {
   try {
     const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -85,13 +97,13 @@ export async function POST(request: Request) {
         configuredUrlDetails = {
           host: configured.host,
           path: configured.pathname,
-          queryParameterNames: [...configured.searchParams.keys()].sort(),
+          queryParameterNames: getQueryParameterNames(configured),
         };
 
         incomingUrlDetails = {
           host: incoming.host,
           path: incoming.pathname,
-          queryParameterNames: [...incoming.searchParams.keys()].sort(),
+          queryParameterNames: getQueryParameterNames(incoming),
         };
       } catch {
         console.error("Could not inspect webhook URL metadata.");
