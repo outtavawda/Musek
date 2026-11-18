@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Song = {
@@ -19,8 +19,14 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   const [message, setMessage] = useState("");
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
+  const countedPlayForSong = useRef<string | null>(null);
+
   const availableSongs = songs.filter((song) => song.audioUrl);
   const selectedSong = availableSongs[selectedIndex];
+
+  useEffect(() => {
+    countedPlayForSong.current = null;
+  }, [selectedSong?.id]);
 
   useEffect(() => {
     async function loadFavorites() {
@@ -66,6 +72,33 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
 
     loadFavorites();
   }, []);
+
+  async function recordPlay(songId: string) {
+    if (countedPlayForSong.current === songId) {
+      return;
+    }
+
+    countedPlayForSong.current = songId;
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase.rpc(
+        "increment_track_play",
+        {
+          track_uuid: songId,
+        }
+      );
+
+      if (error) {
+        countedPlayForSong.current = null;
+        console.error("MUSEK play count error:", error);
+      }
+    } catch (error) {
+      countedPlayForSong.current = null;
+      console.error("MUSEK play count error:", error);
+    }
+  }
 
   async function toggleFavorite(songId: string) {
     if (!userId) {
@@ -240,6 +273,7 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
             controls
             preload="none"
             src={selectedSong.audioUrl || undefined}
+            onPlay={() => recordPlay(selectedSong.id)}
             onEnded={nextSong}
             style={{
               width: "100%",
