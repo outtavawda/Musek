@@ -146,8 +146,14 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   }
 
   return (
-    <div style={{ paddingBottom: "150px" }}>
-      <h2>MUSEK Playlist</h2>
+    <div
+      style={{
+        paddingBottom: "150px",
+        background: "#000000",
+        color: "#ffffff",
+      }}
+    >
+      <h2 style={{ color: "#ffffff" }}>MUSEK Playlist</h2>
 
       {availableSongs.map((song, index) => (
         <div
@@ -155,10 +161,11 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           style={{
             padding: "12px",
             marginBottom: "8px",
-            border: "1px solid #ccc",
+            border: "1px solid #333333",
             borderRadius: "8px",
             background:
-              selectedIndex === index ? "#e5e7eb" : "transparent",
+              selectedIndex === index ? "#262626" : "#000000",
+            color: "#ffffff",
           }}
         >
           <button
@@ -170,14 +177,14 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
               textAlign: "left",
               border: "none",
               background: "transparent",
-              color: "#111",
+              color: "#ffffff",
               cursor: "pointer",
               padding: "5px",
             }}
           >
             <strong>{song.title}</strong>
             <br />
-            <span>
+            <span style={{ color: "#cccccc" }}>
               {song.artistName} · {song.genre || "Music"}
             </span>
           </button>
@@ -186,14 +193,26 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
             type="button"
             onClick={() => toggleFavorite(song.id)}
             disabled={favoriteLoading}
-            style={{ marginTop: "8px" }}
+            style={{
+              marginTop: "8px",
+              background: "#222222",
+              color: "#ffffff",
+              border: "1px solid #555555",
+              borderRadius: "6px",
+              padding: "7px 12px",
+              cursor: "pointer",
+            }}
           >
             {favorites.includes(song.id) ? "❤️ Liked" : "🤍 Like"}
           </button>
         </div>
       ))}
 
-      {message && <p role="status">{message}</p>}
+      {message && (
+        <p role="status" style={{ color: "#ffffff" }}>
+          {message}
+        </p>
+      )}
 
       <div
         style={{
@@ -202,16 +221,17 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           left: 0,
           right: 0,
           zIndex: 100,
-          background: "#111827",
-          color: "white",
+          background: "#000000",
+          color: "#ffffff",
           padding: "15px 20px",
-          boxShadow: "0 -3px 12px rgba(0,0,0,0.2)",
+          boxShadow: "0 -3px 12px rgba(255,255,255,0.08)",
+          borderTop: "1px solid #333333",
         }}
       >
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <strong>{selectedSong.title}</strong>
 
-          <p style={{ margin: "4px 0 10px", color: "#d1d5db" }}>
+          <p style={{ margin: "4px 0 10px", color: "#cccccc" }}>
             {selectedSong.artistName}
           </p>
 
@@ -221,7 +241,10 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
             preload="none"
             src={selectedSong.audioUrl || undefined}
             onEnded={nextSong}
-            style={{ width: "100%" }}
+            style={{
+              width: "100%",
+              colorScheme: "dark",
+            }}
           />
 
           <div
@@ -232,11 +255,33 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
               marginTop: "10px",
             }}
           >
-            <button type="button" onClick={previousSong}>
+            <button
+              type="button"
+              onClick={previousSong}
+              style={{
+                background: "#222222",
+                color: "#ffffff",
+                border: "1px solid #555555",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
               Previous
             </button>
 
-            <button type="button" onClick={nextSong}>
+            <button
+              type="button"
+              onClick={nextSong}
+              style={{
+                background: "#222222",
+                color: "#ffffff",
+                border: "1px solid #555555",
+                borderRadius: "6px",
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
               Next Song
             </button>
           </div>
