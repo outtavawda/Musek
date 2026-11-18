@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import type { CookieOptions } from "@supabase/ssr";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
@@ -30,7 +31,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Read the signed-in user's session from request cookies.
     const supabase = createServerClient(
       supabaseUrl,
       supabaseKey,
@@ -39,7 +39,13 @@ export async function POST(request: Request) {
           getAll() {
             return cookieStore.getAll();
           },
-          setAll(cookiesToSet) {
+          setAll(
+            cookiesToSet: {
+              name: string;
+              value: string;
+              options: CookieOptions;
+            }[]
+          ) {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
@@ -54,7 +60,10 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error("Coin checkout authentication failed:", authError?.message);
+      console.error(
+        "Coin checkout authentication failed:",
+        authError?.message
+      );
 
       return NextResponse.json(
         { error: "Please log in before buying coins." },
