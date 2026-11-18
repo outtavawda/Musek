@@ -276,9 +276,15 @@ export default async function DashboardPage() {
           )}
 
           {accountType === "artist" && (
-            <Link className="secondaryButton" href="/my-music">
-              🎧 My Music
-            </Link>
+            <>
+              <Link className="secondaryButton" href="/my-music">
+                🎧 My Music
+              </Link>
+
+              <Link className="secondaryButton" href="/gift-history">
+                🎁 Gift History
+              </Link>
+            </>
           )}
         </div>
 
@@ -498,6 +504,15 @@ export default async function DashboardPage() {
                     Your lifetime earnings are not necessarily your
                     available withdrawal balance.
                   </p>
+                </div>
+
+                <div style={{ marginTop: "18px" }}>
+                  <Link
+                    className="primaryButton"
+                    href="/gift-history"
+                  >
+                    🎁 View Gifts Received
+                  </Link>
                 </div>
               </>
             ) : (
@@ -743,6 +758,12 @@ export default async function DashboardPage() {
             {accountType === "fan" && (
               <Link href="/gift-history">
                 View Gift History →
+              </Link>
+            )}
+
+            {accountType === "artist" && (
+              <Link href="/gift-history">
+                View Gifts Received →
               </Link>
             )}
 
