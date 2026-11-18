@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Song = {
   id: string;
@@ -13,9 +14,88 @@ type Song = {
 
 export default function MusicPlayer({ songs }: { songs: Song[] }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [message, setMessage] = useState("");
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   const availableSongs = songs.filter((song) => song.audioUrl);
   const selectedSong = availableSongs[selectedIndex];
+
+  useEffect(() => {
+    async function loadFavorites() {
+      const supabase = createClient();
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      setUserId(user.id);
+
+      const { data, error } = await supabase
+        .from("favorite_tracks")
+        .select("track_id")
+        .eq("user_id", user.id);
+
+      if (!error && data) {
+        setFavorites(data.map((item) => item.track_id));
+      }
+    }
+
+    loadFavorites();
+  }, []);
+
+  async function toggleFavorite(songId: string) {
+    if (!userId) {
+      setMessage("Please log in to save favourite songs.");
+      return;
+    }
+
+    setFavoriteLoading(true);
+    setMessage("");
+
+    const supabase = createClient();
+    const alreadyFavorite = favorites.includes(songId);
+
+    try {
+      if (alreadyFavorite) {
+        const { error } = await supabase
+          .from("favorite_tracks")
+          .delete()
+          .eq("user_id", userId)
+          .eq("track_id", songId);
+
+        if (error) throw error;
+
+        setFavorites((current) =>
+          current.filter((id) => id !== songId)
+        );
+        setMessage("Song removed from favourites.");
+      } else {
+        const { error } = await supabase
+          .from("favorite_tracks")
+          .insert({
+            user_id: userId,
+            track_id: songId,
+          });
+
+        if (error) throw error;
+
+        setFavorites((current) => [...current, songId]);
+        setMessage("Song added to favourites!");
+      }
+    } catch (error: unknown) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not update favourites."
+      );
+    } finally {
+      setFavoriteLoading(false);
+    }
+  }
 
   function nextSong() {
     setSelectedIndex((current) =>
@@ -34,38 +114,52 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   }
 
   return (
-    <div style={{ paddingBottom: "110px" }}>
+    <div style={{ paddingBottom: "150px" }}>
       <h2>MUSEK Playlist</h2>
 
       {availableSongs.map((song, index) => (
-        <button
+        <div
           key={song.id}
-          type="button"
-          onClick={() => setSelectedIndex(index)}
           style={{
-            display: "block",
-            width: "100%",
-            textAlign: "left",
-            padding: "15px",
+            padding: "12px",
             marginBottom: "8px",
             border: "1px solid #ccc",
             borderRadius: "8px",
             background:
               selectedIndex === index ? "#e5e7eb" : "transparent",
-            color: "#111",
-            cursor: "pointer",
           }}
         >
-          <strong>{song.title}</strong>
-          <br />
-          <span>
-            {song.artistName} · {song.genre || "Music"}
-          </span>
-          {selectedIndex === index && (
-            <span style={{ float: "right" }}>Selected</span>
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIndex(index)}
+            style={{
+              display: "block",
+              width: "100%",
+              textAlign: "left",
+              border: "none",
+              background: "transparent",
+              color: "#111",
+              cursor: "pointer",
+              padding: "5px",
+            }}
+          >
+            <strong>{song.title}</strong>
+            <br />
+            <span>{song.artistName} · {song.genre || "Music"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => toggleFavorite(song.id)}
+            disabled={favoriteLoading}
+            style={{ marginTop: "8px" }}
+          >
+            {favorites.includes(song.id) ? "❤️ Liked" : "🤍 Like"}
+          </button>
+        </div>
       ))}
+
+      {message && <p role="status">{message}</p>}
 
       <div
         style={{
@@ -80,13 +174,9 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           boxShadow: "0 -3px 12px rgba(0,0,0,0.2)",
         }}
       >
-        <div
-          style={{
-            maxWidth: "1000px",
-            margin: "0 auto",
-          }}
-        >
+        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
           <strong>{selectedSong.title}</strong>
+
           <p style={{ margin: "4px 0 10px", color: "#d1d5db" }}>
             {selectedSong.artistName}
           </p>
