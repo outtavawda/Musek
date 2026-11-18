@@ -1,7 +1,8 @@
 
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
@@ -16,7 +17,36 @@ type PackageKey = keyof typeof COIN_PACKAGES;
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient();
+    const cookieStore = cookies();
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json(
+        { error: "Supabase configuration is incomplete." },
+        { status: 500 }
+      );
+    }
+
+    // Read the signed-in user's session from request cookies.
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseKey,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
 
     const {
       data: { user },
@@ -24,6 +54,8 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.error("Coin checkout authentication failed:", authError?.message);
+
       return NextResponse.json(
         { error: "Please log in before buying coins." },
         { status: 401 }
@@ -31,13 +63,14 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-
     const packageKey = String(body.package);
 
-    if (!Object.prototype.hasOwnProperty.call(
-      COIN_PACKAGES,
-      packageKey
-    )) {
+    if (
+      !Object.prototype.hasOwnProperty.call(
+        COIN_PACKAGES,
+        packageKey
+      )
+    ) {
       return NextResponse.json(
         { error: "Invalid coin package." },
         { status: 400 }
@@ -49,14 +82,12 @@ export async function POST(request: Request) {
 
     const accessToken = process.env.SQUARE_ACCESS_TOKEN;
     const locationId = process.env.SQUARE_LOCATION_ID;
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
     if (
       !accessToken ||
       !locationId ||
-      !supabaseUrl ||
       !serviceKey ||
       !siteUrl
     ) {
@@ -77,8 +108,6 @@ export async function POST(request: Request) {
       }
     );
 
-    const idempotencyKey = randomUUID();
-
     const squareResponse = await fetch(
       "https://connect.squareupsandbox.com/v2/online-checkout/payment-links",
       {
@@ -89,7 +118,7 @@ export async function POST(request: Request) {
           "Square-Version": "2026-09-16",
         },
         body: JSON.stringify({
-          idempotency_key: idempotencyKey,
+          idempotency_key: randomUUID(),
           order: {
             location_id: locationId,
             reference_id: user.id,
