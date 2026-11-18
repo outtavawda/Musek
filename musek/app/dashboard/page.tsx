@@ -12,6 +12,10 @@ type Track = {
   status: string;
 };
 
+type PlayEvent = {
+  played_at: string;
+};
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
@@ -44,8 +48,8 @@ export default async function DashboardPage() {
       ? "Record Label"
       : "Fan";
 
-  // Load only this artist's published songs.
   let tracks: Track[] = [];
+  let playEvents: PlayEvent[] = [];
   let analyticsError = "";
 
   if (accountType === "artist") {
@@ -56,10 +60,27 @@ export default async function DashboardPage() {
       .eq("status", "published");
 
     if (error) {
-      console.error("MUSEK analytics error:", error);
       analyticsError = error.message;
     } else {
       tracks = (data || []) as Track[];
+    }
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const { data: events, error: eventsError } = await supabase
+      .from("track_play_events")
+      .select("played_at")
+      .eq("artist_id", user.id)
+      .gte("played_at", sixMonthsAgo.toISOString())
+      .order("played_at", { ascending: true });
+
+    if (eventsError) {
+      analyticsError = analyticsError || eventsError.message;
+    } else {
+      playEvents = (events || []) as PlayEvent[];
     }
   }
 
@@ -75,6 +96,43 @@ export default async function DashboardPage() {
   );
 
   const mostPlayedSong = rankedTracks[0];
+
+  const monthlyStats = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+    date.setMonth(date.getMonth() - (5 - index));
+
+    const month = date.getMonth();
+    const year = date.getFullYear();
+
+    const plays = playEvents.filter((event) => {
+      const playedDate = new Date(event.played_at);
+
+      return (
+        playedDate.getMonth() === month &&
+        playedDate.getFullYear() === year
+      );
+    }).length;
+
+    return {
+      label: date.toLocaleDateString("en-CA", {
+        month: "short",
+        year: "2-digit",
+      }),
+      plays,
+    };
+  });
+
+  const highestMonthlyPlays = Math.max(
+    ...monthlyStats.map((month) => month.plays),
+    1
+  );
+
+  const totalMonthlyPlays = monthlyStats.reduce(
+    (total, month) => total + month.plays,
+    0
+  );
 
   return (
     <main className="pageWrap">
@@ -134,7 +192,7 @@ export default async function DashboardPage() {
 
             {analyticsError ? (
               <p className="muted">
-                Unable to load your analytics: {analyticsError}
+                Unable to load some analytics: {analyticsError}
               </p>
             ) : (
               <>
@@ -197,9 +255,81 @@ export default async function DashboardPage() {
                   )}
                 </div>
 
+                <div style={{ marginTop: "32px" }}>
+                  <p className="eyebrow">LISTENING HISTORY</p>
+                  <h2>Monthly Listening Report</h2>
+
+                  <p className="muted">
+                    Song plays recorded over the last six months.
+                  </p>
+
+                  <div style={{
+                    padding: "20px",
+                    marginTop: "18px",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "12px"
+                  }}>
+                    <p className="eyebrow">RECORDED PLAYS · SIX MONTHS</p>
+
+                    <h2 style={{ fontSize: "30px" }}>
+                      {totalMonthlyPlays.toLocaleString()}
+                    </h2>
+
+                    <div style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "space-between",
+                      gap: "12px",
+                      height: "190px",
+                      marginTop: "24px"
+                    }}>
+                      {monthlyStats.map((month) => (
+                        <div
+                          key={month.label}
+                          style={{
+                            flex: 1,
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "flex-end",
+                            height: "100%",
+                            gap: "8px"
+                          }}
+                        >
+                          <strong style={{ fontSize: "12px" }}>
+                            {month.plays}
+                          </strong>
+
+                          <div style={{
+                            width: "100%",
+                            maxWidth: "48px",
+                            height: `${Math.max(
+                              (month.plays / highestMonthlyPlays) * 130,
+                              5
+                            )}px`,
+                            background: "#ffffff",
+                            borderRadius: "6px 6px 0 0"
+                          }} />
+
+                          <span style={{
+                            fontSize: "11px",
+                            color: "#aaaaaa"
+                          }}>
+                            {month.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="muted" style={{ marginTop: "12px" }}>
+                    Monthly tracking starts from the date this feature was
+                    installed. Older plays are not included in this report.
+                  </p>
+                </div>
+
                 <div style={{ marginTop: "28px" }}>
                   <p className="eyebrow">POPULARITY RANKING</p>
-
                   <h2>Your Published Songs</h2>
 
                   {rankedTracks.length === 0 ? (
