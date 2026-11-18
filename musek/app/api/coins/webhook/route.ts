@@ -5,6 +5,25 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
+function signatureMatches(
+  key: string,
+  url: string,
+  body: string,
+  received: string
+): boolean {
+  const expected = createHmac("sha256", key)
+    .update(url + body)
+    .digest("base64");
+
+  const expectedBuffer = Buffer.from(expected, "base64");
+  const receivedBuffer = Buffer.from(received, "base64");
+
+  return (
+    expectedBuffer.length === receivedBuffer.length &&
+    timingSafeEqual(expectedBuffer, receivedBuffer)
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
@@ -37,9 +56,7 @@ export async function POST(request: Request) {
     );
 
     if (!receivedSignature) {
-      console.error(
-        "Webhook rejected: Square signature header is missing."
-      );
+      console.error("Webhook signature header is missing.");
 
       return NextResponse.json(
         { error: "Missing Square signature." },
@@ -47,20 +64,66 @@ export async function POST(request: Request) {
       );
     }
 
-    const expectedSignature = createHmac("sha256", signatureKey)
-      .update(notificationUrl + rawBody)
-      .digest("base64");
+    const exactMatch = signatureMatches(
+      signatureKey,
+      notificationUrl,
+      rawBody,
+      receivedSignature
+    );
 
-    const expectedBuffer = Buffer.from(expectedSignature, "base64");
-    const receivedBuffer = Buffer.from(receivedSignature, "base64");
+    if (!exactMatch) {
+      let requestUrl = "";
+      let configuredUrlDetails = {};
+      let incomingUrlDetails = {};
 
-    if (
-      expectedBuffer.length !== receivedBuffer.length ||
-      !timingSafeEqual(expectedBuffer, receivedBuffer)
-    ) {
-      console.error(
-        "Webhook rejected: Square signature does not match."
-      );
+      try {
+        const configured = new URL(notificationUrl);
+        const incoming = new URL(request.url);
+
+        requestUrl = request.url;
+
+        configuredUrlDetails = {
+          host: configured.host,
+          path: configured.pathname,
+          queryParameterNames: [...configured.searchParams.keys()].sort(),
+        };
+
+        incomingUrlDetails = {
+          host: incoming.host,
+          path: incoming.pathname,
+          queryParameterNames: [...incoming.searchParams.keys()].sort(),
+        };
+      } catch {
+        console.error("Could not inspect webhook URL metadata.");
+      }
+
+      console.error("Square signature diagnostic:", {
+        signatureMismatch: true,
+        signatureKeyLength: signatureKey.length,
+        signatureKeyHasOuterWhitespace:
+          signatureKey !== signatureKey.trim(),
+        notificationUrlLength: notificationUrl.length,
+        notificationUrlHasOuterWhitespace:
+          notificationUrl !== notificationUrl.trim(),
+        notificationUrlHasTrailingSlash:
+          notificationUrl.endsWith("/"),
+        configuredUrlDetails,
+        incomingUrlDetails,
+        incomingUrlMatchesConfiguredUrl:
+          requestUrl === notificationUrl,
+        trimmedKeyWouldMatch: signatureMatches(
+          signatureKey.trim(),
+          notificationUrl,
+          rawBody,
+          receivedSignature
+        ),
+        trimmedUrlWouldMatch: signatureMatches(
+          signatureKey,
+          notificationUrl.trim(),
+          rawBody,
+          receivedSignature
+        ),
+      });
 
       return NextResponse.json(
         { error: "Invalid Square signature." },
@@ -88,8 +151,6 @@ export async function POST(request: Request) {
     const paymentId = event.data?.object?.payment?.id;
 
     if (!paymentId) {
-      console.error("Webhook payment ID is missing.");
-
       return NextResponse.json(
         { error: "Payment ID missing." },
         { status: 400 }
@@ -128,14 +189,7 @@ export async function POST(request: Request) {
       !payment?.id ||
       !Number.isInteger(payment?.amount_money?.amount)
     ) {
-      console.error(
-        "Payment not eligible for coin credit:",
-        {
-          status: payment?.status,
-          locationMatches: payment?.location_id === locationId,
-          currency: payment?.amount_money?.currency,
-        }
-      );
+      console.error("Payment not eligible for coin credit.");
 
       return NextResponse.json({
         received: true,
