@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import MusicPlayer from "./music-player";
 
 export default async function DiscoverMusicPage() {
   const supabase = createClient();
@@ -53,7 +54,7 @@ export default async function DiscoverMusicPage() {
         padding: "20px",
       }}
     >
-      <h1>Discover Music</h1>
+      <h1>MUSEK Discover Music</h1>
 
       <p>Discover new sounds and artists on MUSEK.</p>
 
@@ -78,44 +79,20 @@ export default async function DiscoverMusicPage() {
         )}
       </div>
 
-      <h2 style={{ marginTop: "35px" }}>Latest Music</h2>
+      <h2 style={{ marginTop: "35px" }}>Music Library</h2>
 
       {songs.length === 0 ? (
         <p>No published songs yet. Check back soon!</p>
       ) : (
-        songs.map((song) => (
-          <section
-            key={song.id}
-            style={{
-              padding: "20px 0",
-              borderBottom: "1px solid #ccc",
-            }}
-          >
-            <h3>{song.title}</h3>
-
-            <p>
-              By{" "}
-              <Link href={`/artist/${song.artist_id}`}>
-                {song.artistName}
-              </Link>
-            </p>
-
-            <p>Genre: {song.genre || "Not specified"}</p>
-
-            <p>{song.description}</p>
-
-            {song.audioUrl ? (
-              <audio
-                controls
-                preload="none"
-                src={song.audioUrl}
-                style={{ width: "100%", maxWidth: "500px" }}
-              />
-            ) : (
-              <p>Audio is currently unavailable.</p>
-            )}
-          </section>
-        ))
+        <MusicPlayer
+          songs={songs.map((song) => ({
+            id: song.id,
+            title: song.title,
+            artistName: song.artistName,
+            genre: song.genre || "",
+            audioUrl: song.audioUrl,
+          }))}
+        />
       )}
 
       <p style={{ marginTop: "30px" }}>
