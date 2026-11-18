@@ -22,6 +22,19 @@ type Wallet = {
   total_earnings_cad: number;
 };
 
+type FanWallet = {
+  coin_balance: number;
+  total_coins_purchased: number;
+};
+
+type CoinPurchase = {
+  id: string;
+  coins: number;
+  amount_cad: number;
+  status: string;
+  created_at: string;
+};
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
@@ -57,10 +70,46 @@ export default async function DashboardPage() {
   let wallet: Wallet | null = null;
   let walletError = "";
 
+  let fanWallet: FanWallet | null = null;
+  let fanWalletError = "";
+
+  let coinPurchases: CoinPurchase[] = [];
+
   let tracks: Track[] = [];
   let playEvents: PlayEvent[] = [];
   let analyticsError = "";
 
+  // FAN WALLET
+  if (accountType === "fan") {
+    const { data: fanWalletData, error: fanWalletQueryError } =
+      await supabase
+        .from("fan_coin_wallets")
+        .select("coin_balance, total_coins_purchased")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (fanWalletQueryError) {
+      fanWalletError = fanWalletQueryError.message;
+    } else if (fanWalletData) {
+      fanWallet = fanWalletData as FanWallet;
+    }
+
+    const { data: purchases, error: purchasesError } =
+      await supabase
+        .from("coin_purchases")
+        .select("id, coins, amount_cad, status, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+    if (purchasesError) {
+      fanWalletError = fanWalletError || purchasesError.message;
+    } else {
+      coinPurchases = (purchases || []) as CoinPurchase[];
+    }
+  }
+
+  // ARTIST WALLET AND ANALYTICS
   if (accountType === "artist") {
     const { data: walletData, error: walletQueryError } =
       await supabase
@@ -215,10 +264,7 @@ export default async function DashboardPage() {
           </Link>
 
           {accountType === "fan" && (
-            <Link
-              className="primaryButton"
-              href="/buy-coins"
-            >
+            <Link className="primaryButton" href="/buy-coins">
               🪙 Buy MUSEK Coins
             </Link>
           )}
@@ -229,6 +275,142 @@ export default async function DashboardPage() {
             </Link>
           )}
         </div>
+
+        {/* FAN WALLET */}
+        {accountType === "fan" && (
+          <div style={{ marginTop: "36px" }}>
+            <p className="eyebrow">YOUR MUSEK COINS</p>
+
+            <h2>My Fan Wallet</h2>
+
+            {fanWalletError && (
+              <p className="muted">
+                Wallet information: {fanWalletError}
+              </p>
+            )}
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(150px, 1fr))",
+                gap: "14px",
+                marginTop: "20px",
+              }}
+            >
+              <div style={cardStyle}>
+                <p className="eyebrow">CURRENT BALANCE</p>
+                <h2 style={{ fontSize: "30px" }}>
+                  {Number(fanWallet?.coin_balance || 0).toLocaleString()}
+                </h2>
+                <p className="muted">MUSEK Coins</p>
+              </div>
+
+              <div style={cardStyle}>
+                <p className="eyebrow">TOTAL PURCHASED</p>
+                <h2 style={{ fontSize: "30px" }}>
+                  {Number(
+                    fanWallet?.total_coins_purchased || 0
+                  ).toLocaleString()}
+                </h2>
+                <p className="muted">Lifetime coins purchased</p>
+              </div>
+            </div>
+
+            <div
+              style={{
+                ...cardStyle,
+                marginTop: "18px",
+              }}
+            >
+              <p className="eyebrow">COIN VALUE</p>
+              <h3>100 MUSEK Coins = $1.00 CAD</h3>
+              <p className="muted">
+                Your MUSEK Coins are platform credits used within MUSEK.
+              </p>
+
+              <Link
+                className="primaryButton"
+                href="/buy-coins"
+                style={{
+                  display: "inline-block",
+                  marginTop: "12px",
+                }}
+              >
+                🪙 Buy More Coins
+              </Link>
+            </div>
+
+            <div style={{ marginTop: "28px" }}>
+              <p className="eyebrow">PURCHASE HISTORY</p>
+              <h2>Recent Coin Purchases</h2>
+
+              {coinPurchases.length === 0 ? (
+                <p className="muted">
+                  You have no coin purchases yet.
+                </p>
+              ) : (
+                <div style={{ marginTop: "16px" }}>
+                  {coinPurchases.map((purchase) => (
+                    <div
+                      key={purchase.id}
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "12px",
+                        padding: "14px",
+                        marginBottom: "10px",
+                        border:
+                          "1px solid rgba(255,255,255,0.12)",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <div>
+                        <strong>
+                          {Number(purchase.coins).toLocaleString()} Coins
+                        </strong>
+
+                        <p
+                          className="muted"
+                          style={{ margin: "5px 0 0" }}
+                        >
+                          {new Date(
+                            purchase.created_at
+                          ).toLocaleDateString("en-CA")}
+                        </p>
+                      </div>
+
+                      <div style={{ textAlign: "right" }}>
+                        <strong>
+                          {Number(purchase.amount_cad).toLocaleString(
+                            "en-CA",
+                            {
+                              style: "currency",
+                              currency: "CAD",
+                            }
+                          )}
+                        </strong>
+
+                        <p
+                          className="muted"
+                          style={{ margin: "5px 0 0" }}
+                        >
+                          {purchase.status === "paid"
+                            ? "Paid"
+                            : purchase.status === "pending"
+                            ? "Pending"
+                            : "Failed"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ARTIST WALLET */}
         {accountType === "artist" && (
