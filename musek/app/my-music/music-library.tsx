@@ -25,6 +25,7 @@ export default function MusicLibrary({
   const [songs, setSongs] = useState(initialSongs);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
@@ -80,12 +81,69 @@ export default function MusicLibrary({
       setEditingId(null);
       setMessage("Song details updated successfully.");
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error.";
-
-      setMessage("Could not update song: " + errorMessage);
+      setMessage(
+        "Could not update song: " +
+          (error instanceof Error ? error.message : "Unknown error.")
+      );
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function changeStatus(song: Song) {
+    const newStatus =
+      song.status === "published" ? "draft" : "published";
+
+    const action =
+      newStatus === "published" ? "publish" : "unpublish";
+
+    if (
+      !window.confirm(
+        `Are you sure you want to ${action} "${song.title}"?`
+      )
+    ) {
+      return;
+    }
+
+    setPublishingId(song.id);
+    setMessage("");
+
+    try {
+      const supabase = createClient();
+
+      const { data, error } = await supabase
+        .from("music_tracks")
+        .update({ status: newStatus })
+        .eq("id", song.id)
+        .eq("artist_id", userId)
+        .select("id, status");
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        throw new Error("You do not have permission to change this song.");
+      }
+
+      setSongs((currentSongs) =>
+        currentSongs.map((item) =>
+          item.id === song.id
+            ? { ...item, status: newStatus }
+            : item
+        )
+      );
+
+      setMessage(
+        newStatus === "published"
+          ? "Your song is now published on MUSEK!"
+          : "Your song has been moved back to drafts."
+      );
+    } catch (error: unknown) {
+      setMessage(
+        "Could not change song status: " +
+          (error instanceof Error ? error.message : "Unknown error.")
+      );
+    } finally {
+      setPublishingId(null);
     }
   }
 
@@ -102,7 +160,6 @@ export default function MusicLibrary({
     try {
       const supabase = createClient();
 
-      // Delete the database record first.
       const { data: deletedRows, error: databaseError } = await supabase
         .from("music_tracks")
         .delete()
@@ -113,37 +170,32 @@ export default function MusicLibrary({
       if (databaseError) throw databaseError;
 
       if (!deletedRows || deletedRows.length === 0) {
-        throw new Error(
-          "Song could not be deleted. Check your account permissions."
-        );
+        throw new Error("Song could not be deleted. Check your permissions.");
       }
 
-      // Remove the audio file from private storage.
       const { error: storageError } = await supabase.storage
         .from("music-tracks")
         .remove([song.audio_path]);
 
+      setSongs((currentSongs) =>
+        currentSongs.filter((item) => item.id !== song.id)
+      );
+
       if (storageError) {
         setMessage(
-          "Song record deleted, but its audio file could not be removed: " +
+          "Song record deleted, but audio removal failed: " +
             storageError.message
         );
       } else {
         setMessage("Song and audio file deleted successfully.");
       }
 
-      setSongs((currentSongs) =>
-        currentSongs.filter((item) => item.id !== song.id)
-      );
-
-      if (editingId === song.id) {
-        setEditingId(null);
-      }
+      if (editingId === song.id) setEditingId(null);
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error.";
-
-      setMessage("Could not delete song: " + errorMessage);
+      setMessage(
+        "Could not delete song: " +
+          (error instanceof Error ? error.message : "Unknown error.")
+      );
     } finally {
       setDeletingId(null);
     }
@@ -200,9 +252,7 @@ export default function MusicLibrary({
                   Description
                   <textarea
                     value={description}
-                    onChange={(event) =>
-                      setDescription(event.target.value)
-                    }
+                    onChange={(event) => setDescription(event.target.value)}
                     maxLength={1000}
                     rows={4}
                     style={{
@@ -224,8 +274,8 @@ export default function MusicLibrary({
 
                 <button
                   type="button"
-                  disabled={loading}
                   onClick={() => setEditingId(null)}
+                  disabled={loading}
                   style={{ marginLeft: "10px" }}
                 >
                   Cancel
@@ -242,30 +292,41 @@ export default function MusicLibrary({
                   Status: <strong>{song.status}</strong>
                 </p>
 
-                {song.audioUrl ? (
+                {song.audioUrl && (
                   <audio
                     controls
                     preload="none"
                     src={song.audioUrl}
                     style={{ width: "100%", maxWidth: "500px" }}
                   />
-                ) : (
-                  <p>Audio preview is currently unavailable.</p>
                 )}
 
                 <p>
                   <button
                     type="button"
                     onClick={() => startEditing(song)}
-                    disabled={deletingId === song.id}
+                    disabled={deletingId === song.id || publishingId === song.id}
                   >
                     Edit Song
                   </button>
 
                   <button
                     type="button"
+                    onClick={() => changeStatus(song)}
+                    disabled={deletingId === song.id || publishingId === song.id}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    {publishingId === song.id
+                      ? "Updating..."
+                      : song.status === "published"
+                      ? "Unpublish Song"
+                      : "Publish Song"}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => deleteSong(song)}
-                    disabled={deletingId === song.id}
+                    disabled={deletingId === song.id || publishingId === song.id}
                     style={{
                       marginLeft: "10px",
                       backgroundColor: "#b91c1c",
@@ -273,7 +334,6 @@ export default function MusicLibrary({
                       padding: "8px 14px",
                       border: "none",
                       borderRadius: "4px",
-                      cursor: "pointer",
                     }}
                   >
                     {deletingId === song.id ? "Deleting..." : "Delete Song"}
