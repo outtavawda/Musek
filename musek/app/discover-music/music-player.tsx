@@ -10,6 +10,7 @@ type Song = {
   artistName: string;
   genre: string;
   audioUrl: string | null;
+  artworkUrl?: string | null;
 };
 
 export default function MusicPlayer({ songs }: { songs: Song[] }) {
@@ -58,7 +59,7 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           return;
         }
 
-        setFavorites(data.map((item) => item.track_id));
+        setFavorites((data || []).map((item) => item.track_id));
       } catch (error: unknown) {
         console.error("MUSEK favourites loading error:", error);
 
@@ -74,21 +75,16 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   }, []);
 
   async function recordPlay(songId: string) {
-    if (countedPlayForSong.current === songId) {
-      return;
-    }
+    if (countedPlayForSong.current === songId) return;
 
     countedPlayForSong.current = songId;
 
     try {
       const supabase = createClient();
 
-      const { error } = await supabase.rpc(
-        "increment_track_play",
-        {
-          track_uuid: songId,
-        }
-      );
+      const { error } = await supabase.rpc("increment_track_play", {
+        track_uuid: songId,
+      });
 
       if (error) {
         countedPlayForSong.current = null;
@@ -192,6 +188,9 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
         <div
           key={song.id}
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
             padding: "12px",
             marginBottom: "8px",
             border: "1px solid #333333",
@@ -201,43 +200,75 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
             color: "#ffffff",
           }}
         >
-          <button
-            type="button"
-            onClick={() => setSelectedIndex(index)}
-            style={{
-              display: "block",
-              width: "100%",
-              textAlign: "left",
-              border: "none",
-              background: "transparent",
-              color: "#ffffff",
-              cursor: "pointer",
-              padding: "5px",
-            }}
-          >
-            <strong>{song.title}</strong>
-            <br />
-            <span style={{ color: "#cccccc" }}>
-              {song.artistName} · {song.genre || "Music"}
-            </span>
-          </button>
+          {song.artworkUrl ? (
+            <img
+              src={song.artworkUrl}
+              alt={`${song.title} artwork`}
+              style={{
+                width: "58px",
+                height: "58px",
+                objectFit: "cover",
+                borderRadius: "7px",
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "58px",
+                height: "58px",
+                borderRadius: "7px",
+                background: "#292929",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "25px",
+                flexShrink: 0,
+              }}
+            >
+              🎵
+            </div>
+          )}
 
-          <button
-            type="button"
-            onClick={() => toggleFavorite(song.id)}
-            disabled={favoriteLoading}
-            style={{
-              marginTop: "8px",
-              background: "#222222",
-              color: "#ffffff",
-              border: "1px solid #555555",
-              borderRadius: "6px",
-              padding: "7px 12px",
-              cursor: "pointer",
-            }}
-          >
-            {favorites.includes(song.id) ? "❤️ Liked" : "🤍 Like"}
-          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={() => setSelectedIndex(index)}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                border: "none",
+                background: "transparent",
+                color: "#ffffff",
+                cursor: "pointer",
+                padding: "5px",
+              }}
+            >
+              <strong>{song.title}</strong>
+              <br />
+              <span style={{ color: "#cccccc" }}>
+                {song.artistName} · {song.genre || "Music"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => toggleFavorite(song.id)}
+              disabled={favoriteLoading}
+              style={{
+                marginTop: "5px",
+                background: "#222222",
+                color: "#ffffff",
+                border: "1px solid #555555",
+                borderRadius: "6px",
+                padding: "6px 10px",
+                cursor: "pointer",
+              }}
+            >
+              {favorites.includes(song.id) ? "❤️ Liked" : "🤍 Like"}
+            </button>
+          </div>
         </div>
       ))}
 
@@ -256,68 +287,108 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
           zIndex: 100,
           background: "#000000",
           color: "#ffffff",
-          padding: "15px 20px",
+          padding: "12px 20px",
           boxShadow: "0 -3px 12px rgba(255,255,255,0.08)",
           borderTop: "1px solid #333333",
         }}
       >
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          <strong>{selectedSong.title}</strong>
-
-          <p style={{ margin: "4px 0 10px", color: "#cccccc" }}>
-            {selectedSong.artistName}
-          </p>
-
-          <audio
-            key={selectedSong.id}
-            controls
-            preload="none"
-            src={selectedSong.audioUrl || undefined}
-            onPlay={() => recordPlay(selectedSong.id)}
-            onEnded={nextSong}
-            style={{
-              width: "100%",
-              colorScheme: "dark",
-            }}
-          />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "15px",
-              marginTop: "10px",
-            }}
-          >
-            <button
-              type="button"
-              onClick={previousSong}
+        <div
+          style={{
+            maxWidth: "1000px",
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            gap: "15px",
+          }}
+        >
+          {selectedSong.artworkUrl ? (
+            <img
+              src={selectedSong.artworkUrl}
+              alt={`${selectedSong.title} artwork`}
               style={{
-                background: "#222222",
-                color: "#ffffff",
-                border: "1px solid #555555",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                cursor: "pointer",
+                width: "65px",
+                height: "65px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "65px",
+                height: "65px",
+                borderRadius: "8px",
+                background: "#292929",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "28px",
+                flexShrink: 0,
               }}
             >
-              Previous
-            </button>
+              🎵
+            </div>
+          )}
 
-            <button
-              type="button"
-              onClick={nextSong}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <strong>{selectedSong.title}</strong>
+
+            <p style={{ margin: "4px 0 8px", color: "#cccccc" }}>
+              {selectedSong.artistName}
+            </p>
+
+            <audio
+              key={selectedSong.id}
+              controls
+              preload="none"
+              src={selectedSong.audioUrl || undefined}
+              onPlay={() => recordPlay(selectedSong.id)}
+              onEnded={nextSong}
               style={{
-                background: "#222222",
-                color: "#ffffff",
-                border: "1px solid #555555",
-                borderRadius: "6px",
-                padding: "8px 16px",
-                cursor: "pointer",
+                width: "100%",
+                colorScheme: "dark",
+              }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "10px",
+                marginTop: "8px",
               }}
             >
-              Next Song
-            </button>
+              <button
+                type="button"
+                onClick={previousSong}
+                style={{
+                  background: "#222222",
+                  color: "#ffffff",
+                  border: "1px solid #555555",
+                  borderRadius: "6px",
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Previous
+              </button>
+
+              <button
+                type="button"
+                onClick={nextSong}
+                style={{
+                  background: "#222222",
+                  color: "#ffffff",
+                  border: "1px solid #555555",
+                  borderRadius: "6px",
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Next Song
+              </button>
+            </div>
           </div>
         </div>
       </div>
