@@ -30,16 +30,18 @@ export default async function AdminWithdrawalsPage() {
     redirect("/login");
   }
 
-  const { data: admin } = await supabase
+  // Confirm that the signed-in user has admin access.
+  const { data: admin, error: adminError } = await supabase
     .from("admin_users")
     .select("user_id")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!admin) {
+  if (adminError || !admin) {
     redirect("/dashboard");
   }
 
+  // Load all withdrawal requests visible to an authorized admin.
   const { data: withdrawals, error } = await supabase
     .from("creator_withdrawals")
     .select(
@@ -57,22 +59,27 @@ export default async function AdminWithdrawalsPage() {
     );
   }
 
-  const requests = (withdrawals || []) as Withdrawal[];
+  const requests: Withdrawal[] = (withdrawals || []) as Withdrawal[];
 
-  const artistIds = [...new Set(requests.map((item) => item.user_id))];
+  // Collect unique artist IDs using Array.from for TypeScript compatibility.
+  const artistIds = Array.from(
+    new Set(requests.map((item) => item.user_id))
+  );
 
   let profiles: ArtistProfile[] = [];
 
   if (artistIds.length > 0) {
-    const { data } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("user_profiles")
       .select("id, display_name, artist_name")
       .in("id", artistIds);
 
-    profiles = (data || []) as ArtistProfile[];
+    if (!profileError && profileData) {
+      profiles = profileData as ArtistProfile[];
+    }
   }
 
-  const getArtistName = (userId: string) => {
+  const getArtistName = (userId: string): string => {
     const profile = profiles.find((item) => item.id === userId);
 
     return (
@@ -81,6 +88,15 @@ export default async function AdminWithdrawalsPage() {
       "Unknown artist"
     );
   };
+
+  const totalRequested = requests.reduce(
+    (total, request) => total + Number(request.amount_cad),
+    0
+  );
+
+  const pendingCount = requests.filter(
+    (request) => request.status === "pending"
+  ).length;
 
   return (
     <main
@@ -102,18 +118,56 @@ export default async function AdminWithdrawalsPage() {
 
       <div
         style={{
-          padding: "20px",
-          border: "1px solid #333",
-          borderRadius: "12px",
-          marginBottom: "24px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "16px",
+          marginBottom: "28px",
         }}
       >
-        <p style={{ color: "#888", margin: 0 }}>
-          Total withdrawal requests
-        </p>
-        <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
-          {requests.length}
-        </h2>
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #333",
+            borderRadius: "12px",
+          }}
+        >
+          <p style={{ color: "#888", margin: 0 }}>
+            Total withdrawal requests
+          </p>
+          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+            {requests.length}
+          </h2>
+        </div>
+
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #333",
+            borderRadius: "12px",
+          }}
+        >
+          <p style={{ color: "#888", margin: 0 }}>
+            Pending requests
+          </p>
+          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+            {pendingCount}
+          </h2>
+        </div>
+
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #333",
+            borderRadius: "12px",
+          }}
+        >
+          <p style={{ color: "#888", margin: 0 }}>
+            Total amount requested
+          </p>
+          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+            CAD ${totalRequested.toFixed(2)}
+          </h2>
+        </div>
       </div>
 
       {requests.length === 0 ? (
@@ -134,25 +188,31 @@ export default async function AdminWithdrawalsPage() {
               </h2>
 
               <p>
-                **Amount:** CAD $
+                <strong>Amount:</strong> CAD $
                 {Number(request.amount_cad).toFixed(2)}
               </p>
 
               <p>
-                **Status:** {request.status.toUpperCase()}
+                <strong>Status:</strong>{" "}
+                {request.status.toUpperCase()}
               </p>
 
               <p>
-                **Requested:**{" "}
+                <strong>Requested:</strong>{" "}
                 {new Date(request.created_at).toLocaleString("en-CA")}
               </p>
 
               {request.admin_note && (
-                <p>Admin note: {request.admin_note}</p>
+                <p>
+                  <strong>Admin note:</strong> {request.admin_note}
+                </p>
               )}
 
               {request.payout_reference && (
-                <p>Payout reference: {request.payout_reference}</p>
+                <p>
+                  <strong>Payout reference:</strong>{" "}
+                  {request.payout_reference}
+                </p>
               )}
 
               <p
