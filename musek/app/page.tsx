@@ -47,7 +47,9 @@ export default async function HomePage() {
   // LOAD TRENDING PUBLISHED MUSIC
   const { data: tracks } = await supabase
     .from("music_tracks")
-    .select("id, title, genre, artist_id, play_count, audio_path")
+    .select(
+      "id, title, genre, artist_id, play_count, audio_path, cover_art_path"
+    )
     .eq("status", "published")
     .order("play_count", { ascending: false })
     .limit(6);
@@ -65,7 +67,7 @@ export default async function HomePage() {
           .in("id", artistIds)
       : { data: [] };
 
-  // BUILD TRENDING SONGS WITH ARTIST PROFILE ARTWORK
+  // BUILD TRENDING SONGS WITH THEIR OWN COVER ART
   const trendingSongs = await Promise.all(
     (tracks || []).map(async (track) => {
       const { data: signedUrlData } = await supabase.storage
@@ -78,6 +80,20 @@ export default async function HomePage() {
 
       if (!signedUrlData?.signedUrl) return null;
 
+      // Use the artist picture as a fallback.
+      let artworkUrl = artist?.avatar_url || null;
+
+      // Prefer the song's uploaded cover art when available.
+      if (track.cover_art_path) {
+        const { data: coverData } = await supabase.storage
+          .from("song-cover-art")
+          .createSignedUrl(track.cover_art_path, 3600);
+
+        if (coverData?.signedUrl) {
+          artworkUrl = coverData.signedUrl;
+        }
+      }
+
       return {
         id: track.id,
         title: track.title,
@@ -85,7 +101,7 @@ export default async function HomePage() {
           artist?.artist_name || artist?.display_name || "MUSEK Artist",
         genre: track.genre || "Music",
         audioUrl: signedUrlData.signedUrl,
-        artworkUrl: artist?.avatar_url || null,
+        artworkUrl,
       };
     })
   );
