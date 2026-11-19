@@ -18,6 +18,7 @@ type MusicTrack = {
   title: string;
   genre: string | null;
   audio_path: string;
+  cover_art_path: string | null;
 };
 
 type PlayerSong = {
@@ -26,6 +27,7 @@ type PlayerSong = {
   artistName: string;
   genre: string;
   audioUrl: string | null;
+  artworkUrl: string | null;
 };
 
 export default async function LabelPage({
@@ -79,7 +81,9 @@ export default async function LabelPage({
 
     const { data: publishedTracks } = await supabase
       .from("music_tracks")
-      .select("id, artist_id, title, genre, audio_path")
+      .select(
+        "id, artist_id, title, genre, audio_path, cover_art_path"
+      )
       .in("artist_id", artistIds)
       .eq("status", "published")
       .order("created_at", { ascending: false });
@@ -96,6 +100,18 @@ export default async function LabelPage({
           (item) => item.id === track.artist_id
         );
 
+        let artworkUrl = artist?.avatar_url || null;
+
+        if (track.cover_art_path) {
+          const { data: cover } = await supabase.storage
+            .from("song-cover-art")
+            .createSignedUrl(track.cover_art_path, 3600);
+
+          if (cover?.signedUrl) {
+            artworkUrl = cover.signedUrl;
+          }
+        }
+
         return {
           id: track.id,
           title: track.title,
@@ -105,6 +121,7 @@ export default async function LabelPage({
             "MUSEK Artist",
           genre: track.genre || "",
           audioUrl: audio?.signedUrl || null,
+          artworkUrl,
         };
       })
     );
@@ -201,7 +218,8 @@ export default async function LabelPage({
               );
 
               const artistPlayerSongs = playerSongs.filter(
-                (song) => song.artistName === artistName
+                (song) =>
+                  artistTracks.some((track) => track.id === song.id)
               );
 
               return (
