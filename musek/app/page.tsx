@@ -153,7 +153,12 @@ export default async function HomePage() {
           <p>No published music is available yet.</p>
         ) : (
           <>
-            <div style={{ marginTop: "25px" }}>
+            <div
+              style={{
+                marginTop: "25px",
+                maxWidth: "650px",
+              }}
+            >
               <MusicPlayer songs={playableTrendingSongs} />
             </div>
 
