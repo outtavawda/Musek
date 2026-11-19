@@ -9,6 +9,7 @@ export default function UploadForm({ userId }: { userId: string }) {
   const [genre, setGenre] = useState("");
   const [description, setDescription] = useState("");
   const [audio, setAudio] = useState<File | null>(null);
+  const [coverArt, setCoverArt] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -52,22 +53,68 @@ export default function UploadForm({ userId }: { userId: string }) {
       return;
     }
 
+    const allowedImageTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ];
+
+    const allowedImageExtensions = ["jpg", "jpeg", "png", "webp"];
+
+    let coverExtension = "";
+
+    if (coverArt) {
+      coverExtension =
+        coverArt.name.split(".").pop()?.toLowerCase() || "";
+
+      if (
+        !allowedImageTypes.includes(coverArt.type) ||
+        !allowedImageExtensions.includes(coverExtension)
+      ) {
+        setMessage("Cover art must be a JPG, PNG or WebP image.");
+        return;
+      }
+
+      if (coverArt.size > 5 * 1024 * 1024) {
+        setMessage("Cover art must be 5 MB or less.");
+        return;
+      }
+    }
+
     setLoading(true);
 
-    try {
-      const supabase = createClient();
+    let audioPath = "";
+    let coverArtPath: string | null = null;
 
-      const filePath = `${userId}/${crypto.randomUUID()}.${extension}`;
+    const supabase = createClient();
+
+    try {
+      audioPath = `${userId}/${crypto.randomUUID()}.${extension}`;
 
       const { error: uploadError } = await supabase.storage
         .from("music-tracks")
-        .upload(filePath, audio, {
+        .upload(audioPath, audio, {
           contentType: audio.type || "application/octet-stream",
           upsert: false
         });
 
       if (uploadError) {
         throw uploadError;
+      }
+
+      if (coverArt) {
+        coverArtPath = `${userId}/${crypto.randomUUID()}.${coverExtension}`;
+
+        const { error: coverUploadError } = await supabase.storage
+          .from("song-cover-art")
+          .upload(coverArtPath, coverArt, {
+            contentType: coverArt.type,
+            upsert: false
+          });
+
+        if (coverUploadError) {
+          throw coverUploadError;
+        }
       }
 
       const { error: databaseError } = await supabase
@@ -77,14 +124,11 @@ export default function UploadForm({ userId }: { userId: string }) {
           title: title.trim(),
           description: description.trim(),
           genre: genre.trim(),
-          audio_path: filePath
+          audio_path: audioPath,
+          cover_art_path: coverArtPath
         });
 
       if (databaseError) {
-        await supabase.storage
-          .from("music-tracks")
-          .remove([filePath]);
-
         throw databaseError;
       }
 
@@ -92,14 +136,27 @@ export default function UploadForm({ userId }: { userId: string }) {
       setGenre("");
       setDescription("");
       setAudio(null);
+      setCoverArt(null);
       form.reset();
 
       setMessage(
-        "Your song was uploaded successfully and saved as a draft."
+        "Your song and cover art were uploaded successfully and saved as a draft."
       );
 
     } catch (error: unknown) {
       console.error("MUSEK upload error:", error);
+
+      if (audioPath) {
+        await supabase.storage
+          .from("music-tracks")
+          .remove([audioPath]);
+      }
+
+      if (coverArtPath) {
+        await supabase.storage
+          .from("song-cover-art")
+          .remove([coverArtPath]);
+      }
 
       const errorMessage =
         error &&
@@ -164,6 +221,21 @@ export default function UploadForm({ userId }: { userId: string }) {
             width: "100%",
             padding: "12px",
             margin: "8px 0 20px"
+          }}
+        />
+      </label>
+
+      <label>
+        Song cover art (JPG, PNG or WebP — maximum 5 MB)
+        <input
+          type="file"
+          accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+          onChange={(event) =>
+            setCoverArt(event.target.files?.[0] || null)
+          }
+          style={{
+            display: "block",
+            margin: "12px 0 24px"
           }}
         />
       </label>
