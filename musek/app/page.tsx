@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import MusicPlayer from "./discover-music/music-player";
 
 const features = [
   {
@@ -42,6 +43,53 @@ export default async function HomePage() {
   const labels = (profiles || [])
     .filter((profile) => profile.account_type === "label")
     .slice(0, 4);
+
+  // LOAD TRENDING PUBLISHED MUSIC
+  const { data: tracks } = await supabase
+    .from("music_tracks")
+    .select("id, title, genre, artist_id, play_count, audio_path")
+    .eq("status", "published")
+    .order("play_count", { ascending: false })
+    .limit(6);
+
+  const artistIds = Array.from(
+    new Set((tracks || []).map((track) => track.artist_id))
+  );
+
+  const { data: trackArtists } =
+    artistIds.length > 0
+      ? await supabase
+          .from("user_profiles")
+          .select("id, artist_name, display_name")
+          .in("id", artistIds)
+      : { data: [] };
+
+  const trendingSongs = await Promise.all(
+    (tracks || []).map(async (track) => {
+      const { data: signedUrlData } = await supabase.storage
+        .from("music-tracks")
+        .createSignedUrl(track.audio_path, 3600);
+
+      const artist = (trackArtists || []).find(
+        (profile) => profile.id === track.artist_id
+      );
+
+      if (!signedUrlData?.signedUrl) return null;
+
+      return {
+        id: track.id,
+        title: track.title,
+        artistName:
+          artist?.artist_name || artist?.display_name || "MUSEK Artist",
+        genre: track.genre || "Music",
+        audioUrl: signedUrlData.signedUrl,
+      };
+    })
+  );
+
+  const playableTrendingSongs = trendingSongs.filter(
+    (song): song is NonNullable<typeof song> => song !== null
+  );
 
   return (
     <main>
@@ -91,6 +139,64 @@ export default async function HomePage() {
 
         <div className="orb orbOne" />
         <div className="orb orbTwo" />
+      </section>
+
+      {/* TRENDING MUSIC */}
+      <section style={{ padding: "60px 7%" }}>
+        <div className="sectionLabel">WHAT'S GETTING PLAYS</div>
+        <h2>Trending Music</h2>
+        <p>
+          Discover popular songs from artists across MUSEK.
+        </p>
+
+        {playableTrendingSongs.length === 0 ? (
+          <p>No published music is available yet.</p>
+        ) : (
+          <>
+            <div style={{ marginTop: "25px" }}>
+              <MusicPlayer songs={playableTrendingSongs} />
+            </div>
+
+            <div style={{ marginTop: "25px" }}>
+              {playableTrendingSongs.map((song, index) => (
+                <article
+                  key={song.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "15px",
+                    padding: "15px",
+                    borderBottom: "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <div>
+                    <p className="eyebrow">
+                      TRENDING #{index + 1}
+                    </p>
+                    <h3>{song.title}</h3>
+                    <p className="muted">
+                      {song.artistName} · {song.genre}
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/discover-music"
+                    className="secondaryButton"
+                  >
+                    Explore
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
+
+        <p style={{ marginTop: "25px" }}>
+          <Link href="/discover-music">
+            Explore all music →
+          </Link>
+        </p>
       </section>
 
       {/* FEATURED ARTISTS */}
