@@ -56,14 +56,16 @@ export default async function HomePage() {
     new Set((tracks || []).map((track) => track.artist_id))
   );
 
+  // LOAD ARTIST NAMES AND PROFILE PICTURES
   const { data: trackArtists } =
     artistIds.length > 0
       ? await supabase
           .from("user_profiles")
-          .select("id, artist_name, display_name")
+          .select("id, artist_name, display_name, avatar_url")
           .in("id", artistIds)
       : { data: [] };
 
+  // BUILD TRENDING SONGS WITH ARTIST PROFILE ARTWORK
   const trendingSongs = await Promise.all(
     (tracks || []).map(async (track) => {
       const { data: signedUrlData } = await supabase.storage
@@ -83,6 +85,7 @@ export default async function HomePage() {
           artist?.artist_name || artist?.display_name || "MUSEK Artist",
         genre: track.genre || "Music",
         audioUrl: signedUrlData.signedUrl,
+        artworkUrl: artist?.avatar_url || null,
       };
     })
   );
