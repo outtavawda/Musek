@@ -36,7 +36,7 @@ export default async function ArtistPage({
 
   const { data: tracks, error: tracksError } = await supabase
     .from("music_tracks")
-    .select("id, title, genre, audio_path, created_at")
+    .select("id, title, genre, audio_path, cover_art_path, created_at")
     .eq("artist_id", artist.id)
     .eq("status", "published")
     .order("created_at", { ascending: false });
@@ -47,12 +47,25 @@ export default async function ArtistPage({
         .from("music-tracks")
         .createSignedUrl(track.audio_path, 3600);
 
+      let artworkUrl = artist.avatar_url || null;
+
+      if (track.cover_art_path) {
+        const { data: cover } = await supabase.storage
+          .from("song-cover-art")
+          .createSignedUrl(track.cover_art_path, 3600);
+
+        if (cover?.signedUrl) {
+          artworkUrl = cover.signedUrl;
+        }
+      }
+
       return {
         id: track.id,
         title: track.title,
         artistName,
         genre: track.genre || "",
         audioUrl: audio?.signedUrl || null,
+        artworkUrl,
       };
     })
   );
@@ -118,7 +131,6 @@ export default async function ArtistPage({
           </p>
         )}
 
-        {/* SEND GIFT */}
         <SendGift artistId={artist.id} />
 
         <div style={{ marginTop: "30px" }}>
