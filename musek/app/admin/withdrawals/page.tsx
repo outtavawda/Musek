@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import WithdrawalActions from "./withdrawal-actions";
 
 type Withdrawal = {
   id: string;
@@ -41,7 +42,7 @@ export default async function AdminWithdrawalsPage() {
     redirect("/dashboard");
   }
 
-  // Load all withdrawal requests visible to an authorized admin.
+  // Load withdrawal requests visible to an authorized admin.
   const { data: withdrawals, error } = await supabase
     .from("creator_withdrawals")
     .select(
@@ -61,7 +62,7 @@ export default async function AdminWithdrawalsPage() {
 
   const requests: Withdrawal[] = (withdrawals || []) as Withdrawal[];
 
-  // Collect unique artist IDs using Array.from for TypeScript compatibility.
+  // Collect unique artist IDs using TypeScript-compatible syntax.
   const artistIds = Array.from(
     new Set(requests.map((item) => item.user_id))
   );
@@ -96,6 +97,18 @@ export default async function AdminWithdrawalsPage() {
 
   const pendingCount = requests.filter(
     (request) => request.status === "pending"
+  ).length;
+
+  const approvedCount = requests.filter(
+    (request) => request.status === "approved"
+  ).length;
+
+  const processingCount = requests.filter(
+    (request) => request.status === "processing"
+  ).length;
+
+  const paidCount = requests.filter(
+    (request) => request.status === "paid"
   ).length;
 
   return (
@@ -151,6 +164,51 @@ export default async function AdminWithdrawalsPage() {
           </p>
           <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
             {pendingCount}
+          </h2>
+        </div>
+
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #333",
+            borderRadius: "12px",
+          }}
+        >
+          <p style={{ color: "#888", margin: 0 }}>
+            Approved requests
+          </p>
+          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+            {approvedCount}
+          </h2>
+        </div>
+
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #333",
+            borderRadius: "12px",
+          }}
+        >
+          <p style={{ color: "#888", margin: 0 }}>
+            Processing requests
+          </p>
+          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+            {processingCount}
+          </h2>
+        </div>
+
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid #333",
+            borderRadius: "12px",
+          }}
+        >
+          <p style={{ color: "#888", margin: 0 }}>
+            Paid requests
+          </p>
+          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+            {paidCount}
           </h2>
         </div>
 
@@ -224,6 +282,11 @@ export default async function AdminWithdrawalsPage() {
               >
                 Request ID: {request.id}
               </p>
+
+              <WithdrawalActions
+                withdrawalId={request.id}
+                status={request.status}
+              />
             </section>
           ))}
         </div>
