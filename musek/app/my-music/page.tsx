@@ -28,7 +28,7 @@ export default async function MyMusicPage() {
   const { data: tracks, error } = await supabase
     .from("music_tracks")
     .select(
-      "id, title, description, genre, audio_path, status, created_at"
+      "id, title, description, genre, audio_path, cover_art_path, status, created_at"
     )
     .eq("artist_id", user.id)
     .order("created_at", { ascending: false });
@@ -39,13 +39,24 @@ export default async function MyMusicPage() {
 
   const songs = await Promise.all(
     (tracks || []).map(async (track) => {
-      const { data } = await supabase.storage
+      const { data: audioData } = await supabase.storage
         .from("music-tracks")
         .createSignedUrl(track.audio_path, 3600);
 
+      let coverArtUrl: string | null = null;
+
+      if (track.cover_art_path) {
+        const { data: coverData } = await supabase.storage
+          .from("song-cover-art")
+          .createSignedUrl(track.cover_art_path, 3600);
+
+        coverArtUrl = coverData?.signedUrl || null;
+      }
+
       return {
         ...track,
-        audioUrl: data?.signedUrl || null,
+        audioUrl: audioData?.signedUrl || null,
+        coverArtUrl,
       };
     })
   );
