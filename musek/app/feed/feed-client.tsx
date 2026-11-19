@@ -19,29 +19,32 @@ export default function FeedClient({
   return (
     <main
       style={{
-        minHeight: "100vh",
+        minHeight: "100svh",
         background: "#09090d",
         color: "white",
-        padding: "25px 15px 50px",
+        padding: "15px",
+        boxSizing: "border-box",
       }}
     >
-      <header style={{ textAlign: "center", marginBottom: "25px" }}>
-        <h1 style={{ fontSize: "32px", margin: 0 }}>
+      <header style={{ textAlign: "center", marginBottom: "15px" }}>
+        <h1 style={{ fontSize: "30px", margin: 0 }}>
           MUSEK<span style={{ color: "#a855f7" }}>.</span>
         </h1>
-        <p style={{ color: "#aaa" }}>Discover your next favourite song</p>
+        <p style={{ color: "#aaa", margin: "5px 0" }}>
+          Your music. Your discovery.
+        </p>
       </header>
 
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <span style={{ color: "#c084fc", fontWeight: "bold" }}>
-          FOR YOU
-        </span>
-        <span style={{ color: "#777", marginLeft: "25px" }}>
-          TRENDING
-        </span>
-        <span style={{ color: "#777", marginLeft: "25px" }}>
-          NEW
-        </span>
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: "12px",
+          color: "#c084fc",
+          fontWeight: "bold",
+          letterSpacing: "2px",
+        }}
+      >
+        FOR YOU
       </div>
 
       {songs.length === 0 ? (
@@ -52,9 +55,16 @@ export default function FeedClient({
         <div
           style={{
             maxWidth: "650px",
+            height: "calc(100svh - 145px)",
+            minHeight: "500px",
             margin: "0 auto",
-            display: "grid",
-            gap: "25px",
+            overflowY: "auto",
+            scrollSnapType: "y mandatory",
+            overscrollBehaviorY: "contain",
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+            scrollbarWidth: "none",
           }}
         >
           {songs.map((song) => (
@@ -62,14 +72,15 @@ export default function FeedClient({
               key={song.id}
               style={{
                 position: "relative",
-                minHeight: "650px",
-                height: "75vh",
-                maxHeight: "850px",
+                flex: "0 0 100%",
+                height: "100%",
+                minHeight: "500px",
                 borderRadius: "20px",
                 overflow: "hidden",
                 background: "#191522",
                 border: "1px solid #43246a",
                 scrollSnapAlign: "start",
+                scrollSnapStop: "always",
               }}
             >
               {song.artworkUrl ? (
@@ -92,7 +103,8 @@ export default function FeedClient({
                     display: "grid",
                     placeItems: "center",
                     fontSize: "100px",
-                    background: "linear-gradient(135deg, #24103e, #111)",
+                    background:
+                      "linear-gradient(135deg, #24103e, #111)",
                   }}
                 >
                   🎵
@@ -104,7 +116,7 @@ export default function FeedClient({
                   position: "absolute",
                   inset: 0,
                   background:
-                    "linear-gradient(transparent 25%, rgba(0,0,0,.9) 100%)",
+                    "linear-gradient(transparent 15%, rgba(0,0,0,.9) 100%)",
                 }}
               />
 
