@@ -7,12 +7,14 @@ import { createClient } from "@/lib/supabase/client";
 type Song = {
   id: string;
   title: string;
-  description: string;
-  genre: string;
+  description: string | null;
+  genre: string | null;
   audio_path: string;
+  cover_art_path: string | null;
   status: string;
   created_at: string;
   audioUrl: string | null;
+  coverArtUrl: string | null;
 };
 
 export default function MusicLibrary({
@@ -30,6 +32,7 @@ export default function MusicLibrary({
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
   const [description, setDescription] = useState("");
+  const [coverArt, setCoverArt] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,14 +41,17 @@ export default function MusicLibrary({
     setTitle(song.title);
     setGenre(song.genre || "");
     setDescription(song.description || "");
+    setCoverArt(null);
     setMessage("");
   }
 
-  async function saveSong(songId: string) {
+  async function saveSong(song: Song) {
     if (!title.trim()) {
       setMessage("Please enter a song title.");
       return;
     }
+
+    let newCoverPath: string | null = null;
 
     setLoading(true);
     setMessage("");
@@ -53,34 +59,102 @@ export default function MusicLibrary({
     try {
       const supabase = createClient();
 
-      const { error } = await supabase
+      if (coverArt) {
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/webp",
+        ];
+
+        const extension =
+          coverArt.name.split(".").pop()?.toLowerCase() || "";
+
+        if (
+          !allowedTypes.includes(coverArt.type) ||
+          !["jpg", "jpeg", "png", "webp"].includes(extension)
+        ) {
+          throw new Error("Please choose a JPG, PNG or WebP image.");
+        }
+
+        if (coverArt.size > 5 * 1024 * 1024) {
+          throw new Error("Cover art must be 5 MB or less.");
+        }
+
+        newCoverPath = `${userId}/${crypto.randomUUID()}.${extension}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("song-cover-art")
+          .upload(newCoverPath, coverArt, {
+            contentType: coverArt.type,
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+      }
+
+      const updatedCoverPath = newCoverPath || song.cover_art_path;
+
+      const { data, error } = await supabase
         .from("music_tracks")
         .update({
           title: title.trim(),
           genre: genre.trim(),
           description: description.trim(),
+          ...(newCoverPath ? { cover_art_path: newCoverPath } : {}),
         })
-        .eq("id", songId)
-        .eq("artist_id", userId);
+        .eq("id", song.id)
+        .eq("artist_id", userId)
+        .select("id");
 
       if (error) throw error;
 
+      if (!data || data.length === 0) {
+        throw new Error("You do not have permission to update this song.");
+      }
+
+      let newCoverUrl = song.coverArtUrl;
+
+      if (newCoverPath) {
+        const { data: signedData } = await supabase.storage
+          .from("song-cover-art")
+          .createSignedUrl(newCoverPath, 3600);
+
+        newCoverUrl = signedData?.signedUrl || null;
+      }
+
       setSongs((currentSongs) =>
-        currentSongs.map((song) =>
-          song.id === songId
+        currentSongs.map((item) =>
+          item.id === song.id
             ? {
-                ...song,
+                ...item,
                 title: title.trim(),
                 genre: genre.trim(),
                 description: description.trim(),
+                cover_art_path: updatedCoverPath,
+                coverArtUrl: newCoverUrl,
               }
-            : song
+            : item
         )
       );
 
+      if (newCoverPath && song.cover_art_path) {
+        await supabase.storage
+          .from("song-cover-art")
+          .remove([song.cover_art_path]);
+      }
+
       setEditingId(null);
-      setMessage("Song details updated successfully.");
+      setCoverArt(null);
+      setMessage("Song details and cover art updated successfully.");
+
     } catch (error: unknown) {
+      if (newCoverPath) {
+        const supabase = createClient();
+        await supabase.storage
+          .from("song-cover-art")
+          .remove([newCoverPath]);
+      }
+
       setMessage(
         "Could not update song: " +
           (error instanceof Error ? error.message : "Unknown error.")
@@ -177,17 +251,26 @@ export default function MusicLibrary({
         .from("music-tracks")
         .remove([song.audio_path]);
 
+      let coverStorageError = null;
+
+      if (song.cover_art_path) {
+        const { error } = await supabase.storage
+          .from("song-cover-art")
+          .remove([song.cover_art_path]);
+
+        coverStorageError = error;
+      }
+
       setSongs((currentSongs) =>
         currentSongs.filter((item) => item.id !== song.id)
       );
 
-      if (storageError) {
+      if (storageError || coverStorageError) {
         setMessage(
-          "Song record deleted, but audio removal failed: " +
-            storageError.message
+          "Song record deleted, but a storage file could not be removed."
         );
       } else {
-        setMessage("Song and audio file deleted successfully.");
+        setMessage("Song and its files deleted successfully.");
       }
 
       if (editingId === song.id) setEditingId(null);
@@ -264,17 +347,54 @@ export default function MusicLibrary({
                   />
                 </label>
 
+                <div style={{ margin: "16px 0" }}>
+                  <p><strong>Current song cover art</strong></p>
+
+                  {song.coverArtUrl ? (
+                    <img
+                      src={song.coverArtUrl}
+                      alt={`${song.title} cover art`}
+                      style={{
+                        width: "150px",
+                        height: "150px",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  ) : (
+                    <p>No cover art uploaded yet.</p>
+                  )}
+                </div>
+
+                <label>
+                  Add or replace cover art (JPG, PNG or WebP — maximum 5 MB)
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    onChange={(event) =>
+                      setCoverArt(event.target.files?.[0] || null)
+                    }
+                    style={{
+                      display: "block",
+                      margin: "12px 0 20px",
+                    }}
+                  />
+                </label>
+
                 <button
                   type="button"
                   disabled={loading}
-                  onClick={() => saveSong(song.id)}
+                  onClick={() => saveSong(song)}
                 >
                   {loading ? "Saving..." : "Save Changes"}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setEditingId(null)}
+                  onClick={() => {
+                    setEditingId(null);
+                    setCoverArt(null);
+                  }}
                   disabled={loading}
                   style={{ marginLeft: "10px" }}
                 >
@@ -284,6 +404,19 @@ export default function MusicLibrary({
             ) : (
               <div>
                 <h2>{song.title}</h2>
+
+                {song.coverArtUrl && (
+                  <img
+                    src={song.coverArtUrl}
+                    alt={`${song.title} cover art`}
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                )}
 
                 <p>Genre: {song.genre || "Not specified"}</p>
                 <p>{song.description}</p>
