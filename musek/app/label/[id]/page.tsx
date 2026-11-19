@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import MusicPlayer from "../../discover-music/music-player";
 
 type ArtistProfile = {
   id: string;
@@ -16,6 +17,15 @@ type MusicTrack = {
   artist_id: string;
   title: string;
   genre: string | null;
+  audio_path: string;
+};
+
+type PlayerSong = {
+  id: string;
+  title: string;
+  artistName: string;
+  genre: string;
+  audioUrl: string | null;
 };
 
 export default async function LabelPage({
@@ -56,6 +66,7 @@ export default async function LabelPage({
 
   let artists: ArtistProfile[] = [];
   let tracks: MusicTrack[] = [];
+  let playerSongs: PlayerSong[] = [];
 
   if (artistIds.length > 0) {
     const { data: artistProfiles } = await supabase
@@ -68,12 +79,35 @@ export default async function LabelPage({
 
     const { data: publishedTracks } = await supabase
       .from("music_tracks")
-      .select("id, artist_id, title, genre")
+      .select("id, artist_id, title, genre, audio_path")
       .in("artist_id", artistIds)
       .eq("status", "published")
       .order("created_at", { ascending: false });
 
     tracks = (publishedTracks || []) as MusicTrack[];
+
+    playerSongs = await Promise.all(
+      tracks.map(async (track) => {
+        const { data: audio } = await supabase.storage
+          .from("music-tracks")
+          .createSignedUrl(track.audio_path, 3600);
+
+        const artist = artists.find(
+          (item) => item.id === track.artist_id
+        );
+
+        return {
+          id: track.id,
+          title: track.title,
+          artistName:
+            artist?.artist_name ||
+            artist?.display_name ||
+            "MUSEK Artist",
+          genre: track.genre || "",
+          audioUrl: audio?.signedUrl || null,
+        };
+      })
+    );
   }
 
   return (
@@ -166,6 +200,10 @@ export default async function LabelPage({
                 (track) => track.artist_id === artist.id
               );
 
+              const artistPlayerSongs = playerSongs.filter(
+                (song) => song.artistName === artistName
+              );
+
               return (
                 <div
                   key={artist.id}
@@ -217,24 +255,31 @@ export default async function LabelPage({
                       No published songs yet.
                     </p>
                   ) : (
-                    <div style={{ display: "grid", gap: "10px" }}>
-                      {artistTracks.map((track) => (
-                        <div
-                          key={track.id}
-                          style={{
-                            padding: "12px",
-                            background: "#1b1b1b",
-                            borderRadius: "10px",
-                          }}
-                        >
-                          <strong>🎵 {track.title}</strong>
+                    <>
+                      <div style={{ display: "grid", gap: "10px" }}>
+                        {artistTracks.map((track) => (
+                          <div
+                            key={track.id}
+                            style={{
+                              padding: "12px",
+                              background: "#1b1b1b",
+                              borderRadius: "10px",
+                            }}
+                          >
+                            <strong>🎵 {track.title}</strong>
 
-                          {track.genre && (
-                            <p className="muted">{track.genre}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                            {track.genre && (
+                              <p className="muted">{track.genre}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ marginTop: "18px" }}>
+                        <p className="eyebrow">LISTEN TO {artistName}</p>
+                        <MusicPlayer songs={artistPlayerSongs} />
+                      </div>
+                    </>
                   )}
                 </div>
               );
