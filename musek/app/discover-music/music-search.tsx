@@ -10,6 +10,7 @@ type Song = {
   artistName: string;
   genre: string;
   audioUrl: string | null;
+  artworkUrl: string | null;
 };
 
 export default function MusicSearch({ songs }: { songs: Song[] }) {
@@ -59,12 +60,14 @@ export default function MusicSearch({ songs }: { songs: Song[] }) {
 
       <h3>Browse Genres</h3>
 
-      <div style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "10px",
-        marginBottom: "25px"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          marginBottom: "25px",
+        }}
+      >
         {genres.map((genre) => (
           <button
             key={genre}
@@ -99,9 +102,7 @@ export default function MusicSearch({ songs }: { songs: Song[] }) {
 
       <h2>Music Library</h2>
 
-      <p>
-        {filteredSongs.length} song(s) found
-      </p>
+      <p>{filteredSongs.length} song(s) found</p>
 
       {filteredSongs.length === 0 ? (
         <p>No songs found. Try another search.</p>
