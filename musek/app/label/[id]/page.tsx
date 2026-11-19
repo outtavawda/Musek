@@ -27,17 +27,9 @@ export default async function LabelPage({
 
   const { data: label, error: labelError } = await supabase
     .from("user_profiles")
-    .select(`
-      id,
-      display_name,
-      bio,
-      account_type,
-      avatar_url,
-      label_name,
-      location,
-      website_url,
-      is_public
-    `)
+    .select(
+      "id, display_name, bio, account_type, avatar_url, label_name, location, website_url, is_public"
+    )
     .eq("id", params.id)
     .eq("account_type", "label")
     .eq("is_public", true)
@@ -54,9 +46,13 @@ export default async function LabelPage({
     .select("artist_id")
     .eq("label_id", label.id);
 
-  const artistIds = [
-    ...new Set((relationships || []).map((item) => item.artist_id)),
-  ];
+  const artistIds: string[] = [];
+
+  (relationships || []).forEach((item) => {
+    if (!artistIds.includes(item.artist_id)) {
+      artistIds.push(item.artist_id);
+    }
+  });
 
   let artists: ArtistProfile[] = [];
   let tracks: MusicTrack[] = [];
