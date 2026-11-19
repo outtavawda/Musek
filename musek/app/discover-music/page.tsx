@@ -8,7 +8,9 @@ export default async function DiscoverMusicPage() {
 
   const { data: tracks, error } = await supabase
     .from("music_tracks")
-    .select("id, artist_id, title, description, genre, audio_path, created_at")
+    .select(
+      "id, artist_id, title, description, genre, audio_path, cover_art_path, created_at"
+    )
     .eq("status", "published")
     .order("created_at", { ascending: false });
 
@@ -25,13 +27,23 @@ export default async function DiscoverMusicPage() {
     (tracks || []).map(async (track) => {
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("artist_name, display_name")
+        .select("artist_name, display_name, avatar_url")
         .eq("id", track.artist_id)
         .single();
 
       const { data: audio } = await supabase.storage
         .from("music-tracks")
         .createSignedUrl(track.audio_path, 3600);
+
+      let artworkUrl = profile?.avatar_url || null;
+
+      if (track.cover_art_path) {
+        const { data: cover } = await supabase.storage
+          .from("song-cover-art")
+          .createSignedUrl(track.cover_art_path, 3600);
+
+        artworkUrl = cover?.signedUrl || artworkUrl;
+      }
 
       return {
         id: track.id,
@@ -42,6 +54,7 @@ export default async function DiscoverMusicPage() {
           "MUSEK Artist",
         genre: track.genre || "",
         audioUrl: audio?.signedUrl || null,
+        artworkUrl,
       };
     })
   );
