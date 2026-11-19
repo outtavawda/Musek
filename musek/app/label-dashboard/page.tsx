@@ -10,12 +10,18 @@ type Release = {
   title: string;
   genre: string | null;
   created_at: string;
+  play_count: number | null;
 };
 
 type ArtistProfile = {
   id: string;
   artist_name: string | null;
   display_name: string | null;
+};
+
+type PlayEvent = {
+  artist_id: string;
+  played_at: string;
 };
 
 export default async function LabelDashboardPage() {
@@ -25,9 +31,7 @@ export default async function LabelDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
+  if (!user) redirect("/login");
 
   const { data: profile } = await supabase
     .from("user_profiles")
@@ -44,8 +48,7 @@ export default async function LabelDashboardPage() {
   const labelName =
     profile.label_name || profile.display_name || "My Label";
 
-  // Find artists who have joined this label.
-  const { data: roster } = await supabase
+  const { data: roster, error: rosterError } = await supabase
     .from("label_artists")
     .select("artist_id")
     .eq("label_id", user.id);
@@ -54,24 +57,55 @@ export default async function LabelDashboardPage() {
 
   let releases: Release[] = [];
   let artistProfiles: ArtistProfile[] = [];
+  let playEvents: PlayEvent[] = [];
+  let analyticsError = "";
 
-  // Only load music released by artists on this label.
+  if (rosterError) {
+    analyticsError = rosterError.message;
+  }
+
   if (artistIds.length > 0) {
-    const { data: releaseData } = await supabase
+    const { data: releaseData, error: releaseError } = await supabase
       .from("music_tracks")
-      .select("id, artist_id, title, genre, created_at")
+      .select("id, artist_id, title, genre, created_at, play_count")
       .in("artist_id", artistIds)
       .eq("status", "published")
       .order("created_at", { ascending: false });
 
-    releases = (releaseData ?? []) as Release[];
+    if (releaseError) {
+      analyticsError = analyticsError || releaseError.message;
+    } else {
+      releases = (releaseData ?? []) as Release[];
+    }
 
-    const { data: profileData } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("user_profiles")
       .select("id, artist_name, display_name")
       .in("id", artistIds);
 
-    artistProfiles = (profileData ?? []) as ArtistProfile[];
+    if (profileError) {
+      analyticsError = analyticsError || profileError.message;
+    } else {
+      artistProfiles = (profileData ?? []) as ArtistProfile[];
+    }
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const { data: events, error: eventsError } = await supabase
+      .from("track_play_events")
+      .select("artist_id, played_at")
+      .in("artist_id", artistIds)
+      .gte("played_at", sixMonthsAgo.toISOString())
+      .order("played_at", { ascending: true });
+
+    if (eventsError) {
+      analyticsError = analyticsError || eventsError.message;
+    } else {
+      playEvents = (events ?? []) as PlayEvent[];
+    }
   }
 
   function getArtistName(artistId: string) {
@@ -86,6 +120,71 @@ export default async function LabelDashboardPage() {
     );
   }
 
+  const totalPlays = releases.reduce(
+    (total, release) => total + (release.play_count || 0),
+    0
+  );
+
+  const rankedReleases = [...releases].sort(
+    (a, b) => (b.play_count || 0) - (a.play_count || 0)
+  );
+
+  const artistStats = artistIds.map((artistId) => {
+    const artistReleases = releases.filter(
+      (release) => release.artist_id === artistId
+    );
+
+    return {
+      id: artistId,
+      name: getArtistName(artistId),
+      songs: artistReleases.length,
+      plays: artistReleases.reduce(
+        (total, release) => total + (release.play_count || 0),
+        0
+      ),
+    };
+  }).sort((a, b) => b.plays - a.plays);
+
+  const monthlyStats = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+    date.setMonth(date.getMonth() - (5 - index));
+
+    const plays = playEvents.filter((event) => {
+      const playedDate = new Date(event.played_at);
+
+      return (
+        playedDate.getMonth() === date.getMonth() &&
+        playedDate.getFullYear() === date.getFullYear()
+      );
+    }).length;
+
+    return {
+      label: date.toLocaleDateString("en-CA", {
+        month: "short",
+        year: "2-digit",
+      }),
+      plays,
+    };
+  });
+
+  const highestMonthlyPlays = Math.max(
+    ...monthlyStats.map((month) => month.plays),
+    1
+  );
+
+  const totalMonthlyPlays = monthlyStats.reduce(
+    (total, month) => total + month.plays,
+    0
+  );
+
+  const cardStyle = {
+    padding: "20px",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: "12px",
+  };
+
   return (
     <main className="min-h-screen bg-gray-950 text-white">
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -94,11 +193,9 @@ export default async function LabelDashboardPage() {
             <p className="text-sm font-semibold uppercase tracking-widest text-purple-400">
               MUSEK
             </p>
-
             <h1 className="mt-2 text-3xl font-bold">
               Label Dashboard
             </h1>
-
             <p className="mt-2 text-gray-400">
               Manage your label, artists and music releases.
             </p>
@@ -176,15 +273,18 @@ export default async function LabelDashboardPage() {
             </p>
           </a>
 
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-6">
+          <a
+            href="#label-analytics"
+            className="rounded-xl border border-gray-800 bg-gray-900 p-6 transition hover:border-purple-500"
+          >
             <h3 className="text-lg font-semibold">Analytics</h3>
             <p className="mt-2 text-sm text-gray-400">
-              Track music performance and audience activity.
+              Track plays and performance across your signed artists.
             </p>
-            <p className="mt-4 text-sm text-yellow-400">
-              Label analytics coming next
+            <p className="mt-4 text-sm text-purple-400">
+              View analytics ↓
             </p>
-          </div>
+          </a>
 
           <div className="rounded-xl border border-gray-800 bg-gray-900 p-6">
             <h3 className="text-lg font-semibold">Label Earnings</h3>
@@ -221,26 +321,185 @@ export default async function LabelDashboardPage() {
         </section>
 
         <section
-          id="music-releases"
+          id="label-analytics"
           className="mt-10 rounded-2xl border border-gray-800 bg-gray-900 p-6"
         >
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold">Music Releases</h2>
+          <p className="text-sm font-semibold uppercase tracking-widest text-purple-400">
+            LABEL ANALYTICS
+          </p>
+          <h2 className="mt-2 text-2xl font-bold">
+            Your Label's Music Performance
+          </h2>
+          <p className="mt-2 text-sm text-gray-400">
+            Listening statistics from your signed artists.
+          </p>
+
+          {analyticsError && (
+            <p className="mt-4 text-sm text-yellow-400">
+              Some analytics could not be loaded: {analyticsError}
+            </p>
+          )}
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div style={cardStyle}>
+              <p className="text-xs uppercase tracking-widest text-gray-400">
+                TOTAL PLAYS
+              </p>
+              <h3 className="mt-2 text-3xl font-bold">
+                {totalPlays.toLocaleString()}
+              </h3>
+            </div>
+
+            <div style={cardStyle}>
+              <p className="text-xs uppercase tracking-widest text-gray-400">
+                SIGNED ARTISTS
+              </p>
+              <h3 className="mt-2 text-3xl font-bold">
+                {artistIds.length}
+              </h3>
+            </div>
+
+            <div style={cardStyle}>
+              <p className="text-xs uppercase tracking-widest text-gray-400">
+                PUBLISHED SONGS
+              </p>
+              <h3 className="mt-2 text-3xl font-bold">
+                {releases.length}
+              </h3>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold">
+              Plays by Artist
+            </h3>
+
+            {artistStats.length === 0 ? (
+              <p className="mt-3 text-sm text-gray-400">
+                No signed artists are available yet.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {artistStats.map((artist) => (
+                  <div
+                    key={artist.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-800 p-4"
+                  >
+                    <div>
+                      <h4 className="font-semibold">{artist.name}</h4>
+                      <p className="mt-1 text-sm text-gray-400">
+                        {artist.songs} published songs
+                      </p>
+                    </div>
+                    <strong>
+                      {artist.plays.toLocaleString()} plays
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold">
+              Six-Month Listening Report
+            </h3>
             <p className="mt-2 text-sm text-gray-400">
-              Published songs from artists signed to your label.
+              Plays recorded during the last six months.
+            </p>
+
+            <div style={{ ...cardStyle, marginTop: "16px" }}>
+              <p className="text-xs uppercase tracking-widest text-gray-400">
+                RECORDED PLAYS
+              </p>
+              <h3 className="mt-2 text-3xl font-bold">
+                {totalMonthlyPlays.toLocaleString()}
+              </h3>
+
+              <div className="mt-6 flex h-52 items-end justify-between gap-3">
+                {monthlyStats.map((month) => (
+                  <div
+                    key={month.label}
+                    className="flex h-full flex-1 flex-col items-center justify-end gap-2"
+                  >
+                    <strong className="text-xs">{month.plays}</strong>
+                    <div
+                      className="w-full max-w-12 rounded-t-md bg-purple-500"
+                      style={{
+                        height: `${Math.max(
+                          (month.plays / highestMonthlyPlays) * 130,
+                          5
+                        )}px`,
+                      }}
+                    />
+                    <span className="text-xs text-gray-400">
+                      {month.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-gray-500">
+              Monthly tracking starts when play-event tracking was installed.
+              Earlier plays are not included in this chart.
             </p>
           </div>
 
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold">
+              Most-Played Songs
+            </h3>
+
+            {rankedReleases.length === 0 ? (
+              <p className="mt-3 text-sm text-gray-400">
+                No published songs are available yet.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {rankedReleases.slice(0, 10).map((release, index) => (
+                  <div
+                    key={release.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-800 p-4"
+                  >
+                    <div>
+                      <h4 className="font-semibold">
+                        {index + 1}. {release.title}
+                      </h4>
+                      <p className="mt-1 text-sm text-gray-400">
+                        {getArtistName(release.artist_id)}
+                        {" · "}
+                        {release.genre || "Music"}
+                      </p>
+                    </div>
+                    <strong>
+                      {(release.play_count || 0).toLocaleString()} plays
+                    </strong>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section
+          id="music-releases"
+          className="mt-10 rounded-2xl border border-gray-800 bg-gray-900 p-6"
+        >
+          <h2 className="text-2xl font-bold">Music Releases</h2>
+          <p className="mt-2 text-sm text-gray-400">
+            Published songs from artists signed to your label.
+          </p>
+
           {artistIds.length === 0 ? (
-            <p className="text-sm text-gray-400">
+            <p className="mt-4 text-sm text-gray-400">
               No signed artists yet. Invite artists to build your roster.
             </p>
           ) : releases.length === 0 ? (
-            <p className="text-sm text-gray-400">
+            <p className="mt-4 text-sm text-gray-400">
               Your signed artists do not have any published songs available here yet.
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="mt-5 space-y-3">
               {releases.map((release) => (
                 <div
                   key={release.id}
@@ -255,7 +514,6 @@ export default async function LabelDashboardPage() {
                       {release.genre || "Genre not specified"}
                     </p>
                   </div>
-
                   <span className="rounded-full bg-green-900/40 px-3 py-1 text-xs font-semibold text-green-400">
                     Published
                   </span>
