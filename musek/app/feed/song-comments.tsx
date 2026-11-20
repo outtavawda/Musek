@@ -14,8 +14,10 @@ type Comment = {
 
 export default function SongComments({
   trackId,
+  onVisibleCountChange,
 }: {
   trackId: string;
+  onVisibleCountChange?: (count: number) => void;
 }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -56,14 +58,23 @@ export default function SongComments({
       console.error("MUSEK comments error:", error);
       setMessage("Could not load comments.");
     } else {
-      setComments((data || []) as Comment[]);
+      const loadedComments = (data || []) as Comment[];
+
+      setComments(loadedComments);
+
+      const publicCount = loadedComments.filter(
+        (item) => item.status === "visible"
+      ).length;
+
+      onVisibleCountChange?.(publicCount);
     }
 
     setLoading(false);
   }
 
   useEffect(() => {
-    loadComments();
+    setLoading(true);
+    void loadComments();
   }, [trackId]);
 
   async function postComment() {
@@ -134,11 +145,8 @@ export default function SongComments({
       return;
     }
 
-    setComments((current) =>
-      current.filter((item) => item.id !== commentId)
-    );
-
     setMessage("Comment deleted.");
+    await loadComments();
   }
 
   async function moderateComment(
