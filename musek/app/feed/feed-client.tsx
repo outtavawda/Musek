@@ -23,6 +23,7 @@ export default function FeedClient({
 }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
@@ -73,6 +74,39 @@ export default function FeedClient({
     loadFavorites();
   }, []);
 
+  useEffect(() => {
+    async function loadLikeCounts() {
+      if (songs.length === 0) return;
+
+      try {
+        const supabase = createClient();
+
+        const { data, error } = await supabase.rpc(
+          "get_track_like_counts",
+          {
+            p_track_ids: songs.map((song) => song.id),
+          }
+        );
+
+        if (error) throw error;
+
+        const counts: Record<string, number> = {};
+
+        (data || []).forEach(
+          (item: { track_id: string; like_count: number | string }) => {
+            counts[item.track_id] = Number(item.like_count) || 0;
+          }
+        );
+
+        setLikeCounts(counts);
+      } catch (error) {
+        console.error("MUSEK public Like counts error:", error);
+      }
+    }
+
+    loadLikeCounts();
+  }, [songs]);
+
   async function toggleFavorite(songId: string) {
     if (!userId) {
       setMessage("Please log in to like and save songs.");
@@ -99,6 +133,11 @@ export default function FeedClient({
           current.filter((id) => id !== songId)
         );
 
+        setLikeCounts((current) => ({
+          ...current,
+          [songId]: Math.max(0, (current[songId] || 0) - 1),
+        }));
+
         setMessage("Song removed from your favourites.");
       } else {
         const { error } = await supabase
@@ -115,6 +154,11 @@ export default function FeedClient({
             ? current
             : [...current, songId]
         );
+
+        setLikeCounts((current) => ({
+          ...current,
+          [songId]: (current[songId] || 0) + 1,
+        }));
 
         setMessage("Song added to your favourites!");
       }
@@ -311,6 +355,7 @@ export default function FeedClient({
           {songs.map((song) => {
             const isFavorite = favorites.includes(song.id);
             const isLoading = favoriteLoading === song.id;
+            const likeCount = likeCounts[song.id] || 0;
 
             return (
               <article
@@ -444,6 +489,17 @@ export default function FeedClient({
                           ? "❤️ Liked"
                           : "🤍 Like"}
                     </button>
+
+                    <span
+                      aria-label={`${likeCount} likes`}
+                      style={{
+                        color: "#f5d0fe",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ❤️ {likeCount} {likeCount === 1 ? "Like" : "Likes"}
+                    </span>
 
                     <button
                       type="button"
