@@ -12,6 +12,7 @@ type FeedSong = {
   audioUrl: string | null;
   artworkUrl: string | null;
   artistId: string;
+  recommendationReason: string;
 };
 
 export default function FeedClient({
@@ -52,7 +53,6 @@ export default function FeedClient({
 
         setFavorites((data || []).map((item) => item.track_id));
 
-        // Update this fan's personal music preferences.
         const { error: preferenceError } = await supabase.rpc(
           "update_my_music_preferences"
         );
@@ -97,6 +97,7 @@ export default function FeedClient({
         setFavorites((current) =>
           current.filter((id) => id !== songId)
         );
+
         setMessage("Song removed from your favourites.");
       } else {
         const { error } = await supabase
@@ -113,11 +114,11 @@ export default function FeedClient({
             ? current
             : [...current, songId]
         );
+
         setMessage("Song added to your favourites!");
       }
 
-      // Recalculate preferences after a Like or Unlike.
-      const { error: preferenceError } = await createClient().rpc(
+      const { error: preferenceError } = await supabase.rpc(
         "update_my_music_preferences"
       );
 
@@ -129,6 +130,7 @@ export default function FeedClient({
       }
     } catch (error) {
       console.error("MUSEK Like error:", error);
+
       setMessage(
         error instanceof Error
           ? "Could not update Like: " + error.message
@@ -150,6 +152,7 @@ export default function FeedClient({
     }
 
     const songId = listenSong.current;
+
     const seconds = Math.floor(
       (Date.now() - listenStart.current) / 1000
     );
@@ -171,7 +174,6 @@ export default function FeedClient({
       if (error) {
         console.error("MUSEK listening history error:", error);
       } else {
-        // Refresh genre preferences after recording listening activity.
         const { error: preferenceError } = await supabase.rpc(
           "update_my_music_preferences"
         );
@@ -356,6 +358,21 @@ export default function FeedClient({
 
                   <p style={{ color: "#ccc", fontSize: "14px" }}>
                     {song.genre}
+                  </p>
+
+                  <p
+                    style={{
+                      display: "inline-block",
+                      color: "#e9d5ff",
+                      background: "rgba(126,34,206,0.35)",
+                      border: "1px solid rgba(192,132,252,0.5)",
+                      borderRadius: "20px",
+                      padding: "7px 12px",
+                      fontSize: "12px",
+                      margin: "4px 0 12px",
+                    }}
+                  >
+                    ✨ {song.recommendationReason}
                   </p>
 
                   <div
