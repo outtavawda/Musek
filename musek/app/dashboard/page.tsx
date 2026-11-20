@@ -1,95 +1,126 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { signOut } from "../auth-actions";
-import ArtistInvitations from "./artist-invitations";
+padding: "14px",
+                            marginBottom: "10px",
+                            border:
+                              "1px solid rgba(255,255,255,0.12)",
+                            borderRadius: "10px",
+                          }}
+                        >
+                          <div>
+                            <strong>
+                              {index + 1}. {track.title}
+                            </strong>
 
-type Track = {
-  id: string;
-  title: string;
-  genre: string | null;
-  play_count: number | null;
-  status: string;
-};
+                            <p
+                              className="muted"
+                              style={{ margin: "5px 0 0" }}
+                            >
+                              {track.genre || "Music"}
+                            </p>
+                          </div>
 
-type PlayEvent = {
-  played_at: string;
-};
+                          <strong>
+                            {(track.play_count || 0).toLocaleString()} plays
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
-type Wallet = {
-  coin_balance: number;
-  total_coins_received: number;
-  total_earnings_cad: number;
-};
+        {/* ARTIST INVITATIONS */}
+        {accountType === "artist" && <ArtistInvitations />}
 
-type FanWallet = {
-  coin_balance: number;
-  total_coins_purchased: number;
-};
+        {/* PROFILE STATUS */}
+        <div
+          style={{
+            ...cardStyle,
+            marginTop: "36px",
+          }}
+        >
+          <p className="eyebrow">PROFILE STATUS</p>
 
-type CoinPurchase = {
-  id: string;
-  coins: number;
-  amount_cad: number;
-  status: string;
-  created_at: string;
-};
+          <h2>
+            {profile?.is_public
+              ? "Your profile is public"
+              : "Your profile is private"}
+          </h2>
 
-export default async function DashboardPage() {
-  const supabase = createClient();
+          <p className="muted">
+            {profile?.is_public
+              ? "Other MUSEK users can discover your public profile."
+              : "Your profile is hidden from public discovery. You can change this in Edit My Profile."}
+          </p>
+        </div>
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+        {/* EXPLORE MUSEK */}
+        <div style={{ marginTop: "32px" }}>
+          <p className="eyebrow">EXPLORE MUSEK</p>
+          <h2>Your music community</h2>
 
-  if (!user) redirect("/login");
+          <p className="muted">
+            Discover artists, listen to published songs and explore
+            record labels.
+          </p>
 
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("display_name, account_type, bio, is_public")
-    .eq("id", user.id)
-    .maybeSingle();
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "16px",
+            }}
+          >
+            <Link className="primaryButton" href="/feed">
+              ✨ Open Personalised Feed →
+            </Link>
 
-  const displayName =
-    profile?.display_name ||
-    user.user_metadata?.display_name ||
-    user.email;
+            {accountType === "fan" && (
+              <Link href="/following">
+                🎧 Following Artists →
+              </Link>
+            )}
 
-  const accountType =
-    profile?.account_type ||
-    user.user_metadata?.account_type ||
-    "fan";
+            <Link href="/discover-music">
+              Listen to Music →
+            </Link>
 
-  const accountLabel =
-    accountType === "artist"
-      ? "Artist"
-      : accountType === "label"
-      ? "Record Label"
-      : "Fan";
+            <Link href="/favorites">
+              View My Favourites →
+            </Link>
 
-  let wallet: Wallet | null = null;
-  let walletError = "";
+            {accountType === "fan" && (
+              <Link href="/gift-history">
+                View Gift History →
+              </Link>
+            )}
 
-  let fanWallet: FanWallet | null = null;
-  let fanWalletError = "";
+            {accountType === "artist" && (
+              <Link href="/gift-history">
+                View Gifts Received →
+              </Link>
+            )}
 
-  let coinPurchases: CoinPurchase[] = [];
+            {accountType === "artist" && (
+              <Link href="/withdrawals">
+                Withdraw Earnings →
+              </Link>
+            )}
 
-  let tracks: Track[] = [];
-  let playEvents: PlayEvent[] = [];
-  let analyticsError = "";
+            <Link href="/discover">
+              Explore Artists →
+            </Link>
 
-  // FAN WALLET
-  if (accountType === "fan") {
-    const { data: fanWalletData, error: fanWalletQueryError } =
-      await supabase
-        .from("fan_coin_wallets")
-        .select("coin_balance, total_coins_purchased")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-    if (fanWalletQueryError) {
-      fanWalletError = fanWalletQueryError.message;
-    } else if (fanWalletData) {
-      fanWallet = fanWalletData as FanWallet;
-    }
+            {accountType === "artist" && (
+              <Link href="/my-music">
+                Manage My Music →
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
