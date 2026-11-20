@@ -248,6 +248,10 @@ export default async function DashboardPage() {
             marginTop: "24px",
           }}
         >
+          <Link className="primaryButton" href="/feed">
+            ✨ Personalised Music Feed
+          </Link>
+
           <Link className="primaryButton" href="/discover-music">
             🎵 Discover Music
           </Link>
@@ -769,6 +773,10 @@ export default async function DashboardPage() {
               gap: "16px",
             }}
           >
+            <Link className="primaryButton" href="/feed">
+              ✨ Open Personalised Feed →
+            </Link>
+
             <Link href="/discover-music">
               Listen to Music →
             </Link>
