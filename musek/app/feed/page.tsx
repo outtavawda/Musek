@@ -6,12 +6,10 @@ import FeedClient from "./feed-client";
 export default async function FeedPage() {
   const supabase = createClient();
 
-  // Identify the signed-in fan.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Load the fan's private music preferences.
   let preferredGenres: string[] = [];
 
   if (user) {
@@ -30,7 +28,6 @@ export default async function FeedPage() {
       .filter(Boolean);
   }
 
-  // Load a larger selection of published songs.
   const { data: tracks, error: tracksError } = await supabase
     .from("music_tracks")
     .select(
@@ -46,7 +43,6 @@ export default async function FeedPage() {
 
   const availableTracks = tracks || [];
 
-  // Separate familiar music from exploration music.
   const familiarTracks = availableTracks
     .filter((track) =>
       preferredGenres.includes(
@@ -68,8 +64,6 @@ export default async function FeedPage() {
       (a, b) => (a.play_count || 0) - (b.play_count || 0)
     );
 
-  // Build a 70/30 personalised feed.
-  // Seven familiar songs followed by three exploration songs.
   const selectedTracks: typeof availableTracks = [];
 
   const familiarQueue = [...familiarTracks];
@@ -98,11 +92,9 @@ export default async function FeedPage() {
       }
     }
   } else {
-    // New fans or fans without preferences see popular music first.
     selectedTracks.push(...availableTracks.slice(0, 30));
   }
 
-  // Load artist information for the selected songs.
   const artistIds = Array.from(
     new Set(selectedTracks.map((track) => track.artist_id))
   );
@@ -115,7 +107,6 @@ export default async function FeedPage() {
           .in("id", artistIds)
       : { data: [] };
 
-  // Generate secure playback and artwork URLs.
   const songs = await Promise.all(
     selectedTracks.map(async (track) => {
       const artist = (artists || []).find(
@@ -138,6 +129,20 @@ export default async function FeedPage() {
         }
       }
 
+      const genre = track.genre || "Music";
+
+      const isFamiliar = preferredGenres.includes(
+        genre.trim().toLowerCase()
+      );
+
+      let recommendationReason = "Popular on MUSEK";
+
+      if (preferredGenres.length > 0) {
+        recommendationReason = isFamiliar
+          ? `Because you enjoy ${genre}`
+          : "Discover something new";
+      }
+
       return {
         id: track.id,
         title: track.title,
@@ -145,10 +150,11 @@ export default async function FeedPage() {
           artist?.artist_name ||
           artist?.display_name ||
           "MUSEK Artist",
-        genre: track.genre || "Music",
+        genre,
         audioUrl: audio?.signedUrl || null,
         artworkUrl,
         artistId: track.artist_id,
+        recommendationReason,
       };
     })
   );
