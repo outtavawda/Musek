@@ -14,6 +14,7 @@ export default async function FeedPage() {
   let preferredArtistIds: string[] = [];
 
   if (user) {
+    // Load genres the fan has explicitly selected.
     const { data: preferences, error } = await supabase
       .from("user_music_preferences")
       .select("preferred_genres")
@@ -28,7 +29,7 @@ export default async function FeedPage() {
       .map((genre: string) => genre.trim().toLowerCase())
       .filter(Boolean);
 
-    // Load the fan's listening history.
+    // Load recent listening activity.
     const { data: listeningEvents, error: listeningError } =
       await supabase
         .from("music_listening_events")
@@ -41,7 +42,7 @@ export default async function FeedPage() {
       console.error("MUSEK listening history error:", listeningError);
     }
 
-    // Load the fan's favourite songs.
+    // Load songs the fan has liked.
     const { data: favourites, error: favouritesError } =
       await supabase
         .from("favorite_tracks")
@@ -51,9 +52,6 @@ export default async function FeedPage() {
     if (favouritesError) {
       console.error("MUSEK favourites loading error:", favouritesError);
     }
-
-    // Give listening activity and favourites a score.
-    const artistScores: Record<string, number> = {};
 
     const listenedTrackIds = Array.from(
       new Set(
@@ -71,54 +69,94 @@ export default async function FeedPage() {
       new Set([...listenedTrackIds, ...favouriteTrackIds])
     );
 
+    const artistScores: Record<string, number> = {};
+    const genreScores: Record<string, number> = {};
+
     if (knownTrackIds.length > 0) {
+      // Find the artists and genres connected to those songs.
       const { data: knownTracks, error: knownTracksError } =
         await supabase
           .from("music_tracks")
-          .select("id, artist_id")
+          .select("id, artist_id, genre")
           .in("id", knownTrackIds);
 
       if (knownTracksError) {
-        console.error("MUSEK artist preference error:", knownTracksError);
+        console.error("MUSEK taste analysis error:", knownTracksError);
       }
 
-      const artistByTrack = new Map(
-        (knownTracks || []).map((track) => [
-          track.id,
-          track.artist_id,
-        ])
-      );
+      const artistByTrack = new Map<string, string>();
+      const genreByTrack = new Map<string, string>();
 
+      (knownTracks || []).forEach((track) => {
+        artistByTrack.set(track.id, track.artist_id);
+
+        if (track.genre) {
+          genreByTrack.set(
+            track.id,
+            track.genre.trim().toLowerCase()
+          );
+        }
+      });
+
+      // Listening activity helps MUSEK understand what fans enjoy.
       for (const event of listeningEvents || []) {
-        if ((event.listened_seconds || 0) <= 0) continue;
+        const seconds = event.listened_seconds || 0;
+
+        if (seconds <= 0) continue;
 
         const artistId = artistByTrack.get(event.track_id);
+        const genre = genreByTrack.get(event.track_id);
+        const score = Math.min(seconds, 300);
 
         if (artistId) {
           artistScores[artistId] =
-            (artistScores[artistId] || 0) +
-            Math.min(event.listened_seconds, 300);
+            (artistScores[artistId] || 0) + score;
+        }
+
+        if (genre) {
+          genreScores[genre] =
+            (genreScores[genre] || 0) + score;
         }
       }
 
+      // Liked songs receive an extra recommendation boost.
       for (const trackId of favouriteTrackIds) {
         const artistId = artistByTrack.get(trackId);
+        const genre = genreByTrack.get(trackId);
 
         if (artistId) {
           artistScores[artistId] =
             (artistScores[artistId] || 0) + 300;
         }
+
+        if (genre) {
+          genreScores[genre] =
+            (genreScores[genre] || 0) + 300;
+        }
       }
     }
 
-    // Recognise artists with the strongest fan engagement.
+    // Identify artists the fan engages with most.
     preferredArtistIds = Object.entries(artistScores)
       .sort((a, b) => b[1] - a[1])
       .filter(([, score]) => score >= 30)
       .slice(0, 20)
       .map(([artistId]) => artistId);
+
+    // Identify genres the fan enjoys.
+    const learnedGenres = Object.entries(genreScores)
+      .sort((a, b) => b[1] - a[1])
+      .filter(([, score]) => score >= 30)
+      .slice(0, 10)
+      .map(([genre]) => genre);
+
+    // Combine selected genres with genres learned from behaviour.
+    preferredGenres = Array.from(
+      new Set([...preferredGenres, ...learnedGenres])
+    );
   }
 
+  // Load published music available for discovery.
   const { data: tracks, error: tracksError } = await supabase
     .from("music_tracks")
     .select(
@@ -134,7 +172,7 @@ export default async function FeedPage() {
 
   const availableTracks = tracks || [];
 
-  // Familiar music includes preferred genres and preferred artists.
+  // Familiar music: genres and artists the fan already enjoys.
   const familiarTracks = availableTracks
     .filter((track) => {
       const genre = (track.genre || "").trim().toLowerCase();
@@ -144,10 +182,10 @@ export default async function FeedPage() {
         preferredArtistIds.includes(track.artist_id)
       );
     })
-    .sort(
-      (a, b) => (b.play_count || 0) - (a.play_count || 0)
-    );
+    .sort((a, b) => (b.play_count || 0) - (a.play_count || 0));
 
+  // Exploration music: introduce artists and genres the fan
+  // has not engaged with yet.
   const explorationTracks = availableTracks
     .filter((track) => {
       const genre = (track.genre || "").trim().toLowerCase();
@@ -157,15 +195,14 @@ export default async function FeedPage() {
         !preferredArtistIds.includes(track.artist_id)
       );
     })
-    .sort(
-      (a, b) => (a.play_count || 0) - (b.play_count || 0)
-    );
+    .sort((a, b) => (b.play_count || 0) - (a.play_count || 0));
 
   const selectedTracks: typeof availableTracks = [];
 
   const familiarQueue = [...familiarTracks];
   const explorationQueue = [...explorationTracks];
 
+  // Aim for 70% familiar music and 30% new discoveries.
   if (preferredGenres.length > 0 || preferredArtistIds.length > 0) {
     for (let i = 0; i < 30; i++) {
       const shouldUseFamiliar = i % 10 < 7;
@@ -192,6 +229,7 @@ export default async function FeedPage() {
     selectedTracks.push(...availableTracks.slice(0, 30));
   }
 
+  // Load artist profiles for the selected songs.
   const artistIds = Array.from(
     new Set(selectedTracks.map((track) => track.artist_id))
   );
@@ -204,6 +242,7 @@ export default async function FeedPage() {
           .in("id", artistIds)
       : { data: [] };
 
+  // Generate playable audio and artwork URLs.
   const songs = await Promise.all(
     selectedTracks.map(async (track) => {
       const artist = (artists || []).find(
@@ -227,9 +266,12 @@ export default async function FeedPage() {
       }
 
       const genre = track.genre || "Music";
+      const normalizedGenre = genre.trim().toLowerCase();
+
       const isFamiliarGenre = preferredGenres.includes(
-        genre.trim().toLowerCase()
+        normalizedGenre
       );
+
       const isPreferredArtist = preferredArtistIds.includes(
         track.artist_id
       );
