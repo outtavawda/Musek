@@ -10,6 +10,7 @@ export default function FollowArtist({
   artistId: string;
 }) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [isFan, setIsFan] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,25 +22,42 @@ export default function FollowArtist({
 
       const {
         data: { user },
+        error: authError,
       } = await supabase.auth.getUser();
 
-      if (!user) {
+      if (authError) {
+        setMessage("Login check failed: " + authError.message);
         setLoading(false);
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("account_type")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profile?.account_type !== "fan") {
+      if (!user) {
+        setMessage("Please log in with a Fan account to follow artists.");
         setLoading(false);
         return;
       }
 
       setUserId(user.id);
+
+      const { data: profile, error: profileError } = await supabase
+        .from("user_profiles")
+        .select("account_type")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        setMessage("Profile check failed: " + profileError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (profile?.account_type !== "fan") {
+        setMessage("Following artists is available to Fan accounts.");
+        setLoading(false);
+        return;
+      }
+
+      setIsFan(true);
 
       const { data, error } = await supabase
         .from("artist_follows")
@@ -48,7 +66,9 @@ export default function FollowArtist({
         .eq("artist_id", artistId)
         .maybeSingle();
 
-      if (!error) {
+      if (error) {
+        setMessage("Follow check failed: " + error.message);
+      } else {
         setIsFollowing(!!data);
       }
 
@@ -80,7 +100,17 @@ export default function FollowArtist({
     setSaving(false);
   }
 
-  if (loading || !userId) return null;
+  if (loading) {
+    return <p className="muted">Checking Follow status...</p>;
+  }
+
+  if (!isFan) {
+    return (
+      <p className="muted" style={{ margin: "20px 0" }}>
+        {message}
+      </p>
+    );
+  }
 
   return (
     <div style={{ margin: "20px 0" }}>
