@@ -51,6 +51,18 @@ export default function FeedClient({
         if (error) throw error;
 
         setFavorites((data || []).map((item) => item.track_id));
+
+        // Update this fan's personal music preferences.
+        const { error: preferenceError } = await supabase.rpc(
+          "update_my_music_preferences"
+        );
+
+        if (preferenceError) {
+          console.error(
+            "MUSEK preference update error:",
+            preferenceError
+          );
+        }
       } catch (error) {
         console.error("MUSEK favourites loading error:", error);
         setMessage("Could not load your saved songs.");
@@ -103,6 +115,18 @@ export default function FeedClient({
         );
         setMessage("Song added to your favourites!");
       }
+
+      // Recalculate preferences after a Like or Unlike.
+      const { error: preferenceError } = await createClient().rpc(
+        "update_my_music_preferences"
+      );
+
+      if (preferenceError) {
+        console.error(
+          "MUSEK preference update error:",
+          preferenceError
+        );
+      }
     } catch (error) {
       console.error("MUSEK Like error:", error);
       setMessage(
@@ -146,6 +170,18 @@ export default function FeedClient({
 
       if (error) {
         console.error("MUSEK listening history error:", error);
+      } else {
+        // Refresh genre preferences after recording listening activity.
+        const { error: preferenceError } = await supabase.rpc(
+          "update_my_music_preferences"
+        );
+
+        if (preferenceError) {
+          console.error(
+            "MUSEK preference update error:",
+            preferenceError
+          );
+        }
       }
     } catch (error) {
       console.error("MUSEK listening history error:", error);
