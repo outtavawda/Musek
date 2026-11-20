@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import SongComments from "./song-comments";
 
 type FeedSong = {
   id: string;
@@ -369,6 +370,9 @@ export default function FeedClient({
                     bottom: "25px",
                     left: "20px",
                     right: "20px",
+                    maxHeight: "calc(100% - 30px)",
+                    overflowY: "auto",
+                    paddingRight: "4px",
                   }}
                 >
                   <p
@@ -494,6 +498,8 @@ export default function FeedClient({
                       }}
                     />
                   )}
+
+                  <SongComments trackId={song.id} />
                 </div>
               </article>
             );
