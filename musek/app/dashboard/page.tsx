@@ -1,126 +1,207 @@
-                            padding: "14px",
-                            marginBottom: "10px",
-                            border:
-                              "1px solid rgba(255,255,255,0.12)",
-                            borderRadius: "10px",
-                          }}
-                        >
-                          <div>
-                            <strong>
-                              {index + 1}. {track.title}
-                            </strong>
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { signOut } from "../auth-actions";
+import ArtistInvitations from "./artist-invitations";
 
-                            <p
-                              className="muted"
-                              style={{ margin: "5px 0 0" }}
-                            >
-                              {track.genre || "Music"}
-                            </p>
-                          </div>
+type Track = {
+  id: string;
+  title: string;
+  genre: string | null;
+  play_count: number | null;
+  status: string;
+};
 
-                          <strong>
-                            {(track.play_count || 0).toLocaleString()} plays
-                          </strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        )}
+type PlayEvent = {
+  played_at: string;
+};
 
-        {/* ARTIST INVITATIONS */}
-        {accountType === "artist" && <ArtistInvitations />}
+type Wallet = {
+  coin_balance: number;
+  total_coins_received: number;
+  total_earnings_cad: number;
+};
 
-        {/* PROFILE STATUS */}
-        <div
-          style={{
-            ...cardStyle,
-            marginTop: "36px",
-          }}
-        >
-          <p className="eyebrow">PROFILE STATUS</p>
+type FanWallet = {
+  coin_balance: number;
+  total_coins_purchased: number;
+};
 
-          <h2>
-            {profile?.is_public
-              ? "Your profile is public"
-              : "Your profile is private"}
-          </h2>
+type CoinPurchase = {
+  id: string;
+  coins: number;
+  amount_cad: number;
+  status: string;
+  created_at: string;
+};
 
-          <p className="muted">
-            {profile?.is_public
-              ? "Other MUSEK users can discover your public profile."
-              : "Your profile is hidden from public discovery. You can change this in Edit My Profile."}
-          </p>
-        </div>
+export default async function DashboardPage() {
+  const supabase = createClient();
 
-        {/* EXPLORE MUSEK */}
-        <div style={{ marginTop: "32px" }}>
-          <p className="eyebrow">EXPLORE MUSEK</p>
-          <h2>Your music community</h2>
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-          <p className="muted">
-            Discover artists, listen to published songs and explore
-            record labels.
-          </p>
+  if (!user) redirect("/login");
 
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "16px",
-            }}
-          >
-            <Link className="primaryButton" href="/feed">
-              ✨ Open Personalised Feed →
-            </Link>
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("display_name, account_type, bio, is_public")
+    .eq("id", user.id)
+    .maybeSingle();
 
-            {accountType === "fan" && (
-              <Link href="/following">
-                🎧 Following Artists →
-              </Link>
-            )}
+  const displayName =
+    profile?.display_name ||
+    user.user_metadata?.display_name ||
+    user.email;
 
-            <Link href="/discover-music">
-              Listen to Music →
-            </Link>
+  const accountType =
+    profile?.account_type ||
+    user.user_metadata?.account_type ||
+    "fan";
 
-            <Link href="/favorites">
-              View My Favourites →
-            </Link>
+  const accountLabel =
+    accountType === "artist"
+      ? "Artist"
+      : accountType === "label"
+      ? "Record Label"
+      : "Fan";
 
-            {accountType === "fan" && (
-              <Link href="/gift-history">
-                View Gift History →
-              </Link>
-            )}
+  let wallet: Wallet | null = null;
+  let walletError = "";
 
-            {accountType === "artist" && (
-              <Link href="/gift-history">
-                View Gifts Received →
-              </Link>
-            )}
+  let fanWallet: FanWallet | null = null;
+  let fanWalletError = "";
 
-            {accountType === "artist" && (
-              <Link href="/withdrawals">
-                Withdraw Earnings →
-              </Link>
-            )}
+  let coinPurchases: CoinPurchase[] = [];
 
-            <Link href="/discover">
-              Explore Artists →
-            </Link>
+  let tracks: Track[] = [];
+  let playEvents: PlayEvent[] = [];
+  let analyticsError = "";
 
-            {accountType === "artist" && (
-              <Link href="/my-music">
-                Manage My Music →
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
-    </main>
+  // FAN WALLET
+  if (accountType === "fan") {
+    const { data: fanWalletData, error: fanWalletQueryError } =
+      await supabase
+        .from("fan_coin_wallets")
+        .select("coin_balance, total_coins_purchased")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (fanWalletQueryError) {
+      fanWalletError = fanWalletQueryError.message;
+    } else if (fanWalletData) {
+      fanWallet = fanWalletData as FanWallet;
+    }
+
+    const { data: purchases, error: purchasesError } =
+      await supabase
+        .from("coin_purchases")
+        .select("id, coins, amount_cad, status, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+    if (purchasesError) {
+      fanWalletError = fanWalletError || purchasesError.message;
+    } else {
+      coinPurchases = (purchases || []) as CoinPurchase[];
+    }
+  }
+
+  // ARTIST WALLET AND ANALYTICS
+  if (accountType === "artist") {
+    const { data: walletData, error: walletQueryError } =
+      await supabase
+        .from("creator_wallets")
+        .select(
+          "coin_balance, total_coins_received, total_earnings_cad"
+        )
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (walletQueryError) {
+      walletError = walletQueryError.message;
+    } else if (walletData) {
+      wallet = walletData as Wallet;
+    } else {
+      walletError = "No artist wallet was found for this account.";
+    }
+
+    const { data, error } = await supabase
+      .from("music_tracks")
+      .select("id, title, genre, play_count, status")
+      .eq("artist_id", user.id)
+      .eq("status", "published");
+
+    if (error) {
+      analyticsError = error.message;
+    } else {
+      tracks = (data || []) as Track[];
+    }
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const { data: events, error: eventsError } = await supabase
+      .from("track_play_events")
+      .select("played_at")
+      .eq("artist_id", user.id)
+      .gte("played_at", sixMonthsAgo.toISOString())
+      .order("played_at", { ascending: true });
+
+    if (eventsError) {
+      analyticsError = analyticsError || eventsError.message;
+    } else {
+      playEvents = (events || []) as PlayEvent[];
+    }
+  }
+
+  const totalPlays = tracks.reduce(
+    (total, track) => total + (track.play_count || 0),
+    0
   );
-}
+
+  const publishedSongs = tracks.length;
+
+  const rankedTracks = [...tracks].sort(
+    (a, b) => (b.play_count || 0) - (a.play_count || 0)
+  );
+
+  const mostPlayedSong = rankedTracks[0];
+
+  const monthlyStats = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setHours(0, 0, 0, 0);
+    date.setMonth(date.getMonth() - (5 - index));
+
+    const plays = playEvents.filter((event) => {
+      const playedDate = new Date(event.played_at);
+
+      return (
+        playedDate.getMonth() === date.getMonth() &&
+        playedDate.getFullYear() === date.getFullYear()
+      );
+    }).length;
+
+    return {
+      label: date.toLocaleDateString("en-CA", {
+        month: "short",
+        year: "2-digit",
+      }),
+      plays,
+    };
+  });
+
+  const highestMonthlyPlays = Math.max(
+    ...monthlyStats.map((month) => month.plays),
+    1
+  );
+
+  const totalMonthlyPlays = monthlyStats.reduce(
+    (total, month) => total + month.plays,
+    0
+  );
