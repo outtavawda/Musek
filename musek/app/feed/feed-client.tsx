@@ -1,6 +1,9 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
 type FeedSong = {
   id: string;
   title: string;
@@ -16,6 +19,103 @@ export default function FeedClient({
 }: {
   songs: FeedSong[];
 }) {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function loadFavorites() {
+      try {
+        const supabase = createClient();
+
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
+
+        if (authError) throw authError;
+
+        if (!user) return;
+
+        setUserId(user.id);
+
+        const { data, error } = await supabase
+          .from("favorite_tracks")
+          .select("track_id")
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+
+        setFavorites((data || []).map((item) => item.track_id));
+      } catch (error) {
+        console.error("MUSEK favourites loading error:", error);
+        setMessage("Could not load your saved songs.");
+      }
+    }
+
+    loadFavorites();
+  }, []);
+
+  async function toggleFavorite(songId: string) {
+    if (!userId) {
+      setMessage("Please log in to like and save songs.");
+      return;
+    }
+
+    setFavoriteLoading(songId);
+    setMessage("");
+
+    try {
+      const supabase = createClient();
+      const alreadyFavorite = favorites.includes(songId);
+
+      if (alreadyFavorite) {
+        const { error } = await supabase
+          .from("favorite_tracks")
+          .delete()
+          .eq("user_id", userId)
+          .eq("track_id", songId);
+
+        if (error) throw error;
+
+        setFavorites((current) =>
+          current.filter((id) => id !== songId)
+        );
+
+        setMessage("Song removed from your favourites.");
+      } else {
+        const { error } = await supabase
+          .from("favorite_tracks")
+          .insert({
+            user_id: userId,
+            track_id: songId,
+          });
+
+        if (error) throw error;
+
+        setFavorites((current) =>
+          current.includes(songId)
+            ? current
+            : [...current, songId]
+        );
+
+        setMessage("Song added to your favourites!");
+      }
+    } catch (error) {
+      console.error("MUSEK Like error:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong.";
+
+      setMessage("Could not update Like: " + errorMessage);
+    } finally {
+      setFavoriteLoading(null);
+    }
+  }
+
   return (
     <main
       style={{
@@ -30,6 +130,7 @@ export default function FeedClient({
         <h1 style={{ fontSize: "30px", margin: 0 }}>
           MUSEK<span style={{ color: "#a855f7" }}>.</span>
         </h1>
+
         <p style={{ color: "#aaa", margin: "5px 0" }}>
           Your music. Your discovery.
         </p>
@@ -46,6 +147,19 @@ export default function FeedClient({
       >
         FOR YOU
       </div>
+
+      {message && (
+        <p
+          role="status"
+          style={{
+            textAlign: "center",
+            color: "#d8b4fe",
+            fontSize: "14px",
+          }}
+        >
+          {message}
+        </p>
+      )}
 
       {songs.length === 0 ? (
         <p style={{ textAlign: "center", color: "#aaa" }}>
@@ -67,120 +181,156 @@ export default function FeedClient({
             scrollbarWidth: "none",
           }}
         >
-          {songs.map((song) => (
-            <article
-              key={song.id}
-              style={{
-                position: "relative",
-                flex: "0 0 100%",
-                height: "100%",
-                minHeight: "500px",
-                borderRadius: "20px",
-                overflow: "hidden",
-                background: "#191522",
-                border: "1px solid #43246a",
-                scrollSnapAlign: "start",
-                scrollSnapStop: "always",
-              }}
-            >
-              {song.artworkUrl ? (
-                <img
-                  src={song.artworkUrl}
-                  alt={`${song.title} cover`}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              ) : (
+          {songs.map((song) => {
+            const isFavorite = favorites.includes(song.id);
+            const isLoading = favoriteLoading === song.id;
+
+            return (
+              <article
+                key={song.id}
+                style={{
+                  position: "relative",
+                  flex: "0 0 100%",
+                  height: "100%",
+                  minHeight: "500px",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  background: "#191522",
+                  border: "1px solid #43246a",
+                  scrollSnapAlign: "start",
+                  scrollSnapStop: "always",
+                }}
+              >
+                {song.artworkUrl ? (
+                  <img
+                    src={song.artworkUrl}
+                    alt={`${song.title} cover`}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "grid",
+                      placeItems: "center",
+                      fontSize: "100px",
+                      background:
+                        "linear-gradient(135deg, #24103e, #111)",
+                    }}
+                  >
+                    🎵
+                  </div>
+                )}
+
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: "100px",
                     background:
-                      "linear-gradient(135deg, #24103e, #111)",
+                      "linear-gradient(transparent 15%, rgba(0,0,0,.9) 100%)",
                   }}
-                >
-                  🎵
-                </div>
-              )}
+                />
 
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(transparent 15%, rgba(0,0,0,.9) 100%)",
-                }}
-              />
-
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "25px",
-                  left: "20px",
-                  right: "20px",
-                }}
-              >
-                <p
+                <div
                   style={{
-                    color: "#d8b4fe",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    letterSpacing: "2px",
+                    position: "absolute",
+                    bottom: "25px",
+                    left: "20px",
+                    right: "20px",
                   }}
                 >
-                  MUSEK DISCOVERY
-                </p>
-
-                <h2 style={{ fontSize: "28px", margin: "8px 0" }}>
-                  {song.title}
-                </h2>
-
-                <p style={{ color: "#eee", margin: "5px 0" }}>
-                  {song.artistName}
-                </p>
-
-                <p style={{ color: "#ccc", fontSize: "14px" }}>
-                  {song.genre}
-                </p>
-
-                <a
-                  href={`/artist/${song.artistId}`}
-                  style={{
-                    display: "inline-block",
-                    margin: "12px 0",
-                    padding: "11px 18px",
-                    border: "1px solid #a855f7",
-                    borderRadius: "25px",
-                    color: "white",
-                    textDecoration: "none",
-                  }}
-                >
-                  View Artist Profile →
-                </a>
-
-                {song.audioUrl && (
-                  <audio
-                    controls
-                    preload="none"
-                    src={song.audioUrl}
+                  <p
                     style={{
-                      display: "block",
-                      width: "100%",
-                      marginTop: "12px",
+                      color: "#d8b4fe",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      letterSpacing: "2px",
                     }}
-                  />
-                )}
-              </div>
-            </article>
-          ))}
+                  >
+                    MUSEK DISCOVERY
+                  </p>
+
+                  <h2 style={{ fontSize: "28px", margin: "8px 0" }}>
+                    {song.title}
+                  </h2>
+
+                  <p style={{ color: "#eee", margin: "5px 0" }}>
+                    {song.artistName}
+                  </p>
+
+                  <p style={{ color: "#ccc", fontSize: "14px" }}>
+                    {song.genre}
+                  </p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      margin: "12px 0",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleFavorite(song.id)}
+                      disabled={isLoading}
+                      aria-pressed={isFavorite}
+                      style={{
+                        padding: "11px 18px",
+                        border: "1px solid #a855f7",
+                        borderRadius: "25px",
+                        background: isFavorite ? "#6b21a8" : "#17101f",
+                        color: "white",
+                        fontWeight: "bold",
+                        cursor: isLoading ? "wait" : "pointer",
+                        opacity: isLoading ? 0.6 : 1,
+                      }}
+                    >
+                      {isLoading
+                        ? "Saving..."
+                        : isFavorite
+                          ? "❤️ Liked"
+                          : "🤍 Like"}
+                    </button>
+
+                    <a
+                      href={`/artist/${song.artistId}`}
+                      style={{
+                        padding: "11px 18px",
+                        border: "1px solid #a855f7",
+                        borderRadius: "25px",
+                        color: "white",
+                        textDecoration: "none",
+                      }}
+                    >
+                      View Artist →
+                    </a>
+                  </div>
+
+                  {song.audioUrl && (
+                    <audio
+                      controls
+                      preload="none"
+                      src={song.audioUrl}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        marginTop: "12px",
+                      }}
+                    />
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </main>
