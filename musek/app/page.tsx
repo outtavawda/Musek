@@ -80,10 +80,8 @@ export default async function HomePage() {
 
       if (!signedUrlData?.signedUrl) return null;
 
-      // Use the artist picture as a fallback.
       let artworkUrl = artist?.avatar_url || null;
 
-      // Prefer the song's uploaded cover art when available.
       if (track.cover_art_path) {
         const { data: coverData } = await supabase.storage
           .from("song-cover-art")
@@ -118,6 +116,9 @@ export default async function HomePage() {
         </Link>
 
         <div className="navLinks">
+          <Link href="/feed" className="navButton">
+            Feed
+          </Link>
           <Link href="/discover">Discover</Link>
           <a href="#creators">For creators</a>
           <Link href="/login">Login</Link>
@@ -221,6 +222,12 @@ export default async function HomePage() {
             Explore all music →
           </Link>
         </p>
+
+        <div style={{ marginTop: "30px" }}>
+          <Link href="/feed" className="primaryButton">
+            Explore Your Music Feed ↗
+          </Link>
+        </div>
       </section>
 
       {/* FEATURED ARTISTS */}
