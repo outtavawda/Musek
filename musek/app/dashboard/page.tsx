@@ -1,4 +1,4 @@
-padding: "14px",
+                            padding: "14px",
                             marginBottom: "10px",
                             border:
                               "1px solid rgba(255,255,255,0.12)",
