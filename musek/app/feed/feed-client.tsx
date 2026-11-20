@@ -141,6 +141,40 @@ export default function FeedClient({
     }
   }
 
+  async function shareSong(song: FeedSong) {
+    const shareUrl =
+      `${window.location.origin}/artist/${song.artistId}`;
+
+    const shareData = {
+      title: `${song.title} - ${song.artistName} | MUSEK`,
+      text: `Listen to ${song.title} by ${song.artistName} on MUSEK!`,
+      url: shareUrl,
+    };
+
+    setMessage("");
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setMessage("Thanks for sharing MUSEK!");
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        setMessage("Song link copied! Share it with your friends.");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setMessage("Song link copied! Share it with your friends.");
+      } catch {
+        setMessage("Could not share the link. Please try again.");
+      }
+    }
+  }
+
   async function saveListeningTime() {
     if (
       !userId ||
@@ -405,6 +439,22 @@ export default function FeedClient({
                         : isFavorite
                           ? "❤️ Liked"
                           : "🤍 Like"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => shareSong(song)}
+                      style={{
+                        padding: "11px 18px",
+                        border: "1px solid #a855f7",
+                        borderRadius: "25px",
+                        background: "#17101f",
+                        color: "white",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ↗ Share Song
                     </button>
 
                     <a
