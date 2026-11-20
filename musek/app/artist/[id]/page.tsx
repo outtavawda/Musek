@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import MusicPlayer from "../../discover-music/music-player";
 import SendGift from "./send-gift";
+import FollowArtist from "./follow-artist";
 
 export default async function ArtistPage({
   params,
@@ -104,6 +105,8 @@ export default async function ArtistPage({
         {artist.location && (
           <p className="muted">{artist.location}</p>
         )}
+
+        <FollowArtist artistId={artist.id} />
 
         <h2>About the artist</h2>
 
