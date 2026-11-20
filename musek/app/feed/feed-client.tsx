@@ -24,6 +24,7 @@ export default function FeedClient({
   const [userId, setUserId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
@@ -60,10 +61,7 @@ export default function FeedClient({
         );
 
         if (preferenceError) {
-          console.error(
-            "MUSEK preference update error:",
-            preferenceError
-          );
+          console.error("MUSEK preference update error:", preferenceError);
         }
       } catch (error) {
         console.error("MUSEK favourites loading error:", error);
@@ -75,37 +73,65 @@ export default function FeedClient({
   }, []);
 
   useEffect(() => {
-    async function loadLikeCounts() {
+    async function loadCounts() {
       if (songs.length === 0) return;
 
+      const supabase = createClient();
+      const trackIds = songs.map((song) => song.id);
+
       try {
-        const supabase = createClient();
-
-        const { data, error } = await supabase.rpc(
+        const { data: likes, error: likesError } = await supabase.rpc(
           "get_track_like_counts",
-          {
-            p_track_ids: songs.map((song) => song.id),
-          }
+          { p_track_ids: trackIds }
         );
 
-        if (error) throw error;
+        if (likesError) throw likesError;
 
-        const counts: Record<string, number> = {};
+        const newLikeCounts: Record<string, number> = {};
 
-        (data || []).forEach(
+        (likes || []).forEach(
           (item: { track_id: string; like_count: number | string }) => {
-            counts[item.track_id] = Number(item.like_count) || 0;
+            newLikeCounts[item.track_id] = Number(item.like_count) || 0;
           }
         );
 
-        setLikeCounts(counts);
+        setLikeCounts(newLikeCounts);
       } catch (error) {
         console.error("MUSEK public Like counts error:", error);
       }
+
+      try {
+        const { data: comments, error: commentsError } = await supabase.rpc(
+          "get_track_comment_counts",
+          { p_track_ids: trackIds }
+        );
+
+        if (commentsError) throw commentsError;
+
+        const newCommentCounts: Record<string, number> = {};
+
+        (comments || []).forEach(
+          (item: { track_id: string; comment_count: number | string }) => {
+            newCommentCounts[item.track_id] =
+              Number(item.comment_count) || 0;
+          }
+        );
+
+        setCommentCounts(newCommentCounts);
+      } catch (error) {
+        console.error("MUSEK public comment counts error:", error);
+      }
     }
 
-    loadLikeCounts();
+    loadCounts();
   }, [songs]);
+
+  function updateCommentCount(trackId: string, count: number) {
+    setCommentCounts((current) => ({
+      ...current,
+      [trackId]: Math.max(0, count),
+    }));
+  }
 
   async function toggleFavorite(songId: string) {
     if (!userId) {
@@ -150,9 +176,7 @@ export default function FeedClient({
         if (error) throw error;
 
         setFavorites((current) =>
-          current.includes(songId)
-            ? current
-            : [...current, songId]
+          current.includes(songId) ? current : [...current, songId]
         );
 
         setLikeCounts((current) => ({
@@ -168,10 +192,7 @@ export default function FeedClient({
       );
 
       if (preferenceError) {
-        console.error(
-          "MUSEK preference update error:",
-          preferenceError
-        );
+        console.error("MUSEK preference update error:", preferenceError);
       }
     } catch (error) {
       console.error("MUSEK Like error:", error);
@@ -187,8 +208,7 @@ export default function FeedClient({
   }
 
   async function shareSong(song: FeedSong) {
-    const shareUrl =
-      `${window.location.origin}/artist/${song.artistId}`;
+    const shareUrl = `${window.location.origin}/artist/${song.artistId}`;
 
     const shareData = {
       title: `${song.title} - ${song.artistName} | MUSEK`,
@@ -207,9 +227,7 @@ export default function FeedClient({
         setMessage("Song link copied! Share it with your friends.");
       }
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        return;
-      }
+      if (error instanceof Error && error.name === "AbortError") return;
 
       try {
         await navigator.clipboard.writeText(shareUrl);
@@ -231,7 +249,6 @@ export default function FeedClient({
     }
 
     const songId = listenSong.current;
-
     const seconds = Math.floor(
       (Date.now() - listenStart.current) / 1000
     );
@@ -258,10 +275,7 @@ export default function FeedClient({
         );
 
         if (preferenceError) {
-          console.error(
-            "MUSEK preference update error:",
-            preferenceError
-          );
+          console.error("MUSEK preference update error:", preferenceError);
         }
       }
     } catch (error) {
@@ -271,7 +285,6 @@ export default function FeedClient({
 
   function startListening(songId: string) {
     if (!userId) return;
-
     if (listenSong.current === songId) return;
 
     void saveListeningTime();
@@ -308,7 +321,6 @@ export default function FeedClient({
         <h1 style={{ fontSize: "30px", margin: 0 }}>
           MUSEK<span style={{ color: "#a855f7" }}>.</span>
         </h1>
-
         <p style={{ color: "#aaa", margin: "5px 0" }}>
           Your music. Your discovery.
         </p>
@@ -356,6 +368,7 @@ export default function FeedClient({
             const isFavorite = favorites.includes(song.id);
             const isLoading = favoriteLoading === song.id;
             const likeCount = likeCounts[song.id] || 0;
+            const commentCount = commentCounts[song.id] || 0;
 
             return (
               <article
@@ -501,6 +514,18 @@ export default function FeedClient({
                       ❤️ {likeCount} {likeCount === 1 ? "Like" : "Likes"}
                     </span>
 
+                    <span
+                      aria-label={`${commentCount} public comments`}
+                      style={{
+                        color: "#d8b4fe",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      💬 {commentCount}{" "}
+                      {commentCount === 1 ? "Comment" : "Comments"}
+                    </span>
+
                     <button
                       type="button"
                       onClick={() => shareSong(song)}
@@ -555,7 +580,12 @@ export default function FeedClient({
                     />
                   )}
 
-                  <SongComments trackId={song.id} />
+                  <SongComments
+                    trackId={song.id}
+                    onVisibleCountChange={(count) =>
+                      updateCommentCount(song.id, count)
+                    }
+                  />
                 </div>
               </article>
             );
