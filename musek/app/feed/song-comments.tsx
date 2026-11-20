@@ -9,6 +9,7 @@ type Comment = {
   user_id: string;
   comment: string;
   created_at: string;
+  status: "visible" | "hidden";
 };
 
 export default function SongComments({
@@ -18,6 +19,7 @@ export default function SongComments({
 }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isTrackArtist, setIsTrackArtist] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -32,18 +34,29 @@ export default function SongComments({
 
     setUserId(user?.id ?? null);
 
+    if (user) {
+      const { data: track } = await supabase
+        .from("music_tracks")
+        .select("artist_id")
+        .eq("id", trackId)
+        .maybeSingle();
+
+      setIsTrackArtist(track?.artist_id === user.id);
+    } else {
+      setIsTrackArtist(false);
+    }
+
     const { data, error } = await supabase
       .from("music_track_comments")
-      .select("id, user_id, comment, created_at")
+      .select("id, user_id, comment, created_at, status")
       .eq("track_id", trackId)
-      .eq("status", "visible")
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error("MUSEK comments error:", error);
       setMessage("Could not load comments.");
     } else {
-      setComments(data || []);
+      setComments((data || []) as Comment[]);
     }
 
     setLoading(false);
@@ -128,6 +141,39 @@ export default function SongComments({
     setMessage("Comment deleted.");
   }
 
+  async function moderateComment(
+    commentId: string,
+    newStatus: "visible" | "hidden"
+  ) {
+    if (!userId || !isTrackArtist) return;
+
+    const supabase = createClient();
+
+    const { error } = await supabase
+      .from("music_track_comments")
+      .update({ status: newStatus })
+      .eq("id", commentId)
+      .eq("track_id", trackId);
+
+    if (error) {
+      console.error("MUSEK moderation error:", error);
+      setMessage("Could not update this comment.");
+      return;
+    }
+
+    setMessage(
+      newStatus === "hidden"
+        ? "Comment hidden."
+        : "Comment restored."
+    );
+
+    await loadComments();
+  }
+
+  const visibleCount = comments.filter(
+    (item) => item.status === "visible"
+  ).length;
+
   return (
     <section
       style={{
@@ -139,7 +185,7 @@ export default function SongComments({
       }}
     >
       <h3 style={{ margin: "0 0 12px", fontSize: "17px" }}>
-        💬 Comments ({comments.length})
+        💬 Comments ({visibleCount})
       </h3>
 
       <textarea
@@ -213,12 +259,14 @@ export default function SongComments({
               style={{
                 padding: "12px 0",
                 borderTop: "1px solid #352544",
+                opacity: item.status === "hidden" ? 0.7 : 1,
               }}
             >
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  alignItems: "center",
                   gap: "10px",
                 }}
               >
@@ -226,22 +274,51 @@ export default function SongComments({
                   {item.user_id === userId ? "You" : "MUSEK Listener"}
                 </strong>
 
-                {item.user_id === userId && (
-                  <button
-                    type="button"
-                    onClick={() => deleteComment(item.id)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      color: "#fca5a5",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }}
-                  >
-                    Delete
-                  </button>
-                )}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {isTrackArtist && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        moderateComment(
+                          item.id,
+                          item.status === "visible" ? "hidden" : "visible"
+                        )
+                      }
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#c4b5fd",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                      }}
+                    >
+                      {item.status === "visible" ? "Hide" : "Restore"}
+                    </button>
+                  )}
+
+                  {item.user_id === userId && (
+                    <button
+                      type="button"
+                      onClick={() => deleteComment(item.id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#fca5a5",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {item.status === "hidden" && isTrackArtist && (
+                <small style={{ color: "#fbbf24" }}>
+                  Hidden from the public
+                </small>
+              )}
 
               <p
                 style={{
