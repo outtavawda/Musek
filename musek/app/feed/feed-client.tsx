@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type FeedSong = {
@@ -24,6 +24,10 @@ export default function FeedClient({
   const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
+  const listenStart = useRef<number | null>(null);
+  const listenSong = useRef<string | null>(null);
+  const savedListen = useRef(false);
+
   useEffect(() => {
     async function loadFavorites() {
       try {
@@ -35,7 +39,6 @@ export default function FeedClient({
         } = await supabase.auth.getUser();
 
         if (authError) throw authError;
-
         if (!user) return;
 
         setUserId(user.id);
@@ -82,7 +85,6 @@ export default function FeedClient({
         setFavorites((current) =>
           current.filter((id) => id !== songId)
         );
-
         setMessage("Song removed from your favourites.");
       } else {
         const { error } = await supabase
@@ -99,22 +101,81 @@ export default function FeedClient({
             ? current
             : [...current, songId]
         );
-
         setMessage("Song added to your favourites!");
       }
     } catch (error) {
       console.error("MUSEK Like error:", error);
-
-      const errorMessage =
+      setMessage(
         error instanceof Error
-          ? error.message
-          : "Something went wrong.";
-
-      setMessage("Could not update Like: " + errorMessage);
+          ? "Could not update Like: " + error.message
+          : "Could not update Like."
+      );
     } finally {
       setFavoriteLoading(null);
     }
   }
+
+  async function saveListeningTime() {
+    if (
+      !userId ||
+      !listenSong.current ||
+      listenStart.current === null ||
+      savedListen.current
+    ) {
+      return;
+    }
+
+    const songId = listenSong.current;
+    const seconds = Math.floor(
+      (Date.now() - listenStart.current) / 1000
+    );
+
+    savedListen.current = true;
+    listenStart.current = null;
+    listenSong.current = null;
+
+    if (seconds < 1) return;
+
+    try {
+      const supabase = createClient();
+
+      const { error } = await supabase.rpc("record_music_listen", {
+        p_track_id: songId,
+        p_listened_seconds: seconds,
+      });
+
+      if (error) {
+        console.error("MUSEK listening history error:", error);
+      }
+    } catch (error) {
+      console.error("MUSEK listening history error:", error);
+    }
+  }
+
+  function startListening(songId: string) {
+    if (!userId) return;
+
+    if (listenSong.current === songId) return;
+
+    void saveListeningTime();
+
+    listenSong.current = songId;
+    listenStart.current = Date.now();
+    savedListen.current = false;
+  }
+
+  useEffect(() => {
+    const handlePageHide = () => {
+      void saveListeningTime();
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      void saveListeningTime();
+    };
+  }, [userId]);
 
   return (
     <main
@@ -149,14 +210,7 @@ export default function FeedClient({
       </div>
 
       {message && (
-        <p
-          role="status"
-          style={{
-            textAlign: "center",
-            color: "#d8b4fe",
-            fontSize: "14px",
-          }}
-        >
+        <p role="status" style={{ textAlign: "center", color: "#d8b4fe" }}>
           {message}
         </p>
       )}
@@ -221,8 +275,7 @@ export default function FeedClient({
                       display: "grid",
                       placeItems: "center",
                       fontSize: "100px",
-                      background:
-                        "linear-gradient(135deg, #24103e, #111)",
+                      background: "linear-gradient(135deg, #24103e, #111)",
                     }}
                   >
                     🎵
@@ -320,6 +373,17 @@ export default function FeedClient({
                       controls
                       preload="none"
                       src={song.audioUrl}
+                      onPlay={() => startListening(song.id)}
+                      onPause={() => {
+                        if (listenSong.current === song.id) {
+                          void saveListeningTime();
+                        }
+                      }}
+                      onEnded={() => {
+                        if (listenSong.current === song.id) {
+                          void saveListeningTime();
+                        }
+                      }}
                       style={{
                         display: "block",
                         width: "100%",
