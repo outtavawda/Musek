@@ -16,10 +16,11 @@ Live-room gifts are intentionally not included in this isolated release because 
 
 Apply these files in order in the Supabase SQL Editor:
 
-1. `supabase/migrations/004_musek_social.sql`
-2. `supabase/migrations/005_social_guest_invites.sql`
-3. `supabase/migrations/008_social_table_grants.sql`
-4. `supabase/migrations/009_social_invite_grants.sql`
+1. `supabase/migrations/003_public_profiles.sql`
+2. `supabase/migrations/004_musek_social.sql`
+3. `supabase/migrations/005_social_guest_invites.sql`
+4. `supabase/migrations/008_social_table_grants.sql`
+5. `supabase/migrations/009_social_invite_grants.sql`
 
 The migration files are included in this release branch. Confirm they have not already been applied before running them; the SQL uses idempotent table/policy setup where appropriate, but should still be reviewed against the live database.
 
