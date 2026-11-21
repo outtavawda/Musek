@@ -35,3 +35,19 @@ The app issues short-lived, room-scoped LiveKit access tokens from the authentic
 The LiveKit conference provides participant video/audio, microphone and camera controls, screen sharing, and the conference interface. MUSEK room chat and reactions remain in the adjacent Supabase-powered panel.
 
 Guest invitation workflows, private one-to-one call discovery, recording/replay storage, gifts inside live rooms, and production-grade moderation/rate limits remain separate follow-up work. Recording requires an explicit recording/consent flow and LiveKit egress/storage configuration.
+
+
+## Social database migration checklist
+
+Apply the Social migrations in numeric order in the Supabase SQL Editor. Do not skip a migration:
+
+1. `004_musek_social.sql` — live rooms, chat, reactions and base row-level security policies.
+2. `005_social_guest_invites.sql` — host-issued guest invitations and accepted-guest publishing permissions.
+3. `006_social_live_gifts.sql` — secure live-gift ledger and the `send_social_live_gift` RPC.
+4. `007_live_notifications.sql` — persistent notifications when an artist you follow starts a live room.
+5. `008_social_table_grants.sql` — authenticated access grants for the base Social tables.
+6. `009_social_invite_grants.sql` — explicit invitation-table permissions; gift rows remain read-only to clients and are written through the secure RPC.
+
+After applying them, test with separate fan and artist accounts. Verify room creation, chat, reactions, guest invitation/acceptance, notifications and a small live gift in a non-production test environment before using real balances.
+
+The repository cannot confirm whether these SQL migrations have been executed in your Supabase project. Applying the files in GitHub does not run them against your database.
