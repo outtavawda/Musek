@@ -11,29 +11,28 @@ function signatureMatches(
   body: string,
   received: string
 ): boolean {
+  // Square signatures are Base64-encoded HMAC-SHA256 values.
   const expected = createHmac("sha256", key)
     .update(url + body)
-    .digest("base64");
+    .digest();
 
-  const expectedBuffer = Buffer.from(expected, "base64");
-  const receivedBuffer = Buffer.from(received, "base64");
+  let receivedBuffer: Buffer;
+
+  try {
+    receivedBuffer = Buffer.from(received, "base64");
+
+    // Reject malformed or non-canonical Base64 signatures.
+    if (receivedBuffer.toString("base64") !== received) {
+      return false;
+    }
+  } catch {
+    return false;
+  }
 
   return (
-    expectedBuffer.length === receivedBuffer.length &&
-    timingSafeEqual(expectedBuffer, receivedBuffer)
+    expected.length === receivedBuffer.length &&
+    timingSafeEqual(expected, receivedBuffer)
   );
-}
-
-function getQueryParameterNames(url: URL): string[] {
-  const names: string[] = [];
-
-  url.searchParams.forEach((_value, key) => {
-    if (!names.includes(key)) {
-      names.push(key);
-    }
-  });
-
-  return names.sort();
 }
 
 export async function POST(request: Request) {
@@ -68,74 +67,21 @@ export async function POST(request: Request) {
     );
 
     if (!receivedSignature) {
-      console.error("Webhook signature header is missing.");
-
       return NextResponse.json(
         { error: "Missing Square signature." },
         { status: 401 }
       );
     }
 
-    const exactMatch = signatureMatches(
+    const validSignature = signatureMatches(
       signatureKey,
       notificationUrl,
       rawBody,
       receivedSignature
     );
 
-    if (!exactMatch) {
-      let requestUrl = "";
-      let configuredUrlDetails = {};
-      let incomingUrlDetails = {};
-
-      try {
-        const configured = new URL(notificationUrl);
-        const incoming = new URL(request.url);
-
-        requestUrl = request.url;
-
-        configuredUrlDetails = {
-          host: configured.host,
-          path: configured.pathname,
-          queryParameterNames: getQueryParameterNames(configured),
-        };
-
-        incomingUrlDetails = {
-          host: incoming.host,
-          path: incoming.pathname,
-          queryParameterNames: getQueryParameterNames(incoming),
-        };
-      } catch {
-        console.error("Could not inspect webhook URL metadata.");
-      }
-
-      console.error("Square signature diagnostic:", {
-        signatureMismatch: true,
-        signatureKeyLength: signatureKey.length,
-        signatureKeyHasOuterWhitespace:
-          signatureKey !== signatureKey.trim(),
-        notificationUrlLength: notificationUrl.length,
-        notificationUrlHasOuterWhitespace:
-          notificationUrl !== notificationUrl.trim(),
-        notificationUrlHasTrailingSlash:
-          notificationUrl.endsWith("/"),
-        configuredUrlDetails,
-        incomingUrlDetails,
-        incomingUrlMatchesConfiguredUrl:
-          requestUrl === notificationUrl,
-        trimmedKeyWouldMatch: signatureMatches(
-          signatureKey.trim(),
-          notificationUrl,
-          rawBody,
-          receivedSignature
-        ),
-        trimmedUrlWouldMatch: signatureMatches(
-          signatureKey,
-          notificationUrl.trim(),
-          rawBody,
-          receivedSignature
-        ),
-      });
+    if (!validSignature) {
+      console.error("Square webhook rejected: Invalid signature.");
 
       return NextResponse.json(
         { error: "Invalid Square signature." },
@@ -143,13 +89,11 @@ export async function POST(request: Request) {
       );
     }
 
-    let event;
+    let event: any;
 
     try {
       event = JSON.parse(rawBody);
     } catch {
-      console.error("Webhook rejected: Invalid JSON payload.");
-
       return NextResponse.json(
         { error: "Invalid webhook payload." },
         { status: 400 }
@@ -162,7 +106,7 @@ export async function POST(request: Request) {
 
     const paymentId = event.data?.object?.payment?.id;
 
-    if (!paymentId) {
+    if (typeof paymentId !== "string" || !paymentId) {
       return NextResponse.json(
         { error: "Payment ID missing." },
         { status: 400 }
@@ -180,10 +124,8 @@ export async function POST(request: Request) {
       }
     );
 
-    const paymentData = await paymentResponse.json();
-
     if (!paymentResponse.ok) {
-      console.error("Square payment lookup failed:", paymentData);
+      console.error("Square payment lookup failed:", paymentResponse.status);
 
       return NextResponse.json(
         { error: "Could not verify payment with Square." },
@@ -191,15 +133,18 @@ export async function POST(request: Request) {
       );
     }
 
+    const paymentData = await paymentResponse.json();
     const payment = paymentData.payment;
 
     if (
       payment?.status !== "COMPLETED" ||
       payment?.location_id !== locationId ||
       payment?.amount_money?.currency !== "CAD" ||
-      !payment?.order_id ||
-      !payment?.id ||
-      !Number.isInteger(payment?.amount_money?.amount)
+      typeof payment?.order_id !== "string" ||
+      !payment.order_id ||
+      payment?.id !== paymentId ||
+      !Number.isSafeInteger(payment?.amount_money?.amount) ||
+      payment.amount_money.amount <= 0
     ) {
       console.error("Payment not eligible for coin credit.");
 
@@ -223,7 +168,7 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error("Coin credit failed:", error);
+      console.error("Coin credit failed:", error.message);
 
       return NextResponse.json(
         { error: "Could not credit the coin purchase." },
@@ -231,14 +176,17 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Coin purchase successfully processed:", payment.id);
+    console.log("Square payment processed:", payment.id);
 
     return NextResponse.json({
       received: true,
       credited: true,
     });
   } catch (error) {
-    console.error("Square webhook error:", error);
+    console.error(
+      "Square webhook processing failed:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
 
     return NextResponse.json(
       { error: "Webhook processing failed." },
