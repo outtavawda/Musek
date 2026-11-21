@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@/app/globals.css";
+import "./globals.css";
 import GlobalNotifications from "@/app/notifications/global-notifications";
 import MobileAppNav from "@/components/mobile-app-nav";
 
