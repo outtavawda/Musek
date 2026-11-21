@@ -15,10 +15,11 @@ type Room = {
   host_name: string;
   status: "live" | "ended";
   created_at: string;
+  avatar_url?: string | null;
 };
 type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string };
 
-export default function SocialClient({ userId, displayName, accountType }: { userId: string; displayName: string; accountType: string }) {
+export default function SocialClient({ userId, displayName, accountType, avatarUrl }: { userId: string; displayName: string; accountType: string; avatarUrl: string | null }) {
   const supabase = createClient();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selected, setSelected] = useState<Room | null>(null);
@@ -28,6 +29,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [ending, setEnding] = useState(false);
   const [notice, setNotice] = useState("");
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
@@ -40,7 +42,15 @@ export default function SocialClient({ userId, displayName, accountType }: { use
       .select("id,title,description,host_id,host_name,status,created_at")
       .eq("status", "live").order("created_at", { ascending: false }).limit(50);
     if (error) setNotice("Social rooms are not available yet. Apply the MUSEK Social database migration to enable them.");
-    else setRooms((data || []) as Room[]);
+    else {
+      const roomRows = (data || []) as Room[];
+      const hostIds = [...new Set(roomRows.map((room) => room.host_id))];
+      const { data: profiles } = hostIds.length
+        ? await supabase.from("user_profiles").select("id,avatar_url").in("id", hostIds)
+        : { data: [] as { id: string; avatar_url: string | null }[] };
+      const avatarByHost = new Map((profiles || []).map((profile) => [profile.id, profile.avatar_url]));
+      setRooms(roomRows.map((room) => ({ ...room, avatar_url: avatarByHost.get(room.host_id) || null })));
+    }
     setLoading(false);
   }, [supabase]);
 
@@ -104,8 +114,9 @@ export default function SocialClient({ userId, displayName, accountType }: { use
     }).select("id,title,description,host_id,host_name,status,created_at").single();
     setBusy(false);
     if (error) { console.error("MUSEK live room creation failed:", error); setNotice(`Could not create the room: ${error.message}${error.code ? ` (code ${error.code})` : ""}`); return; }
-    setRooms((current) => [data as Room, ...current]);
-    setSelected(data as Room); setTitle(""); setDescription("");
+    const newRoom = { ...(data as Room), avatar_url: avatarUrl };
+    setRooms((current) => [newRoom, ...current]);
+    setSelected(newRoom); setTitle(""); setDescription("");
     setNotice("Your MUSEK Social room is open. Chat is live; video broadcasting will activate after the video provider is connected.");
   };
 
@@ -121,9 +132,14 @@ export default function SocialClient({ userId, displayName, accountType }: { use
   };
 
   const endRoom = async () => {
-    if (!selected || selected.host_id !== userId) return;
-    const { error } = await supabase.from("social_live_rooms").update({ status: "ended", ended_at: new Date().toISOString() }).eq("id", selected.id).eq("host_id", userId);
-    if (error) { setNotice("Could not end the room."); return; }
+    if (!selected || selected.host_id !== userId || ending) return;
+    if (!window.confirm("End this live room? Viewers will no longer be able to join.")) return;
+    setEnding(true);
+    const { error } = await supabase.from("social_live_rooms")
+      .update({ status: "ended", ended_at: new Date().toISOString() })
+      .eq("id", selected.id).eq("host_id", userId);
+    setEnding(false);
+    if (error) { setNotice("Could not end the live room. Please try again."); return; }
     stopMedia(); setSelected(null); await loadRooms(); setNotice("Your live room has ended.");
   };
 
@@ -184,16 +200,28 @@ export default function SocialClient({ userId, displayName, accountType }: { use
       <section id="live-rooms" className="mt-12">
         <div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-bold tracking-[.2em] text-purple-300">HAPPENING NOW</p><h2 className="mt-2 text-3xl font-black">Live rooms</h2></div><span className="text-sm text-gray-500">{rooms.length} active</span></div>
         {loading ? <div className="rounded-2xl border border-white/10 bg-[#11111d] p-8 text-sm text-gray-400">Loading live rooms…</div> : rooms.length === 0 ? <div className="rounded-2xl border border-dashed border-white/15 bg-[#11111d]/60 p-10 text-center"><div className="text-3xl">♫</div><h3 className="mt-3 text-xl font-bold">No one is live just yet</h3><p className="mt-2 text-sm text-gray-400">Start the first room and bring your community together.</p></div> :
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{rooms.map((room) => <article key={room.id} className="rounded-2xl border border-white/10 bg-[#11111d] p-5"><div className="flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-black tracking-widest text-rose-300"><span className="h-2 w-2 animate-pulse rounded-full bg-rose-400"/> LIVE</span><span className="text-xs text-gray-500">MUSEK SOCIAL</span></div><h3 className="mt-4 text-xl font-black">{room.title}</h3><p className="mt-2 line-clamp-2 min-h-10 text-sm text-gray-400">{room.description || "Come join the conversation."}</p><p className="mt-4 text-xs text-gray-500">Hosted by {room.host_name}</p><button onClick={() => setSelected(room)} className="mt-5 w-full rounded-xl border border-purple-400/30 bg-purple-500/15 px-4 py-3 text-sm font-bold hover:bg-purple-500/25">Join conversation</button></article>)}</div>}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{rooms.map((room) => <article key={room.id} className="rounded-2xl border border-white/10 bg-[#11111d] p-5"><div className="flex items-center justify-between"><span className="flex items-center gap-2 text-[10px] font-black tracking-widest text-rose-300"><span className="h-2 w-2 animate-pulse rounded-full bg-rose-400"/> LIVE</span><span className="text-xs text-gray-500">MUSEK SOCIAL</span></div><h3 className="mt-4 text-xl font-black">{room.title}</h3><p className="mt-2 line-clamp-2 min-h-10 text-sm text-gray-400">{room.description || "Come join the conversation."}</p><div className="mt-4 flex items-center gap-3">
+  {room.avatar_url ? <img src={room.avatar_url} alt={room.host_name} className="h-9 w-9 rounded-full border border-purple-300/30 object-cover" /> : <div className="grid h-9 w-9 place-items-center rounded-full border border-purple-300/30 bg-purple-500/15 text-sm font-black text-purple-200">{room.host_name.slice(0, 1).toUpperCase()}</div>}
+  <div><p className="text-xs font-semibold text-gray-200">{room.host_name}</p><p className="text-[10px] text-gray-500">Live host</p></div>
+</div><button onClick={() => setSelected(room)} className="mt-5 w-full rounded-xl border border-purple-400/30 bg-purple-500/15 px-4 py-3 text-sm font-bold hover:bg-purple-500/25">Join conversation</button></article>)}</div>}
       </section>
 
       {selected && <section className="mt-12 grid gap-5 lg:grid-cols-[1fr_360px]">
         <div className="overflow-hidden rounded-3xl border border-purple-400/20 bg-[#11111d]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-5"><div><p className="text-[10px] font-black tracking-[.2em] text-rose-300">● LIVE ROOM</p><h2 className="mt-1 text-2xl font-black">{selected.title}</h2><p className="mt-1 text-xs text-gray-400">Hosted by {selected.host_name}</p></div><button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-bold">Leave room</button></div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-5">
+  <div className="flex min-w-0 items-center gap-3">
+    {selected.avatar_url ? <img src={selected.avatar_url} alt={selected.host_name} className="h-12 w-12 shrink-0 rounded-full border-2 border-purple-300/40 object-cover" /> : <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-purple-300/40 bg-purple-500/15 text-lg font-black text-purple-200">{selected.host_name.slice(0, 1).toUpperCase()}</div>}
+    <div className="min-w-0"><p className="text-[10px] font-black tracking-[.2em] text-rose-300">● LIVE NOW</p><h2 className="mt-1 truncate text-xl font-black">{selected.title}</h2><p className="mt-1 text-xs text-gray-400">Hosted by {selected.host_name}</p></div>
+  </div>
+  <div className="flex shrink-0 gap-2">
+    {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="rounded-lg bg-rose-600 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-rose-500 disabled:opacity-50">{ending ? "Ending…" : "End live"}</button>}
+    <button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-bold">Leave</button>
+  </div>
+</div>
           <div className="bg-[radial-gradient(ellipse_at_center,_#25143d,_#080811_75%)] p-4 sm:p-6"><LiveVideoRoom roomId={selected.id} displayName={displayName} /></div>
           <div className="px-4 sm:px-6"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} /></div>
           <div className="flex flex-wrap items-center gap-2 border-t border-white/10 p-4"><span className="mr-2 text-xs text-gray-400">React</span>{["❤️","🔥","👏","🎶","😂"].map((emoji) => <button key={emoji} onClick={() => react(emoji)} className="rounded-full border border-white/10 px-3 py-2 text-lg hover:border-purple-400/50">{emoji}</button>)}
-            {selected.host_id === userId && <button onClick={endRoom} className="ml-auto rounded-xl bg-rose-500/15 px-4 py-2.5 text-xs font-bold text-rose-200">End room</button>}
+
           </div>
         </div>
         <div className="flex min-h-[440px] flex-col rounded-3xl border border-white/10 bg-[#11111d]">
