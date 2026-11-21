@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import GiftArtwork from "./gift-artwork";
 import { createClient } from "@/lib/supabase/client";
 
 type Gift = {
@@ -76,10 +77,12 @@ export default function LiveGifts({
   roomId,
   creatorId,
   accountType,
+  userId,
 }: {
   roomId: string;
   creatorId: string;
   accountType: string;
+  userId: string;
 }) {
   const supabase = createClient();
   const [gifts, setGifts] = useState<LiveGift[]>([]);
@@ -88,12 +91,67 @@ export default function LiveGifts({
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeGift, setActiveGift] = useState<LiveGift | null>(null);
+  const [giftQueue, setGiftQueue] = useState<LiveGift[]>([]);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const visibleGifts = useMemo(
     () => category === "All" ? GIFT_CATALOG : GIFT_CATALOG.filter((gift) => gift.category === category),
     [category]
   );
   const selectedGift = giftForCoins(selectedCoins);
+
+  const enqueueGift = useCallback((gift: LiveGift) => {
+    setGiftQueue((current) => [...current, gift].slice(-8));
+  }, []);
+
+  const playGiftSound = useCallback((coins: number) => {
+    const context = audioContextRef.current;
+    if (!soundEnabled || !context || context.state !== "running") return;
+    const notes = coins >= 60000 ? [392, 523.25, 659.25, 783.99] : coins >= 20000 ? [349.23, 440, 587.33] : coins >= 2500 ? [440, 554.37] : [659.25];
+    const now = context.currentTime;
+    notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const filter = context.createBiquadFilter();
+      oscillator.type = coins >= 20000 ? "triangle" : "sine";
+      oscillator.frequency.setValueAtTime(frequency, now + index * 0.105);
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(coins >= 60000 ? 2400 : 1500, now + index * 0.105);
+      gain.gain.setValueAtTime(0.0001, now + index * 0.105);
+      gain.gain.exponentialRampToValueAtTime(coins >= 60000 ? 0.12 : 0.07, now + index * 0.105 + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.105 + 0.34);
+      oscillator.connect(filter);
+      filter.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now + index * 0.105);
+      oscillator.stop(now + index * 0.105 + 0.36);
+    });
+  }, [soundEnabled]);
+
+  const toggleSound = async () => {
+    if (!audioContextRef.current) audioContextRef.current = new window.AudioContext();
+    if (soundEnabled) {
+      setSoundEnabled(false);
+      if (audioContextRef.current.state === "running") await audioContextRef.current.suspend();
+    } else {
+      if (audioContextRef.current.state === "suspended") await audioContextRef.current.resume();
+      setSoundEnabled(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!activeGift && giftQueue.length > 0) {
+      setActiveGift(giftQueue[0]);
+      setGiftQueue((current) => current.slice(1));
+      return;
+    }
+    if (!activeGift) return;
+    const coins = Number(activeGift.coins);
+    const duration = coins >= 60000 ? 8000 : coins >= 20000 ? 6500 : coins >= 2500 ? 4500 : 2800;
+    const timeout = window.setTimeout(() => setActiveGift(null), duration);
+    return () => window.clearTimeout(timeout);
+  }, [activeGift, giftQueue]);
 
   // Local-only animation previews: these do not call Supabase or spend coins.
   const previewGift = (coins: number) => {
@@ -105,10 +163,8 @@ export default function LiveGifts({
       coins,
       created_at: new Date().toISOString(),
     };
-    setActiveGift(preview);
-    window.setTimeout(() => {
-      setActiveGift((current) => current?.gift_id === preview.gift_id ? null : current);
-    }, coins >= 60000 ? 8000 : coins >= 20000 ? 6500 : coins >= 2500 ? 4500 : 2800);
+    enqueueGift(preview);
+    playGiftSound(coins);
   };
 
   const loadGifts = useCallback(async () => {
@@ -143,10 +199,8 @@ export default function LiveGifts({
           const gift = payload.new as LiveGift;
           const { data: sender } = await supabase.from("user_profiles").select("display_name,artist_name").eq("id", gift.sender_id).maybeSingle();
           const enrichedGift = { ...gift, sender_name: sender?.artist_name || sender?.display_name || "MUSEK Member" };
-          setActiveGift(enrichedGift);
-          window.setTimeout(() => {
-            setActiveGift((current) => current?.gift_id === gift.gift_id ? null : current);
-          }, Number(gift.coins) >= 60000 ? 8000 : Number(gift.coins) >= 20000 ? 6500 : Number(gift.coins) >= 2500 ? 4500 : 2800);
+          enqueueGift(enrichedGift);
+          playGiftSound(Number(gift.coins));
           setGifts((current) =>
             current.some((item) => item.gift_id === gift.gift_id)
               ? current
@@ -158,7 +212,7 @@ export default function LiveGifts({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadGifts, roomId, supabase]);
+  }, [enqueueGift, loadGifts, playGiftSound, roomId, supabase]);
 
   const sendGift = async () => {
     if (sending || !selectedGift) return;
@@ -186,7 +240,7 @@ export default function LiveGifts({
           <div key={activeGift.gift_id} className={`musek-gift-overlay musek-gift-${tier}`} role="status" aria-live="polite">
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-content">
-              <div className="musek-gift-emoji">{details?.emoji || "🎁"}</div>
+              <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
               <p className="musek-gift-eyebrow">{tier === "legendary" ? "✦ MUSEK ICONIC MOMENT ✦" : tier === "premium" ? "MUSEK PREMIUM GIFT" : tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
               <p className="musek-gift-name">{details?.name || "Live gift"}</p>
               <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
@@ -198,28 +252,39 @@ export default function LiveGifts({
       <style jsx>{`
         .musek-gift-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; }
         .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 34px; border: 1px solid rgba(216,180,254,.55); border-radius: 28px; background: linear-gradient(145deg,rgba(36,20,60,.97),rgba(9,7,20,.96)); box-shadow: 0 0 45px rgba(168,85,247,.45), inset 0 1px rgba(255,255,255,.18); backdrop-filter: blur(16px); }
-        .musek-gift-emoji { font-size: clamp(60px, 11vw, 132px); line-height: 1.2; filter: drop-shadow(0 0 18px rgba(216,180,254,.8)); }
+        .musek-gift-art { position: relative; display: grid; width: clamp(150px, 24vw, 250px); aspect-ratio: 1; place-items: center; perspective: 900px; transform-style: preserve-3d; }
+        .musek-gift-art-aura { position: absolute; inset: 12%; border-radius: 50%; background: radial-gradient(circle,rgba(192,132,252,.42),rgba(124,58,237,.12) 48%,transparent 72%); transform: translateZ(-35px); }
+        .musek-gift-art-svg { position: relative; z-index: 1; width: 100%; height: 100%; overflow: visible; transform-style: preserve-3d; filter: drop-shadow(0 18px 14px rgba(0,0,0,.4)); animation: gift-object-turn 5s ease-in-out infinite; }
+        .musek-gift-art-svg .gift-object { transform-origin: 110px 110px; animation: gift-object-float 2.6s ease-in-out infinite; }
+        .musek-gift-art-fallback { position: absolute; right: 8%; bottom: 9%; z-index: 2; font-size: clamp(22px,4vw,36px); filter: drop-shadow(0 3px 5px rgba(0,0,0,.55)); }
+        .musek-gift-art-small { width: 58px; flex: 0 0 58px; }
+        .musek-gift-art-small .musek-gift-art-fallback { display: none; }
+        .musek-gift-art-medium { animation: gift-art-entry .8s cubic-bezier(.2,.8,.2,1) both; }
+        .musek-gift-art-premium .musek-gift-art-aura,.musek-gift-art-legendary .musek-gift-art-aura { background: radial-gradient(circle,rgba(250,204,21,.38),rgba(168,85,247,.22) 48%,transparent 72%); }
+        .musek-gift-art-legendary { width: clamp(190px,31vw,320px); animation: gift-art-entry 1.1s cubic-bezier(.16,1,.3,1) both; }
+        .musek-gift-art-legendary .musek-gift-art-svg { animation-duration: 3.2s; }
+        .musek-gift-art-legendary .musek-gift-art-fallback { right: 5%; bottom: 6%; font-size: 44px; }
         .musek-gift-eyebrow { margin-top: 10px; color: #d8b4fe; font-size: 10px; font-weight: 950; letter-spacing: .24em; }
         .musek-gift-name { margin-top: 5px; color: white; font-size: clamp(24px, 4vw, 42px); font-weight: 950; text-shadow: 0 3px 22px rgba(192,132,252,.45); }
         .musek-gift-value { margin-top: 4px; color: #e9d5ff; font-size: 13px; font-weight: 800; }
         .musek-gift-sender { margin-top: 8px; color: rgba(255,255,255,.72); font-size: 11px; letter-spacing: .04em; }
         .musek-gift-small { inset: auto 18px 24px auto; width: auto; height: auto; animation: gift-fade 2.8s ease both; }
-        .musek-gift-small .musek-gift-content { flex-direction: row; gap: 12px; padding: 10px 16px; border-radius: 18px; }
-        .musek-gift-small .musek-gift-emoji { font-size: 38px; animation: gift-bounce .7s ease-in-out 2; }
+        .musek-gift-small .musek-gift-content { flex-direction: row; gap: 10px; padding: 8px 14px; border-radius: 18px; }
+        .musek-gift-small .musek-gift-art { animation: gift-bounce .7s ease-in-out 2; }
         .musek-gift-small .musek-gift-eyebrow { margin: 0; text-align: left; }
         .musek-gift-small .musek-gift-name { margin: 2px 0 0; font-size: 17px; }
         .musek-gift-small .musek-gift-value { margin: 0; text-align: left; }
         .musek-gift-small .musek-gift-sender { display: none; }
         .musek-gift-medium { background: radial-gradient(circle, rgba(147,51,234,.3), rgba(0,0,0,.58) 70%); animation: gift-fade 4.5s ease both; }
-        .musek-gift-medium .musek-gift-emoji { animation: gift-pop 1s cubic-bezier(.2,.8,.2,1) both; }
+        .musek-gift-medium .musek-gift-art-svg { animation: gift-object-turn 2.5s ease-in-out infinite; }
         .musek-gift-premium { background: radial-gradient(circle, rgba(147,51,234,.48), rgba(4,3,14,.84) 72%); animation: gift-fade 6.5s ease both; }
         .musek-gift-premium .musek-gift-content { border-color: rgba(250,204,21,.75); background: linear-gradient(145deg,rgba(73,42,101,.98),rgba(12,8,28,.98)); box-shadow: 0 0 70px rgba(250,204,21,.34), 0 0 150px rgba(168,85,247,.48), inset 0 1px rgba(255,255,255,.35); animation: gift-legend 1.2s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-premium .musek-gift-eyebrow { color: #fde68a; }
-        .musek-gift-premium .musek-gift-emoji { animation: gift-float 2s ease-in-out infinite; }
+        .musek-gift-premium .musek-gift-art-svg { animation-duration: 3.2s; }
         .musek-gift-legendary { background: radial-gradient(circle at 50% 48%,rgba(234,179,8,.34),rgba(88,28,135,.48) 38%,rgba(2,2,12,.94) 78%); animation: gift-fade 8s ease both; }
         .musek-gift-legendary .musek-gift-content { border: 1px solid rgba(253,224,71,.9); background: linear-gradient(145deg,rgba(89,52,16,.96),rgba(34,14,60,.98) 48%,rgba(7,7,20,.98)); box-shadow: 0 0 35px rgba(253,224,71,.75),0 0 120px rgba(168,85,247,.72),0 0 220px rgba(217,70,239,.35),inset 0 1px rgba(255,255,255,.5); animation: gift-legendary-entry 1.5s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-legendary .musek-gift-eyebrow { color: #fef08a; }
-        .musek-gift-legendary .musek-gift-emoji { font-size: clamp(90px,16vw,190px); animation: gift-legendary-float 2.2s ease-in-out infinite; }
+        .musek-gift-legendary .musek-gift-art-svg { animation-duration: 2.8s; }
         .musek-gift-effects { position: absolute; inset: 0; overflow: hidden; }
         .musek-gift-effects span { position: absolute; left: calc((var(--spark) * 7.3%) + 3%); top: calc((var(--spark) * 13.7%) + 2%); color: #fef08a; font-size: calc(14px + (var(--spark) * 1.2px)); text-shadow: 0 0 18px #c084fc,0 0 34px #fef08a; animation: gift-spark 1.8s ease-in-out infinite; animation-delay: calc(var(--spark) * -0.17s); }
         .musek-gift-effects span:nth-child(1) { --spark: 1; }
@@ -240,6 +305,9 @@ export default function LiveGifts({
         .musek-gift-effects span:nth-child(16) { --spark: 16; }
         .musek-gift-effects span:nth-child(17) { --spark: 17; }
         .musek-gift-effects span:nth-child(18) { --spark: 18; }
+        @keyframes gift-object-turn { 0%,100% { transform: rotateY(-13deg) rotateX(5deg) translateY(0); } 50% { transform: rotateY(13deg) rotateX(-5deg) translateY(-10px); } }
+        @keyframes gift-object-float { 0%,100% { transform: translateY(0) rotateZ(-2deg); } 50% { transform: translateY(-8px) rotateZ(2deg); } }
+        @keyframes gift-art-entry { 0% { transform: scale(.35) rotateY(70deg); opacity: 0; } 70% { transform: scale(1.08) rotateY(-8deg); opacity: 1; } 100% { transform: scale(1) rotateY(0); } }
         @keyframes gift-bounce { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-12px) scale(1.12); } }
         @keyframes gift-pop { 0% { transform: scale(.25) rotate(-18deg); opacity: 0; } 65% { transform: scale(1.2) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
         @keyframes gift-legend { 0% { transform: scale(.15) rotate(-8deg); opacity: 0; } 70% { transform: scale(1.12) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
@@ -248,7 +316,8 @@ export default function LiveGifts({
         @keyframes gift-float { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-16px) rotate(4deg); } }
         @keyframes gift-spark { 0%,100% { opacity: .1; transform: scale(.3) rotate(0) translateY(18px); } 50% { opacity: 1; transform: scale(1.5) rotate(65deg) translateY(-12px); } }
         @keyframes gift-fade { 0% { opacity: 0; } 10%,82% { opacity: 1; } 100% { opacity: 0; } }
-        @media (prefers-reduced-motion: reduce) { .musek-gift-overlay, .musek-gift-overlay * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+        @media (max-width: 640px) { .musek-gift-content { max-width: calc(100vw - 32px); padding: 18px 20px; } .musek-gift-small { right: 10px; bottom: 12px; } }
+        @media (prefers-reduced-motion: reduce) { .musek-gift-overlay, .musek-gift-overlay * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
       `}</style>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -292,7 +361,7 @@ export default function LiveGifts({
                   ? "rounded-xl border border-purple-300 bg-purple-500/20 p-3 text-left ring-1 ring-purple-300/40"
                   : "rounded-xl border border-white/10 bg-black/20 p-3 text-left hover:border-purple-400/50"}
               >
-                <span className="text-2xl">{gift.emoji}</span>
+                <GiftArtwork category={gift.category} name={gift.name} emoji={gift.emoji} tier="small" />
                 <span className="mt-2 block text-xs font-bold">{gift.name}</span>
                 <span className="mt-1 block text-[11px] text-gray-400">{formatCoins(gift.coins)} coins</span>
               </button>
@@ -311,7 +380,7 @@ export default function LiveGifts({
       </>
 
       <div className="mt-4 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-3">
-        <p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p>
+        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p><button type="button" onClick={toggleSound} className={soundEnabled ? "rounded-full border border-purple-300/40 bg-purple-500/20 px-3 py-1.5 text-[10px] font-bold text-purple-100" : "rounded-full border border-white/10 px-3 py-1.5 text-[10px] font-bold text-gray-400"}>{soundEnabled ? "♫ Sound on" : "♫ Sound off"}</button></div>
         <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => previewGift(10)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview small ✨</button>
