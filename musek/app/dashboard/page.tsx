@@ -273,6 +273,21 @@ export default async function DashboardPage() {
             </div>
           </header>
 
+          <nav aria-label="Quick navigation" className="flex gap-2 overflow-x-auto border-b border-white/[0.06] bg-[#0b0a14] px-4 py-3 lg:hidden">
+            {[
+              { href: "/dashboard", name: "Overview" },
+              { href: "/my-music", name: "My Music" },
+              { href: "/discover-music", name: "Listen" },
+              { href: "/social", name: "Live Social" },
+              { href: "/profile", name: "Profile" },
+              { href: "/gift-history", name: "Gifts" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href} className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${item.href === "/dashboard" ? "border-purple-400/40 bg-purple-500/15 text-purple-100" : "border-white/10 bg-white/[0.03] text-gray-400 hover:border-purple-400/30 hover:text-white"}`}>
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
           <div className="mx-auto max-w-[1500px] space-y-7 px-4 py-7 sm:px-7 lg:px-10 lg:py-9">
             {/* WELCOME BANNER */}
             <section className="relative overflow-hidden rounded-3xl border border-purple-500/25 bg-gradient-to-r from-[#21103c] via-[#171329] to-[#10101d] p-7 sm:p-10">
