@@ -100,6 +100,8 @@ export default function LiveGifts({
     const preview: LiveGift = {
       gift_id: "preview-" + crypto.randomUUID(),
       room_id: roomId,
+      sender_id: userId,
+      sender_name: "Preview",
       coins,
       created_at: new Date().toISOString(),
     };
