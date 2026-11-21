@@ -12,8 +12,9 @@ type GiftArtworkProps = {
 export default function GiftArtwork({ category, name, emoji, tier }: GiftArtworkProps) {
   const kind = category.toLowerCase();
   const uid = useId().replace(/:/g, "");
+  const giftKey = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   return (
-    <div className={`musek-gift-art musek-gift-art-${tier} musek-gift-art-${kind}`} aria-label={name} role="img">
+    <div className={`musek-gift-art musek-gift-art-${tier} musek-gift-art-${kind} musek-gift-art-${giftKey}`} aria-label={name} role="img">
       <div className="musek-gift-art-aura" />
       <svg viewBox="0 0 220 220" aria-hidden="true" className="musek-gift-art-svg">
         <defs>
@@ -21,10 +22,52 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
           <linearGradient id={uid + "Purple"} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f5d0fe"/><stop offset=".48" stopColor="#a855f7"/><stop offset="1" stopColor="#581c87"/></linearGradient>
           <linearGradient id={uid + "Blue"} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#dbeafe"/><stop offset=".5" stopColor="#38bdf8"/><stop offset="1" stopColor="#1e3a8a"/></linearGradient>
           <radialGradient id={uid + "Glow"}><stop offset="0" stopColor="#fff" stopOpacity=".9"/><stop offset="1" stopColor="#c084fc" stopOpacity="0"/></radialGradient>
+          <linearGradient id={uid + "Fire"} x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#b91c1c"/><stop offset=".48" stopColor="#f97316"/><stop offset="1" stopColor="#fef08a"/></linearGradient>
+          <linearGradient id={uid + "Emerald"} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#d1fae5"/><stop offset=".5" stopColor="#10b981"/><stop offset="1" stopColor="#064e3b"/></linearGradient>
           <filter id={uid + "Shadow"} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
         </defs>
         <ellipse cx="110" cy="185" rx="57" ry="13" fill="#000" opacity=".42" filter={`url(#${uid}Shadow)`}/>
-        {kind === "love" ? (
+        {name === "Dragon" ? (
+          <g className="gift-object gift-dragon">
+            <path d="M47 145c-20-24-13-55 12-69-3 18 7 26 19 28-7-27 10-55 36-76-5 27 6 38 24 48 27 15 35 42 22 66-12 23-39 39-70 36-19-2-34-13-43-33z" fill={`url(#${uid}Emerald)`} stroke="#d1fae5" strokeWidth="4"/>
+            <path d="M91 105c17-16 38-13 48-2l23 4-15 13 9 15-25-7c-12 12-31 15-46 4z" fill={`url(#${uid}Gold)`} stroke="#fef3c7" strokeWidth="3"/>
+            <path d="m90 102-31-35 6 43-24 16 43 2m51-27 18-32 2 43 25 9-43 3" fill="#059669" stroke="#d1fae5" strokeWidth="4" strokeLinejoin="round"/>
+            <circle cx="142" cy="112" r="4" fill="#fff7c2"/>
+            <path d="M111 147q-22 25-42 6" fill="none" stroke="#a7f3d0" strokeWidth="7" strokeLinecap="round"/>
+            <path d="M53 169q-18 13-5 23m25-17q-10 18 5 23" fill="none" stroke={`url(#${uid}Fire)`} strokeWidth="9" strokeLinecap="round"/>
+          </g>
+        ) : name === "Phoenix" ? (
+          <g className="gift-object gift-phoenix">
+            <path d="M110 28c-8 30-33 39-29 72-18-11-29-30-26-48-31 31-30 78-4 103 19 19 43 25 59 20 16 5 40-1 59-20 26-25 27-72-4-103 3 18-8 37-26 48 4-33-21-42-29-72z" fill={`url(#${uid}Fire)`} stroke="#ffedd5" strokeWidth="4"/>
+            <path d="M110 75c-22 24-28 47-15 70 5 9 10 14 15 19 5-5 10-10 15-19 13-23 7-46-15-70z" fill={`url(#${uid}Gold)`} stroke="#fff7c2" strokeWidth="3"/>
+            <path d="m76 118-38-17 24 42-21 12 52 3m51-40 38-17-24 42 21 12-52 3" fill="#f97316" stroke="#ffedd5" strokeWidth="4" strokeLinejoin="round"/>
+            <circle cx="110" cy="119" r="8" fill="#fff"/>
+          </g>
+        ) : name === "Rocket" || name === "Private Jet" ? (
+          <g className="gift-object gift-rocket">
+            <path d="M110 24c-37 34-43 86-22 121h44c21-35 15-87-22-121z" fill={`url(#${uid}Blue)`} stroke="#dbeafe" strokeWidth="4"/>
+            <path d="m89 122-34 40 43-13m33-27 34 40-43-13" fill={`url(#${uid}Gold)`} stroke="#fef3c7" strokeWidth="4" strokeLinejoin="round"/>
+            <circle cx="110" cy="91" r="17" fill="#111827" stroke="#bfdbfe" strokeWidth="7"/>
+            <path d="m95 148 15 49 15-49" fill={`url(#${uid}Fire)`}/>
+            <path d="M102 157 110 183l8-26" fill="#fef08a"/>
+          </g>
+        ) : name === "Money Rain" || name === "Money Vault" ? (
+          <g className="gift-object gift-money">
+            <rect x="45" y="66" width="130" height="91" rx="13" fill={`url(#${uid}Emerald)`} stroke="#d1fae5" strokeWidth="5"/>
+            <rect x="57" y="78" width="106" height="67" rx="8" fill="none" stroke="#a7f3d0" strokeWidth="3"/>
+            <circle cx="110" cy="111" r="25" fill={`url(#${uid}Gold)`} stroke="#fff7c2" strokeWidth="3"/>
+            <path d="M119 94c-4-5-21-6-22 4-2 12 20 8 19 19-1 10-17 12-25 4m17-37v56" fill="none" stroke="#78350f" strokeWidth="5" strokeLinecap="round"/>
+            <path d="m61 39 12 17m34-35 2 23m38-13-10 20M31 101l20 2m118 61 18 9" stroke="#86efac" strokeWidth="7" strokeLinecap="round"/>
+          </g>
+        ) : name === "Galaxy" || name === "Universe" || name === "MUSEK Legend" ? (
+          <g className="gift-object gift-cosmos">
+            <circle cx="110" cy="108" r="62" fill={`url(#${uid}Purple)`} stroke="#f5d0fe" strokeWidth="4"/>
+            <ellipse cx="110" cy="108" rx="91" ry="30" transform="rotate(-28 110 108)" fill="none" stroke={`url(#${uid}Gold)`} strokeWidth="10"/>
+            <ellipse cx="110" cy="108" rx="72" ry="22" transform="rotate(48 110 108)" fill="none" stroke="#67e8f9" strokeWidth="4" opacity=".9"/>
+            <circle cx="87" cy="83" r="13" fill="#fff" opacity=".8"/><circle cx="144" cy="132" r="7" fill="#fde68a"/><circle cx="65" cy="121" r="5" fill="#fff"/>
+            <path d="m110 18 6 17 17 6-17 6-6 17-6-17-17-6 17-6zM185 65l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#fff7c2"/>
+          </g>
+        ) : kind === "love" ? (
           <g className="gift-object">
             <path d="M110 177 43 111C-1 63 63 16 110 66c47-50 111-3 67 45z" fill={`url(#${uid}Purple)`} stroke="#f5d0fe" strokeWidth="4"/>
             <path d="M110 165 54 109c-27-30 8-58 37-29l19 19 19-19c29-29 64-1 37 29z" fill="#fff" opacity=".18"/>
@@ -94,6 +137,16 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
         .musek-gift-art-legendary { width:clamp(190px,31vw,320px); animation:gift-art-entry 1.1s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-art-legendary .musek-gift-art-svg { animation-duration:3.2s; }
         .musek-gift-art-legendary .musek-gift-art-fallback { right:5%; bottom:6%; font-size:44px; }
+        .musek-gift-art-dragon .gift-object { animation:gift-dragon-motion 2.2s ease-in-out infinite; }
+        .musek-gift-art-phoenix .gift-object { animation:gift-phoenix-motion 2.8s ease-in-out infinite; }
+        .musek-gift-art-rocket .gift-object { animation:gift-rocket-motion 1.7s ease-in-out infinite; }
+        .musek-gift-art-money-rain .gift-object,.musek-gift-art-money-vault .gift-object { animation:gift-money-motion 2.4s ease-in-out infinite; }
+        .musek-gift-art-galaxy .gift-object,.musek-gift-art-universe .gift-object,.musek-gift-art-musek-legend .gift-object { animation:gift-cosmos-motion 5s linear infinite; }
+        @keyframes gift-dragon-motion { 0%,100% { transform:translateY(0) rotate(-3deg) scale(1); } 50% { transform:translateY(-12px) rotate(4deg) scale(1.05); } }
+        @keyframes gift-phoenix-motion { 0%,100% { transform:translateY(5px) scale(.98); filter:drop-shadow(0 0 5px #f97316); } 50% { transform:translateY(-12px) scale(1.06); filter:drop-shadow(0 0 20px #fbbf24); } }
+        @keyframes gift-rocket-motion { 0%,100% { transform:translateY(5px) rotate(-3deg); } 50% { transform:translateY(-13px) rotate(3deg); } }
+        @keyframes gift-money-motion { 0%,100% { transform:rotateY(-10deg) translateY(0); } 50% { transform:rotateY(10deg) translateY(-8px); } }
+        @keyframes gift-cosmos-motion { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         @keyframes gift-object-turn { 0%,100% { transform:rotateY(-13deg) rotateX(5deg) translateY(0); } 50% { transform:rotateY(13deg) rotateX(-5deg) translateY(-10px); } }
         @keyframes gift-object-float { 0%,100% { transform:translateY(0) rotateZ(-2deg); } 50% { transform:translateY(-8px) rotateZ(2deg); } }
         @keyframes gift-art-entry { 0% { transform:scale(.35) rotateY(70deg); opacity:0; } 70% { transform:scale(1.08) rotateY(-8deg); opacity:1; } 100% { transform:scale(1) rotateY(0); } }
