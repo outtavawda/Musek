@@ -1,0 +1,85 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import type { CookieOptions } from "@supabase/ssr";
+import { AccessToken } from "livekit-server-sdk";
+
+export const runtime = "nodejs";
+
+export async function POST(request: Request) {
+  try {
+    const cookieStore = cookies();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ error: "Supabase configuration is incomplete." }, { status: 500 });
+    }
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(values: { name: string; value: string; options: CookieOptions }[]) {
+          values.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        },
+      },
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Sign in to join a MUSEK live room." }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => null);
+    const roomId = typeof body?.roomId === "string" ? body.roomId : "";
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(roomId)) {
+      return NextResponse.json({ error: "A valid live room is required." }, { status: 400 });
+    }
+
+    const { data: room, error: roomError } = await supabase
+      .from("social_live_rooms")
+      .select("id,status,host_id")
+      .eq("id", roomId)
+      .eq("status", "live")
+      .maybeSingle();
+
+    if (roomError || !room) {
+      return NextResponse.json({ error: "This live room is no longer available." }, { status: 404 });
+    }
+
+    const livekitUrl = process.env.LIVEKIT_URL;
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+    if (!livekitUrl || !apiKey || !apiSecret) {
+      return NextResponse.json({ error: "Live video is not configured yet. Add the LiveKit server settings to the deployment environment." }, { status: 503 });
+    }
+
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("display_name,artist_name")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const displayName = profile?.artist_name || profile?.display_name ||
+      user.user_metadata?.display_name || "MUSEK Member";
+
+    const token = new AccessToken(apiKey, apiSecret, {
+      identity: user.id,
+      name: String(displayName).slice(0, 100),
+      ttl: "2h",
+    });
+
+    token.addGrant({
+      roomJoin: true,
+      room: `musek-${room.id}`,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
+
+    return NextResponse.json({ token: await token.toJwt(), serverUrl: livekitUrl });
+  } catch (error) {
+    console.error("MUSEK live video token error:", error);
+    return NextResponse.json({ error: "Could not prepare your live video connection." }, { status: 500 });
+  }
+}
