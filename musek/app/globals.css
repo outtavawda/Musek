@@ -4,11 +4,11 @@
 @tailwind utilities;
 
 :root {
-  --bg: #090a0e;
-  --panel: #12141b;
-  --text: #f6f4f0;
-  --muted: #a5a6b0;
-  --accent: #c8ff4d;
+  --bg: #080711;
+  --panel: #12101b;
+  --text: #f8f6fb;
+  --muted: #aaa0b5;
+  --accent: #c084fc;
 }
 
 * {
@@ -147,11 +147,11 @@ a {
 
 .primaryButton {
   background: var(--accent);
-  color: #11140a;
+  color: #171023;
 }
 
 .primaryButton:hover {
-  background: #d8ff82;
+  background: #d8b4fe;
 }
 
 .secondaryButton {
@@ -180,11 +180,11 @@ a {
   top: 115px;
   background: radial-gradient(
     circle at 35% 35%,
-    rgba(200,255,77,.27),
-    rgba(200,255,77,.03) 55%,
+    rgba(168,85,247,.27),
+    rgba(168,85,247,.03) 55%,
     transparent 70%
   );
-  border: 1px solid rgba(200,255,77,.13);
+  border: 1px solid rgba(168,85,247,.13);
 }
 
 .orbTwo {
@@ -192,8 +192,8 @@ a {
   height: 230px;
   right: 15%;
   top: 210px;
-  border: 1px solid rgba(200,255,77,.22);
-  box-shadow: 0 0 90px rgba(200,255,77,.08) inset;
+  border: 1px solid rgba(168,85,247,.22);
+  box-shadow: 0 0 90px rgba(168,85,247,.08) inset;
 }
 
 /* HOMEPAGE INTRO */
@@ -273,8 +273,8 @@ a {
   max-width: 1124px;
   margin: 0 auto 100px;
   padding: 70px;
-  background: linear-gradient(120deg, #171c12, #11131a 70%);
-  border: 1px solid #343a29;
+  background: linear-gradient(120deg, #241536, #11101b 70%);
+  border: 1px solid #4c3263;
 }
 
 .creatorBanner h2 {
