@@ -16,7 +16,7 @@ export default async function DiscoverPage() {
     .order("display_name", { ascending: true });
 
   return (
-    <main className="pageWrap">
+    <main className="pageWrap" style={{ width: "100%", minHeight: "100vh", padding: "0 clamp(16px, 3vw, 48px) 48px", boxSizing: "border-box" }}>
       <nav className="nav">
         <Link className="brand" href="/">
           MUSEK<span>.</span>
@@ -26,7 +26,7 @@ export default async function DiscoverPage() {
         </Link>
       </nav>
 
-      <section className="authCard profileCard">
+      <section className="authCard profileCard" style={{ width: "100%", maxWidth: "1440px", margin: "24px auto 0", padding: "clamp(20px, 3vw, 42px)", boxSizing: "border-box" }}>
         <p className="eyebrow">EXPLORE MUSEK</p>
         <h1>Discover MUSEK</h1>
         <p className="muted">
