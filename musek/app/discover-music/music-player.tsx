@@ -311,7 +311,17 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
               controls
               preload="none"
               src={selectedSong.audioUrl || undefined}
-              onPlay={() => recordPlay(selectedSong.id)}
+              onTimeUpdate={(event) => {
+                const audio = event.currentTarget;
+                const playThreshold =
+                  Number.isFinite(audio.duration) && audio.duration > 0 && audio.duration < 30
+                    ? audio.duration * 0.5
+                    : 30;
+
+                if (audio.currentTime >= playThreshold) {
+                  void recordPlay(selectedSong.id);
+                }
+              }}
               onEnded={nextSong}
               className="h-9 w-full"
             />
