@@ -187,24 +187,38 @@ export default async function FanDashboardPage() {
 
         <section className="min-w-0 flex-1 px-5 py-6 sm:px-8 lg:px-10 lg:py-9">
           <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className={label}>FAN WORKSPACE</p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-                Welcome back, {displayName}
-              </h1>
-              <p className={`${muted} mt-2`}>
-                Your music, your artists, all in one place.
-              </p>
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="hidden h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-purple-300/25 bg-gradient-to-br from-purple-600 to-fuchsia-700 sm:flex sm:items-center sm:justify-center">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xl font-black">{displayName.slice(0, 1).toUpperCase()}</span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className={label}>FAN WORKSPACE</p>
+                <h1 className="mt-2 truncate text-3xl font-black tracking-tight sm:text-4xl">
+                  Welcome back, {displayName}
+                </h1>
+                <p className={`${muted} mt-2`}>
+                  Your music, your artists, all in one place.
+                </p>
+              </div>
             </div>
-            <div className="flex gap-2 lg:hidden">
-              <Link href="/feed" className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold">
-                For You
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href="/profile" className="hidden rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-gray-300 transition hover:border-purple-400/40 hover:text-white sm:inline-flex">
+                My Profile
               </Link>
-              <form action={signOut}>
-                <button className="rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold">
-                  Sign out
-                </button>
-              </form>
+              <div className="flex gap-2 lg:hidden">
+                <Link href="/feed" className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold">
+                  For You
+                </Link>
+                <form action={signOut}>
+                  <button className="rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold">
+                    Sign out
+                  </button>
+                </form>
+              </div>
             </div>
           </header>
 
@@ -243,7 +257,8 @@ export default async function FanDashboardPage() {
               <p className={label}>TOTAL COINS PURCHASED</p>
               <p className="mt-3 text-4xl font-black tabular-nums">{totalPurchased.toLocaleString("en-CA")}</p>
               <p className={`${muted} mt-2`}>Lifetime coin purchases</p>
-              <p className="mt-5 text-xs text-gray-500">100 coins = CAD $1.00</p>
+              <p className="mt-2 text-xs text-gray-500">{paidPurchases.length} completed purchase{paidPurchases.length === 1 ? "" : "s"}</p>
+              <p className="mt-3 text-xs text-gray-500">100 coins = CAD $1.00</p>
             </div>
             <div className={card}>
               <p className={label}>ARTISTS FOLLOWING</p>
