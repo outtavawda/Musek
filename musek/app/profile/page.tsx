@@ -46,8 +46,8 @@ export default async function ProfilePage({
     "fan";
 
   return (
-    <main className="pageWrap">
-      <nav className="nav">
+    <main className="pageWrap" style={{ minHeight: "100vh", padding: "32px 20px 70px", background: "radial-gradient(ellipse at top, #21133d 0%, #09090f 48%, #050507 100%)", color: "#f8f7ff" }}>
+      <nav className="nav" style={{ maxWidth: "1080px", margin: "0 auto 34px", padding: "18px 22px", border: "1px solid rgba(168, 85, 247, .22)", borderRadius: "18px", background: "rgba(15, 13, 25, .82)", backdropFilter: "blur(16px)" }}>
         <Link className="brand" href="/">
           MUSEK<span>.</span>
         </Link>
@@ -59,9 +59,9 @@ export default async function ProfilePage({
         </form>
       </nav>
 
-      <section className="authCard profileCard">
-        <p className="eyebrow">YOUR MUSEK PROFILE</p>
-        <h1>Edit profile</h1>
+      <section className="authCard profileCard" style={{ maxWidth: "760px", margin: "0 auto", padding: "clamp(24px, 5vw, 48px)", border: "1px solid rgba(168, 85, 247, .24)", borderRadius: "26px", background: "linear-gradient(145deg, rgba(28, 20, 45, .96), rgba(11, 11, 18, .98))", boxShadow: "0 24px 90px rgba(0, 0, 0, .42)" }}>
+        <p className="eyebrow" style={{ color: "#c084fc", letterSpacing: ".22em", fontWeight: 800 }}>YOUR MUSEK PROFILE</p>
+        <h1 style={{ fontSize: "clamp(32px, 5vw, 46px)", marginBottom: "28px", background: "linear-gradient(90deg, #fff, #d8b4fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Edit profile</h1>
 
         {searchParams?.error && (
           <p className="notice error">{searchParams.error}</p>
@@ -100,7 +100,7 @@ export default async function ProfilePage({
             </div>
           )}
 
-          <h2>Profile picture</h2>
+          <h2 style={{ color: "#f3e8ff" }}>Profile picture</h2>
 
           <form
             action={uploadProfilePhoto}
@@ -125,12 +125,6 @@ export default async function ProfilePage({
         </div>
 
         <form action={updateProfile} className="form">
-          <input
-            type="hidden"
-            name="avatar_url"
-            value={profile?.avatar_url || ""}
-          />
-
           <label>
             Display name
             <input
@@ -161,7 +155,7 @@ export default async function ProfilePage({
 
           {accountType === "artist" && (
             <>
-              <h2>Artist information</h2>
+              <h2 style={{ color: "#f3e8ff", marginTop: "12px" }}>Artist information</h2>
 
               <label>
                 Artist name
@@ -184,7 +178,7 @@ export default async function ProfilePage({
 
           {accountType === "label" && (
             <>
-              <h2>Record label information</h2>
+              <h2 style={{ color: "#f3e8ff", marginTop: "12px" }}>Record label information</h2>
 
               <label>
                 Record label name
@@ -227,7 +221,7 @@ export default async function ProfilePage({
             Make my profile public
           </label>
 
-          <button className="primaryButton" type="submit">
+          <button className="primaryButton" type="submit" style={{ width: "100%", padding: "15px", borderRadius: "13px", background: "linear-gradient(90deg, #9333ea, #c026d3)", border: 0, color: "white", fontWeight: 800, boxShadow: "0 8px 28px rgba(147, 51, 234, .28)" }}>
             Save profile
           </button>
         </form>
