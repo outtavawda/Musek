@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import SongComments from "./song-comments";
 
@@ -434,10 +435,10 @@ export default function FeedClient({
             const nextSong = songs[index + 1];
 
             return (
-              <article id={\`feed-song-\${song.id}\`} key={song.id} className="feed-card">
+              <article id={`feed-song-${song.id}`} key={song.id} className="feed-card">
                 <div className="feed-art">
                   {song.artworkUrl ? (
-                    <img src={song.artworkUrl} alt={\`\${song.title} cover\`} />
+                    <img src={song.artworkUrl} alt={`${song.title} cover`} />
                   ) : (
                     <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"110px",color:"#d8b4fe"}}>♫</div>
                   )}
@@ -463,14 +464,14 @@ export default function FeedClient({
                       type="button"
                       className="feed-skip"
                       onClick={() => {
-                        document.getElementById(\`feed-song-\${song.id}\`)?.querySelector("audio")?.pause();
+                        document.getElementById(`feed-song-${song.id}`)?.querySelector("audio")?.pause();
                         void skipSong(song.id, nextSong?.id);
                       }}
                       disabled={Boolean(skipLoading)}
                     >
                       {isSkipping ? "Skipping..." : "⏭ Skip"}
                     </button>
-                    <Link href={\`/artist/\${song.artistId}\`}>Artist Profile ↗</Link>
+                    <Link href={`/artist/${song.artistId}`}>Artist Profile ↗</Link>
                   </div>
 
                   <div className="feed-counts">
