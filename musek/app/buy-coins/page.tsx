@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 const packages = [
   { coins: 100, price: "$1.00" },
@@ -49,6 +50,14 @@ export default function BuyCoinsPage() {
   return (
     <main className="min-h-screen bg-black px-6 py-12 text-white">
       <div className="mx-auto max-w-xl">
+
+        <Link
+          href="/dashboard"
+          className="mb-8 inline-block text-sm font-semibold text-purple-400 hover:text-purple-300"
+        >
+          ← Return to Dashboard
+        </Link>
+
         <h1 className="mb-3 text-4xl font-bold">Buy MUSEK Coins</h1>
 
         <p className="mb-8 text-gray-400">
@@ -100,6 +109,16 @@ export default function BuyCoinsPage() {
         <p className="mt-5 text-center text-sm text-gray-500">
           Secure checkout powered by Square.
         </p>
+
+        <div className="mt-8 border-t border-gray-800 pt-6 text-center">
+          <Link
+            href="/dashboard"
+            className="font-semibold text-purple-400 hover:text-purple-300"
+          >
+            Return to Dashboard →
+          </Link>
+        </div>
+
       </div>
     </main>
   );
