@@ -108,24 +108,56 @@ export default function LiveGifts({
   const playGiftSound = useCallback((coins: number) => {
     const context = audioContextRef.current;
     if (!soundEnabled || !context || context.state !== "running") return;
-    const notes = coins >= 60000 ? [392, 523.25, 659.25, 783.99] : coins >= 20000 ? [349.23, 440, 587.33] : coins >= 2500 ? [440, 554.37] : [659.25];
+
+    // Each tier has a distinct short sonic signature. Keep the mix quiet
+    // enough to sit underneath live speech and music.
+    const tier = coins >= 60000 ? "legendary" : coins >= 20000 ? "premium" : coins >= 2500 ? "medium" : "small";
+    const notes = tier === "legendary"
+      ? [392, 523.25, 659.25, 783.99, 1046.5]
+      : tier === "premium"
+        ? [349.23, 440, 587.33, 698.46]
+        : tier === "medium"
+          ? [440, 554.37, 659.25]
+          : [659.25, 987.77];
+
     const now = context.currentTime;
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.linearRampToValueAtTime(tier === "legendary" ? 0.075 : 0.045, now + 0.035);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + (tier === "legendary" ? 1.25 : 0.72));
+    master.connect(context.destination);
+
     notes.forEach((frequency, index) => {
+      const startAt = now + index * (tier === "legendary" ? 0.095 : 0.075);
       const oscillator = context.createOscillator();
-      const gain = context.createGain();
+      const overtone = context.createOscillator();
+      const voiceGain = context.createGain();
+      const overtoneGain = context.createGain();
       const filter = context.createBiquadFilter();
-      oscillator.type = coins >= 20000 ? "triangle" : "sine";
-      oscillator.frequency.setValueAtTime(frequency, now + index * 0.105);
+
+      oscillator.type = tier === "small" ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(frequency, startAt);
+      overtone.type = "sine";
+      overtone.frequency.setValueAtTime(frequency * 2.01, startAt);
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(coins >= 60000 ? 2400 : 1500, now + index * 0.105);
-      gain.gain.setValueAtTime(0.0001, now + index * 0.105);
-      gain.gain.exponentialRampToValueAtTime(coins >= 60000 ? 0.12 : 0.07, now + index * 0.105 + 0.025);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.105 + 0.34);
+      filter.frequency.setValueAtTime(tier === "legendary" ? 3200 : 2200, startAt);
+
+      voiceGain.gain.setValueAtTime(0.0001, startAt);
+      voiceGain.gain.linearRampToValueAtTime(0.72, startAt + 0.025);
+      voiceGain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.48);
+      overtoneGain.gain.setValueAtTime(0.0001, startAt);
+      overtoneGain.gain.linearRampToValueAtTime(0.16, startAt + 0.02);
+      overtoneGain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.3);
+
       oscillator.connect(filter);
-      filter.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start(now + index * 0.105);
-      oscillator.stop(now + index * 0.105 + 0.36);
+      filter.connect(voiceGain);
+      voiceGain.connect(master);
+      overtone.connect(overtoneGain);
+      overtoneGain.connect(master);
+      oscillator.start(startAt);
+      overtone.start(startAt);
+      oscillator.stop(startAt + 0.5);
+      overtone.stop(startAt + 0.32);
     });
   }, [soundEnabled]);
 
@@ -386,6 +418,7 @@ export default function LiveGifts({
           <button type="button" onClick={() => previewGift(10)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview small ✨</button>
           <button type="button" onClick={() => previewGift(2500)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview medium 💎</button>
           <button type="button" onClick={() => previewGift(60000)} className="rounded-lg border border-amber-300/20 bg-amber-400/[.08] px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/50">Preview premium 🌌</button>
+          <button type="button" onClick={() => previewGift(150000)} className="rounded-lg border border-fuchsia-300/30 bg-gradient-to-r from-amber-400/10 to-fuchsia-500/15 px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/60">Preview legendary 🐉</button>
         </div>
       </div>
       {notice && <p role="status" className="mt-3 text-xs text-purple-200">{notice}</p>}
