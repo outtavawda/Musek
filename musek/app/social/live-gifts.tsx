@@ -269,8 +269,18 @@ export default function LiveGifts({
         const details = giftForCoins(Number(activeGift.coins));
         const tier = Number(activeGift.coins) >= 60000 ? "legendary" : Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 2500 ? "medium" : "small";
         return (
-          <div key={activeGift.gift_id} className={`musek-gift-overlay musek-gift-${tier}`} role="status" aria-live="polite">
-            <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
+          <div key={activeGift.gift_id} className={`musek-gift-overlay musek-gift-${tier} musek-gift-event-${(details?.name || "gift").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} role="status" aria-live="polite">
+            {tier === "legendary" && (
+              <div className="musek-legendary-event" aria-hidden="true">
+                <div className="musek-event-vignette" />
+                <div className="musek-event-shockwave" />
+                <div className="musek-event-beam musek-event-beam-one" />
+                <div className="musek-event-beam musek-event-beam-two" />
+                <div className="musek-event-title">A LEGENDARY MOMENT</div>
+                <div className="musek-event-embers">{Array.from({ length: 34 }, (_, index) => <i key={index} style={{ "--ember": index } as React.CSSProperties} />)}</div>
+              </div>
+            )}
+            <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-content">
               <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
               <p className="musek-gift-eyebrow">{tier === "legendary" ? "✦ MUSEK ICONIC MOMENT ✦" : tier === "premium" ? "MUSEK PREMIUM GIFT" : tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
@@ -317,6 +327,25 @@ export default function LiveGifts({
         .musek-gift-legendary .musek-gift-content { border: 1px solid rgba(253,224,71,.9); background: linear-gradient(145deg,rgba(89,52,16,.96),rgba(34,14,60,.98) 48%,rgba(7,7,20,.98)); box-shadow: 0 0 35px rgba(253,224,71,.75),0 0 120px rgba(168,85,247,.72),0 0 220px rgba(217,70,239,.35),inset 0 1px rgba(255,255,255,.5); animation: gift-legendary-entry 1.5s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-legendary .musek-gift-eyebrow { color: #fef08a; }
         .musek-gift-legendary .musek-gift-art-svg { animation-duration: 2.8s; }
+        .musek-legendary-event { position:absolute; inset:0; overflow:hidden; z-index:0; }
+        .musek-event-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at center,transparent 8%,rgba(0,0,0,.28) 58%,rgba(0,0,0,.86) 100%); animation:event-vignette 8s ease both; }
+        .musek-event-shockwave { position:absolute; left:50%; top:50%; width:18vmin; aspect-ratio:1; border:3px solid rgba(253,224,71,.9); border-radius:50%; transform:translate(-50%,-50%) scale(.1); box-shadow:0 0 35px #facc15,inset 0 0 35px #c084fc; animation:event-shockwave 1.35s cubic-bezier(.12,.7,.2,1) both; }
+        .musek-event-beam { position:absolute; left:50%; top:50%; width:2px; height:150vmax; transform-origin:top center; background:linear-gradient(180deg,transparent,rgba(253,224,71,.45),transparent); filter:blur(5px); opacity:0; }
+        .musek-event-beam-one { transform:rotate(28deg); animation:event-beam 2.8s ease-in-out .15s both; }
+        .musek-event-beam-two { transform:rotate(-32deg); animation:event-beam 2.8s ease-in-out .4s both; }
+        .musek-event-title { position:absolute; top:9%; left:0; width:100%; text-align:center; color:#fef3c7; font-size:clamp(11px,2vw,18px); font-weight:1000; letter-spacing:.42em; text-shadow:0 0 18px #f59e0b,0 0 38px #a855f7; animation:event-title 8s ease both; }
+        .musek-event-embers { position:absolute; inset:0; overflow:hidden; }
+        .musek-event-embers i { position:absolute; left:calc((var(--ember) * 29.7%) - 430%); bottom:-12%; width:3px; height:calc(10px + (var(--ember) * 1.1px)); border-radius:99px; background:linear-gradient(#fff7ed,#f97316,transparent); box-shadow:0 0 12px #fb923c; opacity:0; animation:event-ember calc(2.1s + (var(--ember) * .035s)) ease-out infinite; animation-delay:calc(var(--ember) * -.11s); }
+        .musek-gift-event-dragon .musek-gift-content { animation:dragon-reveal 1.8s cubic-bezier(.12,.8,.2,1) both; }
+        .musek-gift-event-dragon .musek-gift-art { filter:drop-shadow(0 0 28px rgba(16,185,129,.8)) drop-shadow(0 0 55px rgba(249,115,22,.55)); }
+        .musek-gift-event-phoenix .musek-gift-art { filter:drop-shadow(0 0 30px rgba(249,115,22,.9)) drop-shadow(0 0 70px rgba(234,179,8,.55)); }
+        .musek-gift-event-galaxy .musek-event-vignette,.musek-gift-event-universe .musek-event-vignette,.musek-gift-event-musek-legend .musek-event-vignette { background:radial-gradient(ellipse at center,rgba(88,28,135,.08),rgba(5,5,20,.28) 52%,rgba(0,0,0,.9) 100%); }
+        @keyframes event-vignette { 0% { opacity:0; } 12%,82% { opacity:1; } 100% { opacity:0; } }
+        @keyframes event-shockwave { 0% { opacity:0; transform:translate(-50%,-50%) scale(.1); } 15% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-50%) scale(15); } }
+        @keyframes event-beam { 0%,100% { opacity:0; } 25%,60% { opacity:.7; } }
+        @keyframes event-title { 0%,12% { opacity:0; transform:translateY(-18px); } 24%,78% { opacity:1; transform:translateY(0); } 100% { opacity:0; } }
+        @keyframes event-ember { 0% { opacity:0; transform:translate3d(0,0,0) rotate(15deg); } 12% { opacity:.95; } 100% { opacity:0; transform:translate3d(calc((var(--ember) - 16) * 2px),-115vh,0) rotate(210deg); } }
+        @keyframes dragon-reveal { 0% { opacity:0; transform:translateY(70px) scale(.35) rotateX(35deg); filter:blur(18px); } 60% { opacity:1; transform:translateY(-12px) scale(1.08) rotateX(0); filter:blur(0); } 100% { opacity:1; transform:translateY(0) scale(1); } }
         .musek-gift-effects { position: absolute; inset: 0; overflow: hidden; }
         .musek-gift-effects span { position: absolute; left: calc((var(--spark) * 7.3%) + 3%); top: calc((var(--spark) * 13.7%) + 2%); color: #fef08a; font-size: calc(14px + (var(--spark) * 1.2px)); text-shadow: 0 0 18px #c084fc,0 0 34px #fef08a; animation: gift-spark 1.8s ease-in-out infinite; animation-delay: calc(var(--spark) * -0.17s); }
         .musek-gift-effects span:nth-child(1) { --spark: 1; }
