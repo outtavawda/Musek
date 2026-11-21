@@ -88,7 +88,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setCameraOn(true); setMicOn(true);
-      setNotice("Your local camera and microphone preview is ready. Live broadcasting and remote guest connections still need the video service integration.");
+      setNotice("Your local camera and microphone preview is ready. Join a LiveKit room to broadcast to other participants once the service credentials are configured.");
     } catch {
       setNotice("Camera or microphone permission was denied, or no device is available.");
     }
@@ -200,7 +200,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
           <form onSubmit={sendMessage} className="flex gap-2 border-t border-white/10 p-3"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Write a message…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm outline-none focus:border-purple-400"/><button disabled={!draft.trim()} className="rounded-xl bg-purple-600 px-4 text-sm font-bold disabled:opacity-40">Send</button></form>
         </div>
       </section>}
-      <p className="mt-12 text-center text-xs leading-6 text-gray-600">MUSEK SOCIAL is being rolled out in stages. This first foundation includes live room records, realtime chat, reactions and local device preview. Full multi-person video streaming, private calls, moderation and gift checkout require their dedicated integrations.</p>
+      <p className="mt-12 text-center text-xs leading-6 text-gray-600">MUSEK SOCIAL now includes live rooms, realtime chat, reactions, LiveKit multi-person video and host-issued artist guest invitations. Live video requires LiveKit credentials; private one-to-one calls, recordings, in-room gifts and production moderation remain in the next rollout.</p>
     </div>
   );
 }
