@@ -60,61 +60,147 @@ export default function BuyCoinsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-6 py-12 text-white">
-      <div className="mx-auto max-w-xl">
-
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#050505",
+        color: "white",
+        padding: "48px 20px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "850px",
+          margin: "0 auto",
+        }}
+      >
         <Link
           href="/dashboard"
-          className="mb-8 inline-block text-sm font-semibold text-purple-400 hover:text-purple-300"
+          style={{
+            display: "inline-block",
+            color: "#b78cff",
+            textDecoration: "none",
+            marginBottom: "35px",
+            fontWeight: 600,
+          }}
         >
           ← Return to Dashboard
         </Link>
 
-        <h1 className="mb-3 text-4xl font-bold">
+        <h1
+          style={{
+            fontSize: "34px",
+            fontWeight: 800,
+            marginBottom: "12px",
+          }}
+        >
           Buy MUSEK Coins
         </h1>
 
-        <p className="mb-8 text-gray-400">
+        <p
+          style={{
+            color: "#aaa",
+            marginBottom: "35px",
+            lineHeight: 1.6,
+          }}
+        >
           Purchase coins to support your favourite artists.
           100 MUSEK Coins = CAD $1.00.
         </p>
 
-        <div className="space-y-4">
-          {packages.map((item) => (
-            <button
-              key={item.coins}
-              type="button"
-              onClick={() => setSelectedPackage(item.coins)}
-              className={`flex w-full items-center gap-4 rounded-xl border p-4 text-left transition ${
-                selectedPackage === item.coins
-                  ? "border-purple-500 bg-purple-950"
-                  : "border-gray-700 bg-gray-900 hover:border-gray-500"
-              }`}
-            >
-              <img
-                src={item.image}
-                alt={`${item.coins.toLocaleString()} MUSEK Coins`}
-                className="h-14 w-14 shrink-0 object-contain"
-              />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: "14px",
+            justifyContent: "center",
+          }}
+        >
+          {packages.map((item) => {
+            const selected = selectedPackage === item.coins;
 
-              <span className="min-w-0 flex-1">
-                <span className="block text-xl font-bold">
+            return (
+              <button
+                key={item.coins}
+                type="button"
+                onClick={() => setSelectedPackage(item.coins)}
+                style={{
+                  flex: "1 1 180px",
+                  maxWidth: "260px",
+                  minWidth: "0",
+                  background: "#111",
+                  color: "white",
+                  border: selected
+                    ? "2px solid #a855f7"
+                    : "1px solid #333",
+                  borderRadius: "14px",
+                  padding: "20px 12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                  cursor: "pointer",
+                  boxShadow: selected
+                    ? "0 0 16px rgba(168,85,247,0.2)"
+                    : "none",
+                }}
+              >
+                <img
+                  src={item.image}
+                  alt={`${item.coins} MUSEK Coins`}
+                  style={{
+                    width: "55px",
+                    height: "55px",
+                    objectFit: "contain",
+                    display: "block",
+                    background: "transparent",
+                  }}
+                />
+
+                <span
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 800,
+                  }}
+                >
                   {item.coins.toLocaleString()} Coins
                 </span>
-                <span className="text-sm text-gray-400">
+
+                <span
+                  style={{
+                    color: "#aaa",
+                    fontSize: "13px",
+                  }}
+                >
                   MUSEK Coin Package
                 </span>
-              </span>
 
-              <span className="shrink-0 text-xl font-bold">
-                {item.price} CAD
-              </span>
-            </button>
-          ))}
+                <span
+                  style={{
+                    fontSize: "19px",
+                    fontWeight: 800,
+                    color: "#fff",
+                  }}
+                >
+                  {item.price} CAD
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {error && (
-          <p className="mt-5 rounded-lg bg-red-950 p-3 text-sm text-red-300">
+          <p
+            style={{
+              marginTop: "22px",
+              padding: "14px",
+              background: "#450a0a",
+              color: "#fca5a5",
+              borderRadius: "8px",
+            }}
+          >
             {error}
           </p>
         )}
@@ -123,24 +209,54 @@ export default function BuyCoinsPage() {
           type="button"
           onClick={handlePurchase}
           disabled={loading}
-          className="mt-8 w-full rounded-xl bg-purple-600 px-6 py-4 font-bold hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{
+            width: "100%",
+            marginTop: "35px",
+            padding: "17px",
+            background: loading ? "#398b25" : "#39ff14",
+            color: "#050505",
+            border: "none",
+            borderRadius: "12px",
+            fontSize: "17px",
+            fontWeight: 900,
+            cursor: loading ? "not-allowed" : "pointer",
+            boxShadow: "0 0 18px rgba(57,255,20,0.35)",
+            opacity: loading ? 0.7 : 1,
+          }}
         >
           {loading ? "Connecting to Square..." : "Continue to Payment"}
         </button>
 
-        <p className="mt-5 text-center text-sm text-gray-500">
+        <p
+          style={{
+            textAlign: "center",
+            color: "#777",
+            fontSize: "13px",
+            marginTop: "18px",
+          }}
+        >
           Secure checkout powered by Square.
         </p>
 
-        <div className="mt-8 border-t border-gray-800 pt-6 text-center">
+        <div
+          style={{
+            borderTop: "1px solid #292929",
+            marginTop: "35px",
+            paddingTop: "25px",
+            textAlign: "center",
+          }}
+        >
           <Link
             href="/dashboard"
-            className="font-semibold text-purple-400 hover:text-purple-300"
+            style={{
+              color: "#b78cff",
+              textDecoration: "none",
+              fontWeight: 600,
+            }}
           >
             Return to Dashboard →
           </Link>
         </div>
-
       </div>
     </main>
   );
