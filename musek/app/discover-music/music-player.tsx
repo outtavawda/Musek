@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -62,7 +61,6 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
         setFavorites((data || []).map((item) => item.track_id));
       } catch (error: unknown) {
         console.error("MUSEK favourites loading error:", error);
-
         setMessage(
           error instanceof Error
             ? error.message
@@ -81,7 +79,6 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
 
     try {
       const supabase = createClient();
-
       const { error } = await supabase.rpc("increment_track_play", {
         track_uuid: songId,
       });
@@ -118,27 +115,19 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
 
         if (error) throw error;
 
-        setFavorites((current) =>
-          current.filter((id) => id !== songId)
-        );
-
+        setFavorites((current) => current.filter((id) => id !== songId));
         setMessage("Song removed from favourites.");
       } else {
-        const { error } = await supabase
-          .from("favorite_tracks")
-          .insert({
-            user_id: userId,
-            track_id: songId,
-          });
+        const { error } = await supabase.from("favorite_tracks").insert({
+          user_id: userId,
+          track_id: songId,
+        });
 
         if (error) throw error;
 
         setFavorites((current) =>
-          current.includes(songId)
-            ? current
-            : [...current, songId]
+          current.includes(songId) ? current : [...current, songId]
         );
-
         setMessage("Song added to favourites!");
       }
     } catch (error: unknown) {
@@ -171,173 +160,152 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   }
 
   if (availableSongs.length === 0) {
-    return <p>No playable music is available yet.</p>;
+    return (
+      <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-12 text-center">
+        <div className="mb-3 text-4xl text-fuchsia-300">♫</div>
+        <h3 className="font-semibold text-white">No playable music yet</h3>
+        <p className="mt-2 text-sm text-gray-500">
+          Published tracks with playable audio will appear here.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div
-      style={{
-        paddingBottom: "150px",
-        background: "#000000",
-        color: "#ffffff",
-      }}
-    >
-      <h2 style={{ color: "#ffffff" }}>MUSEK Playlist</h2>
-
-      {availableSongs.map((song, index) => (
-        <div
-          key={song.id}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            padding: "12px",
-            marginBottom: "8px",
-            border: "1px solid #333333",
-            borderRadius: "8px",
-            background:
-              selectedIndex === index ? "#262626" : "#000000",
-            color: "#ffffff",
-          }}
-        >
-          {song.artworkUrl ? (
-            <img
-              src={song.artworkUrl}
-              alt={`${song.title} artwork`}
-              style={{
-                width: "58px",
-                height: "58px",
-                objectFit: "cover",
-                borderRadius: "7px",
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: "58px",
-                height: "58px",
-                borderRadius: "7px",
-                background: "#292929",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "25px",
-                flexShrink: 0,
-              }}
-            >
-              🎵
-            </div>
-          )}
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <button
-              type="button"
-              onClick={() => setSelectedIndex(index)}
-              style={{
-                display: "block",
-                width: "100%",
-                textAlign: "left",
-                border: "none",
-                background: "transparent",
-                color: "#ffffff",
-                cursor: "pointer",
-                padding: "5px",
-              }}
-            >
-              <strong>{song.title}</strong>
-              <br />
-              <span style={{ color: "#cccccc" }}>
-                {song.artistName} · {song.genre || "Music"}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => toggleFavorite(song.id)}
-              disabled={favoriteLoading}
-              style={{
-                marginTop: "5px",
-                background: "#222222",
-                color: "#ffffff",
-                border: "1px solid #555555",
-                borderRadius: "6px",
-                padding: "6px 10px",
-                cursor: "pointer",
-              }}
-            >
-              {favorites.includes(song.id) ? "❤️ Liked" : "🤍 Like"}
-            </button>
-          </div>
+    <div className="pb-44 text-white">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold">Your playlist</h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Select a track to load it into the player.
+          </p>
         </div>
-      ))}
+        <span className="rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold text-fuchsia-200">
+          {availableSongs.length} playable
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        {availableSongs.map((song, index) => {
+          const active = selectedIndex === index;
+          const liked = favorites.includes(song.id);
+
+          return (
+            <div
+              key={song.id}
+              className={
+                active
+                  ? "flex items-center gap-3 rounded-2xl border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/15 to-violet-500/10 p-3 shadow-lg shadow-fuchsia-950/20 sm:gap-4 sm:p-4"
+                  : "flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#0b0a14] p-3 transition hover:border-white/20 hover:bg-white/[0.04] sm:gap-4 sm:p-4"
+              }
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedIndex(index)}
+                aria-label={`Play ${song.title} in player`}
+                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-violet-700 to-fuchsia-600 sm:h-16 sm:w-16"
+              >
+                {song.artworkUrl ? (
+                  <img
+                    src={song.artworkUrl}
+                    alt={`${song.title} artwork`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-2xl">
+                    ♫
+                  </span>
+                )}
+                <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-xl text-white opacity-0 transition hover:opacity-100">
+                  ▶
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedIndex(index)}
+                className="min-w-0 flex-1 text-left"
+              >
+                <span className="block truncate text-sm font-bold text-white sm:text-base">
+                  {song.title}
+                </span>
+                <span className="mt-1 block truncate text-xs text-gray-400">
+                  {song.artistName}
+                </span>
+                <span className="mt-2 inline-flex max-w-full truncate rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                  {song.genre || "Music"}
+                </span>
+              </button>
+
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                {active && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
+                    Selected
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(song.id)}
+                  disabled={favoriteLoading}
+                  aria-label={liked ? "Remove from favourites" : "Add to favourites"}
+                  aria-pressed={liked}
+                  className={
+                    liked
+                      ? "rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-2 text-xs font-semibold text-pink-300 transition hover:bg-pink-500/20 disabled:opacity-50"
+                      : "rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-pink-400/30 hover:text-pink-300 disabled:opacity-50"
+                  }
+                >
+                  {liked ? "♥ Liked" : "♡ Like"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {message && (
-        <p role="status" style={{ color: "#ffffff" }}>
+        <p
+          role="status"
+          className="mt-4 rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-3 text-sm text-fuchsia-100"
+        >
           {message}
         </p>
       )}
 
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          background: "#000000",
-          color: "#ffffff",
-          padding: "12px 20px",
-          boxShadow: "0 -3px 12px rgba(255,255,255,0.08)",
-          borderTop: "1px solid #333333",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1000px",
-            margin: "0 auto",
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-          }}
-        >
-          {selectedSong.artworkUrl ? (
-            <img
-              src={selectedSong.artworkUrl}
-              alt={`${selectedSong.title} artwork`}
-              style={{
-                width: "65px",
-                height: "65px",
-                objectFit: "cover",
-                borderRadius: "8px",
-                flexShrink: 0,
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: "65px",
-                height: "65px",
-                borderRadius: "8px",
-                background: "#292929",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "28px",
-                flexShrink: 0,
-              }}
-            >
-              🎵
-            </div>
-          )}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-fuchsia-400/20 bg-[#0b0914]/95 px-3 py-3 shadow-[0_-12px_45px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 sm:gap-5">
+          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-violet-700 to-fuchsia-600 sm:h-14 sm:w-14">
+            {selectedSong.artworkUrl ? (
+              <img
+                src={selectedSong.artworkUrl}
+                alt={`${selectedSong.title} artwork`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center text-xl">
+                ♫
+              </span>
+            )}
+          </div>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <strong>{selectedSong.title}</strong>
-
-            <p style={{ margin: "4px 0 8px", color: "#cccccc" }}>
+          <div className="hidden min-w-0 w-44 shrink-0 sm:block">
+            <p className="truncate text-sm font-bold text-white">
+              {selectedSong.title}
+            </p>
+            <p className="mt-1 truncate text-xs text-gray-400">
               {selectedSong.artistName}
             </p>
+          </div>
 
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 sm:hidden">
+              <p className="truncate text-xs font-bold text-white">
+                {selectedSong.title}
+              </p>
+              <p className="truncate text-[10px] text-gray-400">
+                {selectedSong.artistName}
+              </p>
+            </div>
             <audio
               key={selectedSong.id}
               controls
@@ -345,51 +313,44 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
               src={selectedSong.audioUrl || undefined}
               onPlay={() => recordPlay(selectedSong.id)}
               onEnded={nextSong}
-              style={{
-                width: "100%",
-                colorScheme: "dark",
-              }}
+              className="h-9 w-full"
             />
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "10px",
-                marginTop: "8px",
-              }}
-            >
-              <button
-                type="button"
-                onClick={previousSong}
-                style={{
-                  background: "#222222",
-                  color: "#ffffff",
-                  border: "1px solid #555555",
-                  borderRadius: "6px",
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                Previous
-              </button>
-
-              <button
-                type="button"
-                onClick={nextSong}
-                style={{
-                  background: "#222222",
-                  color: "#ffffff",
-                  border: "1px solid #555555",
-                  borderRadius: "6px",
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                Next Song
-              </button>
-            </div>
           </div>
+
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <button
+              type="button"
+              onClick={previousSong}
+              aria-label="Previous song"
+              className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-semibold text-gray-200 transition hover:border-fuchsia-400/40 hover:text-white"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={nextSong}
+              aria-label="Next song"
+              className="rounded-full bg-fuchsia-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-fuchsia-950/40 transition hover:bg-fuchsia-400"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+        <div className="mt-2 flex justify-center gap-3 sm:hidden">
+          <button
+            type="button"
+            onClick={previousSong}
+            className="rounded-full border border-white/10 px-4 py-1.5 text-[11px] font-semibold text-gray-300"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            onClick={nextSong}
+            className="rounded-full bg-fuchsia-500 px-4 py-1.5 text-[11px] font-bold text-white"
+          >
+            Next Song
+          </button>
         </div>
       </div>
     </div>
