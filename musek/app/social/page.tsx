@@ -26,7 +26,7 @@ export default async function SocialPage() {
           <Link href="/profile" className="rounded-xl border border-white/10 px-4 py-2">Profile</Link>
         </div>
       </nav>
-      <SocialClient userId={user.id} displayName={displayName} accountType={profile?.account_type || "fan"} />
+      <SocialClient userId={user.id} displayName={displayName} accountType={profile?.account_type || "fan"} avatarUrl={profile?.avatar_url || null} />
     </main>
   );
 }
