@@ -44,7 +44,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     if (error) setNotice("Social rooms are not available yet. Apply the MUSEK Social database migration to enable them.");
     else {
       const roomRows = (data || []) as Room[];
-      const hostIds = [...new Set(roomRows.map((room) => room.host_id))];
+      const hostIds = Array.from(new Set(roomRows.map((room) => room.host_id)));
       const { data: profiles } = hostIds.length
         ? await supabase.from("user_profiles").select("id,avatar_url").in("id", hostIds)
         : { data: [] as { id: string; avatar_url: string | null }[] };
