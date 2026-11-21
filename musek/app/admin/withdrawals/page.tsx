@@ -56,7 +56,83 @@ export default async function AdminWithdrawalsPage() {
         <h1>Admin Withdrawals</h1>
         <p>Unable to load withdrawal requests.</p>
         <p>{error.message}</p>
-      </main>
+  
+      <style jsx global>{`
+        main.admin-shell {
+          max-width: 1280px !important;
+          min-height: 100vh;
+          padding: 42px 28px !important;
+          color: #f8f7ff;
+          background: radial-gradient(ellipse at 85% 0%, rgba(124,58,237,.18), transparent 38%), #080811;
+          font-family: inherit;
+        }
+        main.admin-shell > a {
+          display: inline-flex;
+          padding: 10px 15px;
+          border: 1px solid rgba(168,85,247,.35);
+          border-radius: 999px;
+          color: #d8b4fe;
+          text-decoration: none;
+          background: rgba(168,85,247,.08);
+        }
+        main.admin-shell h1 {
+          font-size: clamp(30px, 4vw, 44px) !important;
+          font-weight: 900;
+          letter-spacing: -.04em;
+          color: #fff;
+        }
+        main.admin-shell h2 { color: #fff; font-weight: 850; letter-spacing: -.025em; }
+        main.admin-shell p { color: #a7a4b8; }
+        main.admin-shell > div:first-of-type {
+          gap: 14px !important;
+        }
+        main.admin-shell > div:first-of-type > div {
+          background: linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98)) !important;
+          border: 1px solid rgba(168,85,247,.22) !important;
+          border-radius: 20px !important;
+          padding: 23px !important;
+          box-shadow: 0 16px 45px rgba(0,0,0,.22);
+        }
+        main.admin-shell > div:first-of-type > div p {
+          color: #aaa4bd !important;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: .09em;
+          font-weight: 700;
+        }
+        main.admin-shell > div:first-of-type > div h2 {
+          font-size: 32px !important;
+          color: #e9d5ff;
+        }
+        main.admin-shell > div:last-of-type > section {
+          background: linear-gradient(145deg, rgba(24,21,39,.98), rgba(13,13,24,.98)) !important;
+          border: 1px solid rgba(168,85,247,.2) !important;
+          border-radius: 22px !important;
+          padding: 25px !important;
+          box-shadow: 0 18px 50px rgba(0,0,0,.2);
+        }
+        main.admin-shell > div:last-of-type > section p { line-height: 1.65; }
+        main.admin-shell > div:last-of-type > section p strong { color: #eee8fa; }
+        main.admin-shell button {
+          border-radius: 999px !important;
+          padding: 11px 19px !important;
+          font-weight: 750;
+          transition: transform .18s ease, filter .18s ease;
+        }
+        main.admin-shell button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.15); }
+        main.admin-shell button:disabled { opacity: .55; cursor: wait; }
+        main.admin-shell input, main.admin-shell textarea {
+          color: #fff !important;
+          background: #0b0b16 !important;
+          border: 1px solid rgba(168,85,247,.3) !important;
+        }
+        main.admin-shell label { color: #d8b4fe; font-size: 13px; font-weight: 700; }
+        @media (max-width: 640px) {
+          main.admin-shell { padding: 26px 16px !important; }
+          main.admin-shell > div:last-of-type > section { padding: 18px !important; }
+        }
+      `}</style>
+    </main>
     );
   }
 
@@ -113,6 +189,7 @@ export default async function AdminWithdrawalsPage() {
 
   return (
     <main
+      className="admin-shell"
       style={{
         maxWidth: "1100px",
         margin: "0 auto",
