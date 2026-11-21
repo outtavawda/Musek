@@ -22,7 +22,7 @@ export default async function FavoritesPage() {
 
   if (favoritesError) {
     return (
-      <main style={{ maxWidth: "900px", margin: "40px auto", padding: "20px" }}>
+      <main style={{ width: "min(100% - 32px, 1440px)", margin: "40px auto", padding: "clamp(16px, 2.5vw, 36px)", boxSizing: "border-box" }}>
         <h1>My Favourites</h1>
         <p>Could not load your favourite songs: {favoritesError.message}</p>
         <Link href="/dashboard">Back to Dashboard</Link>
@@ -108,7 +108,7 @@ export default async function FavoritesPage() {
   );
 
   return (
-    <main style={{ maxWidth: "1000px", margin: "40px auto", padding: "20px" }}>
+    <main style={{ width: "min(100% - 32px, 1440px)", margin: "40px auto", padding: "clamp(16px, 2.5vw, 36px)", boxSizing: "border-box" }}>
       <h1>❤️ My Favourites</h1>
 
       <p>Your saved MUSEK songs, all in one place.</p>
