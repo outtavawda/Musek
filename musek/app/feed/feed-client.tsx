@@ -357,63 +357,74 @@ export default function FeedClient({
       window.removeEventListener("pagehide", handlePageHide);
       void saveListeningTime();
     };
-  }, [userId]);  return (
-    <main
-      style={{
-        minHeight: "100svh",
-        background: "#09090d",
-        color: "white",
-        padding: "15px",
-        boxSizing: "border-box",
-      }}
-    >
-      <header style={{ textAlign: "center", marginBottom: "15px" }}>
-        <h1 style={{ fontSize: "30px", margin: 0 }}>
-          MUSEK<span style={{ color: "#a855f7" }}>.</span>
-        </h1>
-        <p style={{ color: "#aaa", margin: "5px 0" }}>
-          Your music. Your discovery.
-        </p>
+  }, [userId]);
+  return (
+    <main className="musek-feed">
+      <style>{\`
+        .musek-feed{min-height:100svh;background:radial-gradient(ellipse at 50% 0%,rgba(126,34,206,.18),transparent 42%),#08070d;color:#fff;padding:0 22px 36px}
+        .musek-feed *{box-sizing:border-box}
+        .feed-topbar{max-width:1180px;height:76px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.09)}
+        .feed-logo{font-size:25px;font-weight:950;letter-spacing:-1.5px}.feed-logo span{color:#c084fc}
+        .feed-nav{display:flex;align-items:center;gap:10px}.feed-nav a{color:#e9d5ff;text-decoration:none;border:1px solid rgba(192,132,252,.28);background:rgba(88,28,135,.15);padding:10px 15px;border-radius:999px;font-size:13px;font-weight:700}
+        .feed-intro{max-width:1180px;margin:0 auto;padding:30px 0 22px;display:flex;justify-content:space-between;align-items:end;gap:20px}
+        .feed-kicker{color:#c084fc;font-size:11px;font-weight:800;letter-spacing:2.6px;margin:0 0 10px}
+        .feed-intro h1{font-size:clamp(30px,4vw,46px);letter-spacing:-2px;line-height:1;margin:0}
+        .feed-intro p{color:#a7a0b2;font-size:14px;line-height:1.6;margin:10px 0 0}
+        .feed-pill{white-space:nowrap;border:1px solid rgba(192,132,252,.25);background:rgba(126,34,206,.12);color:#e9d5ff;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:700}
+        .feed-status{max-width:1180px;margin:0 auto 14px;text-align:center;color:#e9d5ff;font-size:13px}
+        .feed-list{max-width:1180px;height:min(690px,calc(100svh - 190px));min-height:560px;margin:0 auto;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;display:flex;flex-direction:column;gap:18px;padding:2px 3px 20px;scrollbar-width:thin;scrollbar-color:#6b21a8 #17111f}
+        .feed-card{flex:0 0 100%;min-height:540px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);border:1px solid rgba(192,132,252,.22);border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#17111f,#0e0c14);scroll-snap-align:start;scroll-snap-stop:always;box-shadow:0 18px 60px rgba(0,0,0,.28)}
+        .feed-art{position:relative;min-height:540px;background:linear-gradient(135deg,#321052,#100d18);overflow:hidden}
+        .feed-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+        .feed-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 45%,rgba(10,8,15,.18)),linear-gradient(0deg,rgba(8,6,12,.72),transparent 55%)}
+        .feed-art-tag{position:absolute;z-index:1;left:22px;top:22px;border:1px solid rgba(255,255,255,.25);background:rgba(10,8,15,.48);backdrop-filter:blur(12px);padding:8px 12px;border-radius:999px;font-size:10px;letter-spacing:2px;font-weight:800;color:#f3e8ff}
+        .feed-art-title{position:absolute;z-index:1;left:26px;right:24px;bottom:26px;text-shadow:0 3px 24px rgba(0,0,0,.7)}
+        .feed-art-title small{display:block;color:#e9d5ff;font-size:11px;letter-spacing:2px;font-weight:800;margin-bottom:8px}
+        .feed-art-title strong{display:block;font-size:clamp(25px,3vw,40px);line-height:1.05;letter-spacing:-1.4px;overflow-wrap:anywhere}
+        .feed-details{padding:25px;display:flex;flex-direction:column;min-width:0;overflow-y:auto}
+        .feed-reason{display:inline-flex;align-self:flex-start;max-width:100%;color:#e9d5ff;background:rgba(126,34,206,.16);border:1px solid rgba(192,132,252,.25);padding:8px 11px;border-radius:999px;font-size:11px;font-weight:700;margin-bottom:13px}
+        .feed-track-name{font-size:25px;letter-spacing:-.8px;margin:0 0 5px;overflow-wrap:anywhere}
+        .feed-artist{font-size:14px;color:#d8cde5;margin:0 0 5px}
+        .feed-genre{font-size:12px;color:#93899f;margin:0 0 18px}
+        .feed-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 15px}
+        .feed-actions button,.feed-actions a{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(192,132,252,.34);border-radius:999px;padding:9px 12px;background:#1a1324;color:#f8f4ff;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer}
+        .feed-actions button:disabled{opacity:.55;cursor:wait}
+        .feed-actions .feed-like{background:linear-gradient(135deg,#7e22ce,#581c87);border-color:#a855f7}
+        .feed-actions .feed-skip{background:rgba(126,34,206,.22)}
+        .feed-counts{display:flex;gap:16px;color:#c4b5d4;font-size:12px;margin:0 0 12px}
+        .feed-audio{width:100%;display:block;margin:0 0 4px;accent-color:#a855f7}
+        .feed-empty{max-width:700px;margin:40px auto;padding:42px 24px;text-align:center;border:1px solid rgba(192,132,252,.2);border-radius:22px;background:#15101d;color:#c4b5d4}
+        @media(max-width:760px){.musek-feed{padding:0 12px 24px}.feed-topbar{height:66px}.feed-intro{padding:24px 2px 18px;align-items:flex-start;flex-direction:column;gap:12px}.feed-intro h1{font-size:34px}.feed-list{height:calc(100svh - 205px);min-height:560px;gap:14px}.feed-card{grid-template-columns:1fr;grid-template-rows:280px auto;min-height:0}.feed-art{min-height:280px}.feed-art-title{left:18px;bottom:17px}.feed-art-title strong{font-size:28px}.feed-details{padding:18px;overflow:visible}.feed-track-name{font-size:22px}.feed-nav a{padding:9px 12px}.feed-pill{font-size:11px}}
+        @media(max-width:420px){.feed-logo{font-size:22px}.feed-nav{gap:6px}.feed-nav a{font-size:11px;padding:8px 10px}.feed-list{height:calc(100svh - 215px)}.feed-card{grid-template-rows:240px auto}.feed-art{min-height:240px}.feed-details{padding:15px}.feed-actions button,.feed-actions a{padding:9px 10px;font-size:11px}}
+      \`}</style>
+
+      <header className="feed-topbar">
+        <Link className="feed-logo" href="/">MUSEK<span>.</span></Link>
+        <nav className="feed-nav" aria-label="Music navigation">
+          <Link href="/discover-music">Discover Music</Link>
+          <Link href="/fan-dashboard">My Dashboard</Link>
+        </nav>
       </header>
 
-      <div
-        style={{
-          textAlign: "center",
-          marginBottom: "12px",
-          color: "#c084fc",
-          fontWeight: "bold",
-          letterSpacing: "2px",
-        }}
-      >
-        FOR YOU
-      </div>
+      <section className="feed-intro">
+        <div>
+          <p className="feed-kicker">MADE FOR YOUR TASTE</p>
+          <h1>Your Music Feed</h1>
+          <p>Find your next favourite song. Keep listening, liking and discovering.</p>
+        </div>
+        <div className="feed-pill">✦ PERSONALIZED DISCOVERY</div>
+      </section>
 
-      {message && (
-        <p role="status" style={{ textAlign: "center", color: "#d8b4fe" }}>
-          {message}
-        </p>
-      )}
+      {message && <p className="feed-status" role="status">{message}</p>}
 
       {songs.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#aaa" }}>
-          No published songs are available yet.
-        </p>
+        <div className="feed-empty">
+          <div style={{fontSize:"38px",marginBottom:"12px"}}>♫</div>
+          <h2 style={{color:"white",margin:"0 0 8px"}}>Your next discovery is coming</h2>
+          <p style={{margin:0}}>No published songs are available yet. Check back soon.</p>
+        </div>
       ) : (
-        <div
-          style={{
-            maxWidth: "650px",
-            height: "calc(100svh - 145px)",
-            minHeight: "500px",
-            margin: "0 auto",
-            overflowY: "auto",
-            scrollSnapType: "y mandatory",
-            overscrollBehaviorY: "contain",
-            display: "flex",
-            flexDirection: "column",
-            gap: "15px",
-            scrollbarWidth: "none",
-          }}
-        >
+        <div className="feed-list">
           {songs.map((song, index) => {
             const isFavorite = favorites.includes(song.id);
             const isLoading = favoriteLoading === song.id;
@@ -423,247 +434,67 @@ export default function FeedClient({
             const nextSong = songs[index + 1];
 
             return (
-              <article
-                id={`feed-song-${song.id}`}
-                key={song.id}
-                style={{
-                  position: "relative",
-                  flex: "0 0 100%",
-                  height: "100%",
-                  minHeight: "500px",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                  background: "#191522",
-                  border: "1px solid #43246a",
-                  scrollSnapAlign: "start",
-                  scrollSnapStop: "always",
-                }}
-              >
-                {song.artworkUrl ? (
-                  <img
-                    src={song.artworkUrl}
-                    alt={`${song.title} cover`}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "grid",
-                      placeItems: "center",
-                      fontSize: "100px",
-                      background: "linear-gradient(135deg, #24103e, #111)",
-                    }}
-                  >
-                    🎵
+              <article id={\`feed-song-\${song.id}\`} key={song.id} className="feed-card">
+                <div className="feed-art">
+                  {song.artworkUrl ? (
+                    <img src={song.artworkUrl} alt={\`\${song.title} cover\`} />
+                  ) : (
+                    <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"110px",color:"#d8b4fe"}}>♫</div>
+                  )}
+                  <div className="feed-art-tag">MUSEK • DISCOVER</div>
+                  <div className="feed-art-title">
+                    <small>NOW IN YOUR FEED</small>
+                    <strong>{song.title}</strong>
                   </div>
-                )}
+                </div>
 
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(transparent 15%, rgba(0,0,0,.9) 100%)",
-                  }}
-                />
+                <div className="feed-details">
+                  <div className="feed-reason">✦ {song.recommendationReason}</div>
+                  <h2 className="feed-track-name">{song.title}</h2>
+                  <p className="feed-artist">{song.artistName}</p>
+                  <p className="feed-genre">{song.genre}</p>
 
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "25px",
-                    left: "20px",
-                    right: "20px",
-                    maxHeight: "calc(100% - 30px)",
-                    overflowY: "auto",
-                    paddingRight: "4px",
-                  }}
-                >
-                  <p
-                    style={{
-                      color: "#d8b4fe",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      letterSpacing: "2px",
-                    }}
-                  >
-                    MUSEK DISCOVERY
-                  </p>
-
-                  <h2 style={{ fontSize: "28px", margin: "8px 0" }}>
-                    {song.title}
-                  </h2>
-
-                  <p style={{ color: "#eee", margin: "5px 0" }}>
-                    {song.artistName}
-                  </p>
-
-                  <p style={{ color: "#ccc", fontSize: "14px" }}>
-                    {song.genre}
-                  </p>
-
-                  <p
-                    style={{
-                      display: "inline-block",
-                      color: "#e9d5ff",
-                      background: "rgba(126,34,206,0.35)",
-                      border: "1px solid rgba(192,132,252,0.5)",
-                      borderRadius: "20px",
-                      padding: "7px 12px",
-                      fontSize: "12px",
-                      margin: "4px 0 12px",
-                    }}
-                  >
-                    ✨ {song.recommendationReason}
-                  </p>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "12px",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      margin: "12px 0",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleFavorite(song.id)}
-                      disabled={isLoading}
-                      aria-pressed={isFavorite}
-                      style={{
-                        padding: "11px 18px",
-                        border: "1px solid #a855f7",
-                        borderRadius: "25px",
-                        background: isFavorite ? "#6b21a8" : "#17101f",
-                        color: "white",
-                        fontWeight: "bold",
-                        cursor: isLoading ? "wait" : "pointer",
-                        opacity: isLoading ? 0.6 : 1,
-                      }}
-                    >
-                      {isLoading
-                        ? "Saving..."
-                        : isFavorite
-                          ? "❤️ Liked"
-                          : "🤍 Like"}
+                  <div className="feed-actions">
+                    <button type="button" className="feed-like" onClick={() => toggleFavorite(song.id)} disabled={isLoading} aria-pressed={isFavorite}>
+                      {isLoading ? "Saving..." : isFavorite ? "♥ Liked" : "♡ Like"}
                     </button>
-
-                    <span
-                      aria-label={`${likeCount} likes`}
-                      style={{
-                        color: "#f5d0fe",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      ❤️ {likeCount} {likeCount === 1 ? "Like" : "Likes"}
-                    </span>
-
-                    <span
-                      aria-label={`${commentCount} public comments`}
-                      style={{
-                        color: "#d8b4fe",
-                        fontSize: "14px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      💬 {commentCount}{" "}
-                      {commentCount === 1 ? "Comment" : "Comments"}
-                    </span>
-
+                    <button type="button" onClick={() => shareSong(song)}>↗ Share</button>
                     <button
                       type="button"
-                      onClick={() => shareSong(song)}
-                      style={{
-                        padding: "11px 18px",
-                        border: "1px solid #a855f7",
-                        borderRadius: "25px",
-                        background: "#17101f",
-                        color: "white",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                      }}
-                    >
-                      ↗ Share Song
-                    </button>
-
-                    <button
-                      type="button"
+                      className="feed-skip"
                       onClick={() => {
-                        document
-                          .getElementById(`feed-song-${song.id}`)
-                          ?.querySelector("audio")
-                          ?.pause();
-
+                        document.getElementById(\`feed-song-\${song.id}\`)?.querySelector("audio")?.pause();
                         void skipSong(song.id, nextSong?.id);
                       }}
                       disabled={Boolean(skipLoading)}
-                      style={{
-                        padding: "11px 18px",
-                        border: "1px solid #a855f7",
-                        borderRadius: "25px",
-                        background: "#6b21a8",
-                        color: "white",
-                        fontWeight: "bold",
-                        cursor: skipLoading ? "wait" : "pointer",
-                        opacity: skipLoading ? 0.6 : 1,
-                      }}
                     >
-                      {isSkipping ? "Skipping..." : "⏭ Skip Song"}
+                      {isSkipping ? "Skipping..." : "⏭ Skip"}
                     </button>
+                    <Link href={\`/artist/\${song.artistId}\`}>Artist Profile ↗</Link>
+                  </div>
 
-                    <a
-                      href={`/artist/${song.artistId}`}
-                      style={{
-                        padding: "11px 18px",
-                        border: "1px solid #a855f7",
-                        borderRadius: "25px",
-                        color: "white",
-                        textDecoration: "none",
-                      }}
-                    >
-                      View Artist →
-                    </a>
+                  <div className="feed-counts">
+                    <span>♥ {likeCount} {likeCount === 1 ? "Like" : "Likes"}</span>
+                    <span>💬 {commentCount} {commentCount === 1 ? "Comment" : "Comments"}</span>
                   </div>
 
                   {song.audioUrl && (
                     <audio
+                      className="feed-audio"
                       controls
                       preload="none"
                       src={song.audioUrl}
                       onPlay={() => startListening(song.id)}
                       onPause={() => {
-                        if (listenSong.current === song.id) {
-                          void saveListeningTime();
-                        }
+                        if (listenSong.current === song.id) void saveListeningTime();
                       }}
                       onEnded={() => {
-                        if (listenSong.current === song.id) {
-                          void saveListeningTime();
-                        }
-                      }}
-                      style={{
-                        display: "block",
-                        width: "100%",
-                        marginTop: "12px",
+                        if (listenSong.current === song.id) void saveListeningTime();
                       }}
                     />
                   )}
 
-                  <SongComments
-                    trackId={song.id}
-                    onVisibleCountChange={(count) =>
-                      updateCommentCount(song.id, count)
-                    }
-                  />
+                  <SongComments trackId={song.id} onVisibleCountChange={(count) => updateCommentCount(song.id, count)} />
                 </div>
               </article>
             );
