@@ -94,7 +94,7 @@ export default function BuyCoinsPage() {
               <img
                 src={item.image}
                 alt={`${item.coins.toLocaleString()} MUSEK Coins`}
-                className="h-20 w-20 shrink-0 object-contain"
+                className="h-14 w-14 shrink-0 object-contain"
               />
 
               <span className="min-w-0 flex-1">
