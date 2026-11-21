@@ -315,6 +315,12 @@ export default async function DashboardPage() {
 
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
+                    href="/social"
+                    className="group relative inline-flex items-center gap-2 rounded-full border border-fuchsia-200/70 bg-[linear-gradient(110deg,#f5eaff_0%,#c084fc_18%,#7c3aed_42%,#e9d5ff_68%,#9333ea_100%)] px-6 py-3 text-sm font-black tracking-wide text-[#160b25] shadow-[0_0_10px_rgba(216,180,254,.75),0_0_28px_rgba(168,85,247,.45),inset_0_1px_0_rgba(255,255,255,.9)] transition duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_0_16px_rgba(216,180,254,.95),0_0_38px_rgba(168,85,247,.65)]"
+                  >
+                    <span aria-hidden="true">◉</span> MUSEK Social · Live <span aria-hidden="true">→</span>
+                  </Link>
+                  <Link
                     href="/profile"
                     className="rounded-full bg-purple-600 px-5 py-3 text-sm font-bold shadow-lg shadow-purple-900/40 transition hover:bg-purple-500"
                   >
