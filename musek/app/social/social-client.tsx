@@ -18,7 +18,7 @@ type Room = {
 };
 type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string };
 
-export default function SocialClient({ userId, displayName, accountType, avatarUrl }: { userId: string; displayName: string; accountType: string; avatarUrl: string | null }) {
+export default function SocialClient({ userId, displayName, avatarUrl }: { userId: string; displayName: string; avatarUrl: string | null }) {
   const supabase = createClient();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selected, setSelected] = useState<Room | null>(null);
@@ -159,7 +159,6 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#start-room" className="rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#171022]">Go live — anyone can host</a>
             <a href="#live-rooms" className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold">Explore live rooms</a>
-            <Link href="/buy-coins" className="rounded-xl border border-purple-300/30 bg-purple-500/15 px-5 py-3 text-sm font-bold">MUSEK Coins</Link>
           </div>
         </div>
       </section>
