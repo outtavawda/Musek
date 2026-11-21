@@ -16,10 +16,12 @@ export default function GlobalSocialButton() {
   const [rooms, setRooms] = useState<LiveRoom[]>([]);
   const [open, setOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [checkedAuth, setCheckedAuth] = useState(false);
 
   const loadLiveRooms = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setSignedIn(Boolean(user));
+    setCheckedAuth(true);
     if (!user) {
       setRooms([]);
       return;
@@ -36,20 +38,20 @@ export default function GlobalSocialButton() {
   }, [supabase]);
 
   useEffect(() => {
-    loadLiveRooms();
+    void loadLiveRooms();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(() => {
-      loadLiveRooms();
+      void loadLiveRooms();
     });
 
     const channel = supabase
       .channel("musek-global-live-indicator")
       .on("postgres_changes", { event: "*", schema: "public", table: "social_live_rooms" }, () => {
-        loadLiveRooms();
+        void loadLiveRooms();
       })
       .subscribe();
 
-    const refresh = window.setInterval(loadLiveRooms, 30000);
+    const refresh = window.setInterval(() => void loadLiveRooms(), 30000);
 
     return () => {
       authListener.subscription.unsubscribe();
@@ -58,23 +60,30 @@ export default function GlobalSocialButton() {
     };
   }, [loadLiveRooms, supabase]);
 
-  if (!signedIn) return null;
-
   return (
     <div className="fixed bottom-5 right-5 z-[90]">
       {open && (
-        <div className="mb-3 w-[min( min( calc(100vw - 2.5rem), 360px), 360px)] overflow-hidden rounded-2xl border border-purple-300/25 bg-[#11101d] shadow-2xl shadow-purple-950/40">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div className="mb-3 w-[min(calc(100vw-2.5rem),360px)] overflow-hidden rounded-2xl border border-lime-300/40 bg-[#10170d] shadow-[0_0_22px_rgba(163,230,53,.18),0_18px_60px_rgba(0,0,0,.6)]">
+          <div className="flex items-center justify-between border-b border-lime-300/15 px-4 py-3">
             <div>
-              <p className="text-[10px] font-black tracking-[.2em] text-purple-300">MUSEK SOCIAL</p>
+              <p className="text-[10px] font-black tracking-[.22em] text-lime-300">MUSEK SOCIAL</p>
               <p className="mt-1 text-sm font-extrabold text-white">Who’s live right now?</p>
             </div>
-            <span className="rounded-full bg-rose-500/15 px-2.5 py-1 text-[10px] font-black text-rose-300">{rooms.length} LIVE</span>
+            <span className="rounded-full border border-lime-300/30 bg-lime-300/10 px-2.5 py-1 text-[10px] font-black text-lime-200">{rooms.length} LIVE</span>
           </div>
           <div className="max-h-80 overflow-y-auto p-3">
-            {rooms.length === 0 ? (
+            {!checkedAuth ? (
+              <p className="px-3 py-7 text-center text-xs text-lime-100/70">Checking live rooms…</p>
+            ) : !signedIn ? (
               <div className="px-3 py-7 text-center">
-                <div className="text-2xl">♫</div>
+                <div className="text-2xl text-lime-300">♫</div>
+                <p className="mt-2 text-sm font-bold text-white">Join the MUSEK community</p>
+                <p className="mt-1 text-xs text-gray-400">Log in to see live rooms and join the conversation.</p>
+                <Link href="/login" onClick={() => setOpen(false)} className="mt-4 inline-flex rounded-lg border border-lime-300/50 bg-lime-300 px-4 py-2 text-xs font-black text-[#15200b] hover:bg-lime-200">Log in</Link>
+              </div>
+            ) : rooms.length === 0 ? (
+              <div className="px-3 py-7 text-center">
+                <div className="text-2xl text-lime-300">♫</div>
                 <p className="mt-2 text-sm font-bold text-white">No one is live right now</p>
                 <p className="mt-1 text-xs text-gray-400">Start a room and let your community join.</p>
               </div>
@@ -85,26 +94,26 @@ export default function GlobalSocialButton() {
                     <Link
                       href="/social"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3 transition hover:border-purple-300/40 hover:bg-purple-500/10"
+                      className="flex items-center gap-3 rounded-xl border border-lime-300/15 bg-white/[0.04] p-3 transition hover:border-lime-300/50 hover:bg-lime-300/[0.08]"
                     >
-                      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/20 text-lg">
+                      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-lime-300/30 bg-lime-300/10 text-lg text-lime-200">
                         ♫
-                        <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[#11101d] bg-rose-400" />
+                        <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-[#10170d] bg-lime-300 shadow-[0_0_9px_#a3e635]" />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-bold text-white">{room.host_name} is live</span>
                         <span className="mt-0.5 block truncate text-xs text-gray-400">{room.title}</span>
                       </span>
-                      <span className="text-xs font-bold text-purple-200">Join →</span>
+                      <span className="text-xs font-bold text-lime-200">Join →</span>
                     </Link>
                   </li>
                 ))}
               </ul>
             )}
           </div>
-          <div className="border-t border-white/10 p-3">
-            <Link href="/social" onClick={() => setOpen(false)} className="block rounded-xl bg-purple-600 px-4 py-2.5 text-center text-xs font-extrabold text-white hover:bg-purple-500">
-              Open MUSEK SOCIAL
+          <div className="border-t border-lime-300/15 p-3">
+            <Link href={signedIn ? "/social" : "/login"} onClick={() => setOpen(false)} className="block rounded-xl border border-lime-200/70 bg-gradient-to-b from-lime-200 via-lime-400 to-lime-600 px-4 py-2.5 text-center text-xs font-black tracking-wide text-[#142006] shadow-[inset_0_1px_0_rgba(255,255,255,.7),0_0_16px_rgba(163,230,53,.22)] hover:brightness-110">
+              {signedIn ? "OPEN MUSEK SOCIAL" : "LOG IN TO MUSEK"}
             </Link>
           </div>
         </div>
@@ -114,14 +123,15 @@ export default function GlobalSocialButton() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-label={open ? "Close live rooms" : "Show who is live"}
-        className="flex items-center gap-2 rounded-full border border-purple-300/30 bg-[#211334] px-4 py-3 text-sm font-black text-white shadow-xl shadow-purple-950/40 transition hover:-translate-y-0.5 hover:bg-[#35204d]"
+        className="group relative flex items-center gap-2.5 overflow-hidden rounded-full border border-lime-200/80 bg-gradient-to-b from-[#efffc0] via-[#a3e635] to-[#4d7c0f] px-5 py-3 text-sm font-black tracking-[.12em] text-[#152006] shadow-[inset_0_1px_0_rgba(255,255,255,.9),inset_0_-3px_0_rgba(54,83,10,.45),0_0_12px_rgba(163,230,53,.55),0_0_34px_rgba(163,230,53,.22)] transition hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime-200"
       >
+        <span className="pointer-events-none absolute inset-x-3 top-px h-px bg-white/80" />
         <span className="relative flex h-2.5 w-2.5">
-          {rooms.length > 0 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70" />}
-          <span className={rooms.length > 0 ? "relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-400" : "relative inline-flex h-2.5 w-2.5 rounded-full bg-gray-500"} />
+          {rooms.length > 0 && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-700 opacity-60" />}
+          <span className={rooms.length > 0 ? "relative inline-flex h-2.5 w-2.5 rounded-full border border-emerald-950 bg-emerald-700" : "relative inline-flex h-2.5 w-2.5 rounded-full border border-emerald-950/70 bg-emerald-900/50"} />
         </span>
         SOCIAL
-        {rooms.length > 0 && <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px]">{rooms.length}</span>}
+        {rooms.length > 0 && <span className="rounded-full border border-emerald-900/30 bg-[#173006] px-2 py-0.5 text-[10px] text-lime-100 shadow-inner">{rooms.length}</span>}
       </button>
     </div>
   );
