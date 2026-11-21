@@ -170,7 +170,9 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     if (error) { setNotice("Comment could not be published: " + error.message); return; }
     setCommentDrafts(current => ({ ...current, [postId]: "" }));
     await loadComments(postId);
-    setPosts(current => current.map(post => post.id === postId ? { ...post, comments_count: post.comments_count + 1 } : post));
+    // Reload aggregate counts from the database; the realtime subscription may
+    // also refresh this list, so avoid incrementing an already-updated count.
+    await loadPosts();
   };
 
   const initials = displayName.trim().slice(0, 1).toUpperCase() || "M";
