@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import LiveVideoRoom from "./live-video-room";
 import GuestInvites from "./guest-invites";
+import LiveGifts from "./live-gifts";
 
 type Room = {
   id: string;
@@ -190,6 +191,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
         <div className="overflow-hidden rounded-3xl border border-purple-400/20 bg-[#11111d]">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-5"><div><p className="text-[10px] font-black tracking-[.2em] text-rose-300">● LIVE ROOM</p><h2 className="mt-1 text-2xl font-black">{selected.title}</h2><p className="mt-1 text-xs text-gray-400">Hosted by {selected.host_name}</p></div><button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-bold">Leave room</button></div>
           <div className="bg-[radial-gradient(ellipse_at_center,_#25143d,_#080811_75%)] p-4 sm:p-6"><LiveVideoRoom roomId={selected.id} displayName={displayName} /></div>
+          <div className="px-4 sm:px-6"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} /></div>
           <div className="flex flex-wrap items-center gap-2 border-t border-white/10 p-4"><span className="mr-2 text-xs text-gray-400">React</span>{["❤️","🔥","👏","🎶","😂"].map((emoji) => <button key={emoji} onClick={() => react(emoji)} className="rounded-full border border-white/10 px-3 py-2 text-lg hover:border-purple-400/50">{emoji}</button>)}
             {selected.host_id === userId && <button onClick={endRoom} className="ml-auto rounded-xl bg-rose-500/15 px-4 py-2.5 text-xs font-bold text-rose-200">End room</button>}
           </div>
@@ -200,7 +202,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
           <form onSubmit={sendMessage} className="flex gap-2 border-t border-white/10 p-3"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Write a message…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm outline-none focus:border-purple-400"/><button disabled={!draft.trim()} className="rounded-xl bg-purple-600 px-4 text-sm font-bold disabled:opacity-40">Send</button></form>
         </div>
       </section>}
-      <p className="mt-12 text-center text-xs leading-6 text-gray-600">MUSEK SOCIAL now includes live rooms, realtime chat, reactions, LiveKit multi-person video and host-issued artist guest invitations. Live video requires LiveKit credentials; private one-to-one calls, recordings, in-room gifts and production moderation remain in the next rollout.</p>
+      <p className="mt-12 text-center text-xs leading-6 text-gray-600">MUSEK SOCIAL now includes live rooms, realtime chat, reactions, LiveKit multi-person video and host-issued artist guest invitations. Live video requires LiveKit credentials; private one-to-one calls, recordings and production moderation remain in the next rollout. Live-room gifts require migration 006.</p>
     </div>
   );
 }
