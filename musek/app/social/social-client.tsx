@@ -206,28 +206,48 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 </div><button onClick={() => setSelected(room)} className="mt-5 w-full rounded-xl border border-purple-400/30 bg-purple-500/15 px-4 py-3 text-sm font-bold hover:bg-purple-500/25">Join conversation</button></article>)}</div>}
       </section>
 
-      {selected && <section className="mt-12 grid gap-5 lg:grid-cols-[1fr_360px]">
-        <div className="overflow-hidden rounded-3xl border border-purple-400/20 bg-[#11111d]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-5">
-  <div className="flex min-w-0 items-center gap-3">
-    {selected.avatar_url ? <img src={selected.avatar_url} alt={selected.host_name} className="h-12 w-12 shrink-0 rounded-full border-2 border-purple-300/40 object-cover" /> : <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-purple-300/40 bg-purple-500/15 text-lg font-black text-purple-200">{selected.host_name.slice(0, 1).toUpperCase()}</div>}
-    <div className="min-w-0"><p className="text-[10px] font-black tracking-[.2em] text-rose-300">● LIVE NOW</p><h2 className="mt-1 truncate text-xl font-black">{selected.title}</h2><p className="mt-1 text-xs text-gray-400">Hosted by {selected.host_name}</p></div>
-  </div>
-  <div className="flex shrink-0 gap-2">
-    {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="rounded-lg bg-rose-600 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-rose-500 disabled:opacity-50">{ending ? "Ending…" : "End live"}</button>}
-    <button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-bold">Leave</button>
-  </div>
-</div>
-          <div className="bg-[radial-gradient(ellipse_at_center,_#25143d,_#080811_75%)] p-4 sm:p-6"><LiveVideoRoom roomId={selected.id} displayName={displayName} /></div>
-          <div className="px-4 sm:px-6"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} /></div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-white/10 p-4"><span className="mr-2 text-xs text-gray-400">React</span>{["❤️","🔥","👏","🎶","😂"].map((emoji) => <button key={emoji} onClick={() => react(emoji)} className="rounded-full border border-white/10 px-3 py-2 text-lg hover:border-purple-400/50">{emoji}</button>)}
-
-          </div>
+      {selected && <section className="mt-12 scroll-mt-6">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div><p className="text-xs font-black tracking-[.25em] text-purple-300">MUSEK LIVE STUDIO</p><h2 className="mt-2 text-3xl font-black sm:text-4xl">{selected.title}</h2><p className="mt-2 text-sm text-gray-400">{selected.description || "A live space for music, conversation and community."}</p></div>
+          <div className="flex items-center gap-2 rounded-full border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs font-black tracking-wider text-rose-300"><span className="h-2 w-2 animate-pulse rounded-full bg-rose-400"/> LIVE BROADCAST</div>
         </div>
-        <div className="flex min-h-[440px] flex-col rounded-3xl border border-white/10 bg-[#11111d]">
-          <div className="border-b border-white/10 p-5"><h3 className="font-black">Live chat</h3><p className="mt-1 text-xs text-gray-500">Be respectful and keep it positive.</p></div>
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">{messages.map((message) => <div key={message.id}><p className="text-xs font-bold text-purple-300">{message.display_name}</p><p className="mt-1 break-words text-sm text-gray-200">{message.message}</p></div>)}{messages.length === 0 && <p className="py-10 text-center text-sm text-gray-500">Start the conversation.</p>}<div ref={bottomRef}/></div>
-          <form onSubmit={sendMessage} className="flex gap-2 border-t border-white/10 p-3"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Write a message…" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-3 text-sm outline-none focus:border-purple-400"/><button disabled={!draft.trim()} className="rounded-xl bg-purple-600 px-4 text-sm font-bold disabled:opacity-40">Send</button></form>
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_370px]">
+          <div className="min-w-0 overflow-hidden rounded-[2rem] border border-purple-400/20 bg-[#100D1B] shadow-[0_25px_90px_rgba(88,28,135,.16)]">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-[#241536] to-[#151020] p-4 sm:p-5">
+              <div className="flex min-w-0 items-center gap-3">
+                {selected.avatar_url ? <img src={selected.avatar_url} alt={selected.host_name} className="h-12 w-12 shrink-0 rounded-2xl border border-purple-300/40 object-cover" /> : <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-purple-300/30 bg-purple-500/20 text-lg font-black text-purple-100">{selected.host_name.slice(0, 1).toUpperCase()}</div>}
+                <div className="min-w-0"><p className="text-[10px] font-black uppercase tracking-[.2em] text-purple-300">ROOM HOST</p><p className="mt-1 truncate font-bold text-white">{selected.host_name}</p><p className="text-xs text-gray-400">Hosting the conversation</p></div>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-rose-500 disabled:opacity-50">{ending ? "Ending…" : "End live"}</button>}
+                <button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-bold text-gray-200 transition hover:bg-white/10">Leave room</button>
+              </div>
+            </div>
+            <div className="bg-[radial-gradient(ellipse_at_top,_#382052,_#100D1B_65%)] p-3 sm:p-5">
+              <div className="mb-3 flex items-center justify-between px-1"><p className="text-xs font-bold uppercase tracking-[.18em] text-purple-200">THE STAGE</p><p className="text-[11px] text-gray-400">Video &amp; audio experience</p></div>
+              <LiveVideoRoom roomId={selected.id} displayName={displayName} />
+            </div>
+            <div className="border-t border-white/10 bg-[#151020] p-4 sm:p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs font-black uppercase tracking-[.18em] text-purple-300">SHOW SOME LOVE</p><p className="mt-1 text-xs text-gray-500">Send a reaction to the room</p></div><span className="text-xs text-gray-500">Community reactions</span></div>
+              <div className="flex flex-wrap gap-2">{["❤️","🔥","👏","🎶","😂"].map((emoji) => <button key={emoji} onClick={() => react(emoji)} aria-label={`React ${emoji}`} className="grid h-11 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-xl transition hover:-translate-y-0.5 hover:border-purple-400/50 hover:bg-purple-500/15">{emoji}</button>)}</div>
+              <div className="mt-4"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} /></div>
+            </div>
+          </div>
+          <aside className="flex h-[680px] min-h-[520px] flex-col overflow-hidden rounded-[2rem] border border-purple-400/20 bg-[#100D1B] shadow-[0_25px_90px_rgba(88,28,135,.12)]">
+            <div className="border-b border-white/10 bg-gradient-to-r from-[#241536] to-[#151020] p-5">
+              <div className="flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.22em] text-purple-300">COMMUNITY</p><h3 className="mt-1 text-xl font-black text-white">Live chat</h3></div><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Connected</span></div>
+              <p className="mt-2 text-xs leading-5 text-gray-400">Talk with the host and everyone watching this room.</p>
+            </div>
+            <div className="flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_rgba(111,65,151,.12),_transparent_60%)] p-4">
+              {messages.map((message) => <div key={message.id} className={message.user_id === userId ? "ml-5 rounded-2xl rounded-tr-sm border border-purple-400/20 bg-purple-500/15 p-3" : "mr-5 rounded-2xl rounded-tl-sm border border-white/[.07] bg-white/[.04] p-3"}><div className="flex items-center justify-between gap-2"><p className="truncate text-xs font-extrabold text-purple-200">{message.display_name}{message.user_id === selected.host_id ? <span className="ml-2 rounded bg-purple-400/15 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-purple-200">Host</span> : null}</p><span className="shrink-0 text-[9px] text-gray-600">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span></div><p className="mt-2 break-words text-sm leading-6 text-gray-200">{message.message}</p></div>)}
+              {messages.length === 0 && <div className="flex h-full min-h-64 flex-col items-center justify-center text-center"><div className="grid h-14 w-14 place-items-center rounded-2xl border border-purple-300/20 bg-purple-500/10 text-2xl">✦</div><p className="mt-4 text-sm font-bold text-gray-200">Start the conversation</p><p className="mt-1 max-w-[220px] text-xs leading-5 text-gray-500">Say hello and make this live room feel alive.</p></div>}
+              <div ref={bottomRef}/>
+            </div>
+            <form onSubmit={sendMessage} className="border-t border-white/10 bg-[#151020] p-3">
+              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1.5 focus-within:border-purple-400/50"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Message the room…" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-600"/><button disabled={!draft.trim()} className="rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-500 disabled:opacity-40">Send</button></div>
+              <p className="mt-2 px-1 text-[10px] text-gray-600">Keep it kind. Everyone is part of the MUSEK community.</p>
+            </form>
+          </aside>
         </div>
       </section>}
       <p className="mt-12 text-center text-xs leading-6 text-gray-600">MUSEK SOCIAL now includes live rooms, realtime chat, reactions, LiveKit multi-person video and host-issued artist guest invitations. Live video requires LiveKit credentials; private one-to-one calls, recordings and production moderation remain in the next rollout. Live-room gifts require migration 006.</p>
