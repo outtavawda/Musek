@@ -140,9 +140,9 @@ export default function SocialClient({ userId, displayName, accountType }: { use
         <div className="relative max-w-3xl">
           <p className="text-xs font-bold tracking-[.25em] text-purple-200">MUSEK SOCIAL</p>
           <h1 className="mt-4 text-4xl font-black tracking-tight sm:text-6xl">Music brings us together.</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-purple-100/75 sm:text-base">Go live with your community, meet other listeners, talk music and build real connections around the artists you love.</p>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-purple-100/75 sm:text-base">Fans, artists and creators can all go live. Host a listening party, talk with your community, share your camera and microphone, and build real connections.</p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <a href="#start-room" className="rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#171022]">Start a live room</a>
+            <a href="#start-room" className="rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#171022]">Go live — anyone can host</a>
             <a href="#live-rooms" className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold">Explore live rooms</a>
             <Link href="/buy-coins" className="rounded-xl border border-purple-300/30 bg-purple-500/15 px-5 py-3 text-sm font-bold">MUSEK Coins</Link>
           </div>
@@ -161,8 +161,8 @@ export default function SocialClient({ userId, displayName, accountType }: { use
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={90} placeholder="e.g. Studio talk with the fans" className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-purple-400" />
           <label className="mt-4 block text-xs font-bold text-gray-400">DESCRIPTION</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={300} rows={3} placeholder="What are we talking about today?" className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-purple-400" />
-          <button disabled={busy} onClick={startRoom} className="mt-5 w-full rounded-xl bg-purple-600 px-5 py-3 font-bold transition hover:bg-purple-500 disabled:opacity-50">{busy ? "Opening room..." : "＋ Go live with a room"}</button>
-          <p className="mt-3 text-xs leading-5 text-gray-500">Any signed-in member can open a community room. Artist-only broadcasting permissions can be added with the full live-video rollout.</p>
+          <button disabled={busy} onClick={startRoom} className="mt-5 w-full rounded-xl bg-purple-600 px-5 py-3 font-bold transition hover:bg-purple-500 disabled:opacity-50">{busy ? "Opening room..." : "＋ Go live now"}</button>
+          <p className="mt-3 text-xs leading-5 text-gray-500">Available to every signed-in fan, artist and creator account. The person who opens the room can broadcast; invited guests can join the video when the host accepts their invitation.</p>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#11111d]">
