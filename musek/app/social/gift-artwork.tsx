@@ -27,7 +27,16 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
           <filter id={uid + "Shadow"} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
         </defs>
         <ellipse cx="110" cy="185" rx="57" ry="13" fill="#000" opacity=".42" filter={`url(#${uid}Shadow)`}/>
-        {name === "Dragon" ? (
+        {name === "Rose" ? (
+          <g className="gift-object gift-rose">
+            <path d="M110 105c-8 22-10 45-7 75m7-52c-19-14-33-12-43-2 18 2 30 11 38 23m8-14c16-19 31-20 44-10-18 6-29 16-39 31" fill="none" stroke={`url(#${uid}Emerald)`} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M110 112c-26-12-38-36-20-51 8-7 17-5 20 4 5-17 28-18 37-4 12 19-8 42-37 51z" fill="#dc2626" stroke="#fecaca" strokeWidth="4"/>
+            <path d="M110 102c-14-10-17-21-8-28 6-4 11 0 8 8 7-13 20-10 21-1 1 8-8 16-21 21z" fill="#fb7185" stroke="#fda4af" strokeWidth="2"/>
+            <path d="M110 111c-18-8-31-22-28-36 3-12 15-16 25-9-10 2-13 12-5 21 5-10 16-17 27-14 16 5 14 25-19 38z" fill="#b91c1c" opacity=".92"/>
+            <path d="M110 113c-7-18-6-32 0-45 7 15 8 30 0 45z" fill="#fda4af" opacity=".9"/>
+            <path d="M110 174q-18 8-27 1 13 22 30 9 16 12 30-8-15 7-33-2z" fill="#059669" stroke="#a7f3d0" strokeWidth="3"/>
+          </g>
+        ) : name === "Dragon" ? (
           <g className="gift-object gift-dragon">
             <path d="M47 145c-20-24-13-55 12-69-3 18 7 26 19 28-7-27 10-55 36-76-5 27 6 38 24 48 27 15 35 42 22 66-12 23-39 39-70 36-19-2-34-13-43-33z" fill={`url(#${uid}Emerald)`} stroke="#d1fae5" strokeWidth="4"/>
             <path d="M91 105c17-16 38-13 48-2l23 4-15 13 9 15-25-7c-12 12-31 15-46 4z" fill={`url(#${uid}Gold)`} stroke="#fef3c7" strokeWidth="3"/>
@@ -137,7 +146,10 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
         .musek-gift-art-legendary { width:clamp(190px,31vw,320px); animation:gift-art-entry 1.1s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-art-legendary .musek-gift-art-svg { animation-duration:3.2s; }
         .musek-gift-art-legendary .musek-gift-art-fallback { right:5%; bottom:6%; font-size:44px; }
-        .musek-gift-art-dragon .gift-object { animation:gift-dragon-motion 2.2s ease-in-out infinite; }
+        .musek-gift-art-rose .gift-object { animation:gift-rose-motion 2.8s ease-in-out infinite; transform-origin:110px 110px; }
+        .musek-gift-art-rose .musek-gift-art-aura { background:radial-gradient(circle,rgba(244,63,94,.42),rgba(190,24,93,.16) 48%,transparent 72%); }
+        @keyframes gift-rose-motion { 0%,100% { transform:translateY(3px) rotate(-4deg) scale(.98); filter:drop-shadow(0 0 8px rgba(244,63,94,.45)); } 50% { transform:translateY(-10px) rotate(4deg) scale(1.07); filter:drop-shadow(0 0 24px rgba(244,63,94,.9)); } }
+                .musek-gift-art-dragon .gift-object { animation:gift-dragon-motion 2.2s ease-in-out infinite; }
         .musek-gift-art-phoenix .gift-object { animation:gift-phoenix-motion 2.8s ease-in-out infinite; }
         .musek-gift-art-rocket .gift-object { animation:gift-rocket-motion 1.7s ease-in-out infinite; }
         .musek-gift-art-money-rain .gift-object,.musek-gift-art-money-vault .gift-object { animation:gift-money-motion 2.4s ease-in-out infinite; }
