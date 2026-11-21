@@ -93,6 +93,20 @@ export default function LiveGifts({
   );
   const selectedGift = giftForCoins(selectedCoins);
 
+  // Local-only animation previews: these do not call Supabase or spend coins.
+  const previewGift = (coins: number) => {
+    const preview: LiveGift = {
+      gift_id: "preview-" + crypto.randomUUID(),
+      room_id: roomId,
+      coins,
+      created_at: new Date().toISOString(),
+    };
+    setActiveGift(preview);
+    window.setTimeout(() => {
+      setActiveGift((current) => current?.gift_id === preview.gift_id ? null : current);
+    }, coins >= 20000 ? 6500 : coins >= 2500 ? 4200 : 2400);
+  };
+
   const loadGifts = useCallback(async () => {
     const { data } = await supabase
       .from("social_live_gifts")
@@ -263,6 +277,15 @@ export default function LiveGifts({
         </>
       )}
 
+      <div className="mt-4 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-3">
+        <p className="text-[10px] font-black tracking-[.18em] text-purple-200">ANIMATION TEST · NO COINS SPENT</p>
+        <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => previewGift(10)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview small ✨</button>
+          <button type="button" onClick={() => previewGift(2500)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview medium 💎</button>
+          <button type="button" onClick={() => previewGift(20000)} className="rounded-lg border border-amber-300/20 bg-amber-400/[.08] px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/50">Preview premium 🌌</button>
+        </div>
+      </div>
       {notice && <p role="status" className="mt-3 text-xs text-purple-200">{notice}</p>}
       <div className="mt-4 border-t border-white/10 pt-3">
         <p className="mb-2 text-xs font-bold text-gray-300">Recent gifts in this room</p>
