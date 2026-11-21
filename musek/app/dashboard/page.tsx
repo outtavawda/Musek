@@ -60,6 +60,9 @@ export default async function DashboardPage() {
       "artist"
   ).trim().toLowerCase();
 
+  if (accountType === "fan") redirect("/fan-dashboard");
+  if (accountType === "label") redirect("/label-dashboard");
+
   let wallet: Wallet | null = null;
   let tracks: Track[] = [];
   let playEvents: PlayEvent[] = [];
