@@ -85,6 +85,7 @@ export default function LiveGifts({
   const [category, setCategory] = useState("All");
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
+  const [activeGift, setActiveGift] = useState<LiveGift | null>(null);
 
   const visibleGifts = useMemo(
     () => category === "All" ? GIFT_CATALOG : GIFT_CATALOG.filter((gift) => gift.category === category),
@@ -116,6 +117,10 @@ export default function LiveGifts({
         },
         (payload) => {
           const gift = payload.new as LiveGift;
+          setActiveGift(gift);
+          window.setTimeout(() => {
+            setActiveGift((current) => current?.gift_id === gift.gift_id ? null : current);
+          }, Number(gift.coins) >= 20000 ? 6500 : Number(gift.coins) >= 2500 ? 4200 : 2400);
           setGifts((current) =>
             current.some((item) => item.gift_id === gift.gift_id)
               ? current
@@ -147,7 +152,57 @@ export default function LiveGifts({
   };
 
   return (
-    <section className="mt-5 rounded-2xl border border-purple-400/20 bg-[#171326] p-5">
+    <section className="relative mt-5 rounded-2xl border border-purple-400/20 bg-[#171326] p-5">
+      {activeGift && (() => {
+        const details = giftForCoins(Number(activeGift.coins));
+        const tier = Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 2500 ? "medium" : "small";
+        return (
+          <div key={activeGift.gift_id} className={`musek-gift-overlay musek-gift-${tier}`} role="status" aria-live="polite">
+            <div className="musek-gift-effects" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span><span>✦</span><span>✧</span></div>
+            <div className="musek-gift-content">
+              <div className="musek-gift-emoji">{details?.emoji || "🎁"}</div>
+              <p className="musek-gift-eyebrow">{tier === "premium" ? "MUSEK LEGENDARY GIFT" : tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
+              <p className="musek-gift-name">{details?.name || "Live gift"}</p>
+              <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
+            </div>
+          </div>
+        );
+      })()}
+      <style jsx>{`
+        .musek-gift-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; }
+        .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 22px 30px; border: 1px solid rgba(216,180,254,.45); border-radius: 24px; background: rgba(20,12,38,.94); box-shadow: 0 0 55px rgba(168,85,247,.38); }
+        .musek-gift-emoji { font-size: clamp(54px, 10vw, 112px); line-height: 1.2; filter: drop-shadow(0 0 18px rgba(216,180,254,.8)); }
+        .musek-gift-eyebrow { margin-top: 10px; color: #d8b4fe; font-size: 10px; font-weight: 900; letter-spacing: .22em; }
+        .musek-gift-name { margin-top: 5px; color: white; font-size: clamp(22px, 4vw, 38px); font-weight: 900; }
+        .musek-gift-value { margin-top: 4px; color: #e9d5ff; font-size: 13px; }
+        .musek-gift-small { inset: auto 18px 24px auto; width: auto; height: auto; animation: gift-fade 2.4s ease both; }
+        .musek-gift-small .musek-gift-content { flex-direction: row; gap: 12px; padding: 10px 16px; border-radius: 18px; }
+        .musek-gift-small .musek-gift-emoji { font-size: 38px; animation: gift-bounce .7s ease-in-out 2; }
+        .musek-gift-small .musek-gift-eyebrow { margin: 0; text-align: left; }
+        .musek-gift-small .musek-gift-name { margin: 2px 0 0; font-size: 17px; }
+        .musek-gift-small .musek-gift-value { margin: 0; text-align: left; }
+        .musek-gift-medium { background: radial-gradient(circle, rgba(88,28,135,.35), rgba(0,0,0,.55) 68%); animation: gift-fade 4.2s ease both; }
+        .musek-gift-medium .musek-gift-emoji { animation: gift-pop 1s cubic-bezier(.2,.8,.2,1) both; }
+        .musek-gift-premium { background: radial-gradient(circle, rgba(88,28,135,.58), rgba(4,3,14,.88) 72%); animation: gift-fade 6.5s ease both; }
+        .musek-gift-premium .musek-gift-content { border-color: rgba(250,204,21,.7); background: linear-gradient(145deg, rgba(49,26,82,.97), rgba(9,8,24,.97)); box-shadow: 0 0 90px rgba(250,204,21,.32), 0 0 150px rgba(168,85,247,.35); animation: gift-legend 1.2s cubic-bezier(.16,1,.3,1) both; }
+        .musek-gift-premium .musek-gift-eyebrow { color: #fde68a; }
+        .musek-gift-premium .musek-gift-emoji { animation: gift-float 2s ease-in-out infinite; }
+        .musek-gift-effects { position: absolute; inset: 0; overflow: hidden; }
+        .musek-gift-effects span { position: absolute; color: #fef08a; font-size: 30px; text-shadow: 0 0 18px #c084fc; animation: gift-spark 1.8s ease-in-out infinite; }
+        .musek-gift-effects span:nth-child(1) { left: 12%; top: 20%; }
+        .musek-gift-effects span:nth-child(2) { left: 78%; top: 18%; animation-delay: .3s; }
+        .musek-gift-effects span:nth-child(3) { left: 18%; top: 72%; animation-delay: .6s; }
+        .musek-gift-effects span:nth-child(4) { left: 84%; top: 70%; animation-delay: .9s; }
+        .musek-gift-effects span:nth-child(5) { left: 50%; top: 10%; animation-delay: 1.2s; }
+        .musek-gift-effects span:nth-child(6) { left: 52%; top: 85%; animation-delay: 1.5s; }
+        @keyframes gift-bounce { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-12px) scale(1.12); } }
+        @keyframes gift-pop { 0% { transform: scale(.25) rotate(-18deg); opacity: 0; } 65% { transform: scale(1.2) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+        @keyframes gift-legend { 0% { transform: scale(.15) rotate(-8deg); opacity: 0; } 70% { transform: scale(1.12) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+        @keyframes gift-float { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-16px) rotate(4deg); } }
+        @keyframes gift-spark { 0%,100% { opacity: .2; transform: scale(.6) rotate(0); } 50% { opacity: 1; transform: scale(1.35) rotate(45deg); } }
+        @keyframes gift-fade { 0% { opacity: 0; } 12%,78% { opacity: 1; } 100% { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .musek-gift-overlay, .musek-gift-overlay * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+      `}</style>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black tracking-[.2em] text-purple-300">SUPPORT THE ARTIST</p>
