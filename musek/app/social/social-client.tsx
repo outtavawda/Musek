@@ -103,7 +103,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
       host_id: userId, host_name: displayName, status: "live"
     }).select("id,title,description,host_id,host_name,status,created_at").single();
     setBusy(false);
-    if (error) { setNotice("Could not create the room. Make sure the MUSEK Social database migration is applied."); return; }
+    if (error) { console.error("MUSEK live room creation failed:", error); setNotice(`Could not create the room: ${error.message}${error.code ? ` (code ${error.code})` : ""}`); return; }
     setRooms((current) => [data as Room, ...current]);
     setSelected(data as Room); setTitle(""); setDescription("");
     setNotice("Your MUSEK Social room is open. Chat is live; video broadcasting will activate after the video provider is connected.");
