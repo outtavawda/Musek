@@ -22,11 +22,11 @@ export default async function SocialPage() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between border-b border-white/10 px-5 py-5">
         <Link href="/" className="text-2xl font-black tracking-tight">MUSEK<span className="text-purple-400">.</span></Link>
         <div className="flex items-center gap-3 text-sm">
-          <Link href="/feed" className="text-gray-400 hover:text-white">Music feed</Link>
+          <Link href="/discover" className="text-gray-400 hover:text-white">Discover music</Link>
           <Link href="/profile" className="rounded-xl border border-white/10 px-4 py-2">Profile</Link>
         </div>
       </nav>
-      <SocialClient userId={user.id} displayName={displayName} accountType={profile?.account_type || "fan"} avatarUrl={profile?.avatar_url || null} />
+      <SocialClient userId={user.id} displayName={displayName} avatarUrl={profile?.avatar_url || null} />
     </main>
   );
 }
