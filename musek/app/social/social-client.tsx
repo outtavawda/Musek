@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import LiveVideoRoom from "./live-video-room";
 
 type Room = {
   id: string;
@@ -186,7 +187,7 @@ export default function SocialClient({ userId, displayName, accountType }: { use
       {selected && <section className="mt-12 grid gap-5 lg:grid-cols-[1fr_360px]">
         <div className="overflow-hidden rounded-3xl border border-purple-400/20 bg-[#11111d]">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-5"><div><p className="text-[10px] font-black tracking-[.2em] text-rose-300">● LIVE ROOM</p><h2 className="mt-1 text-2xl font-black">{selected.title}</h2><p className="mt-1 text-xs text-gray-400">Hosted by {selected.host_name}</p></div><button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-bold">Leave room</button></div>
-          <div className="grid min-h-64 place-items-center bg-[radial-gradient(ellipse_at_center,_#25143d,_#080811_75%)] p-8 text-center"><div><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-purple-300/30 bg-purple-500/15 text-3xl">♫</div><p className="mt-4 font-bold">You're in the room</p><p className="mt-1 max-w-md text-xs leading-5 text-gray-400">Live room chat and reactions are connected. Remote video broadcasting and guest video calls are the next integration layer.</p></div></div>
+          <div className="bg-[radial-gradient(ellipse_at_center,_#25143d,_#080811_75%)] p-4 sm:p-6"><LiveVideoRoom roomId={selected.id} displayName={displayName} /></div>
           <div className="flex flex-wrap items-center gap-2 border-t border-white/10 p-4"><span className="mr-2 text-xs text-gray-400">React</span>{["❤️","🔥","👏","🎶","😂"].map((emoji) => <button key={emoji} onClick={() => react(emoji)} className="rounded-full border border-white/10 px-3 py-2 text-lg hover:border-purple-400/50">{emoji}</button>)}
             {selected.host_id === userId && <button onClick={endRoom} className="ml-auto rounded-xl bg-rose-500/15 px-4 py-2.5 text-xs font-bold text-rose-200">End room</button>}
           </div>
