@@ -26,7 +26,6 @@ create policy "Members can view gifts in live rooms"
     )
   );
 
--- All inserts go through this function. Clients cannot fabricate gift events.
 revoke insert, update, delete on public.social_live_gifts from anon, authenticated;
 grant select on public.social_live_gifts to authenticated;
 
@@ -50,8 +49,18 @@ begin
     raise exception 'You must be logged in to send a live gift.';
   end if;
 
-  if p_room_id is null or p_coins is null or p_coins not in (100, 500, 1000) then
-    raise exception 'Choose a valid live gift.';
+  if p_room_id is null
+     or p_coins not in (
+       10, 25, 50, 75, 100,
+       150, 200, 250, 300, 350,
+       400, 500, 600, 750, 900,
+       1000, 1250, 1500, 1750, 2000,
+       2500, 3000, 3500, 4000, 5000,
+       6000, 7500, 10000, 12500, 15000,
+       20000, 25000, 30000, 40000, 50000,
+       60000, 75000, 100000, 120000, 150000
+     ) then
+    raise exception 'Choose a valid MUSEK live gift.';
   end if;
 
   if p_idempotency_key is null then
@@ -71,8 +80,6 @@ begin
     raise exception 'You cannot send a gift to yourself.';
   end if;
 
-  -- Existing function atomically checks fan/artist roles, debits coins,
-  -- credits creator earnings, records the ledger and applies 70/30.
   v_gift_id := public.send_musek_gift(
     v_creator_id,
     p_coins,
