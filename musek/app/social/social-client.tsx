@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import LiveVideoRoom from "./live-video-room";
 import GuestInvites from "./guest-invites";
 import LiveGifts from "./live-gifts";
+import SocialFeed from "./social-feed";
 
 type Room = {
   id: string;
@@ -186,6 +187,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
       {notice && <div role="status" className="mt-5 rounded-xl border border-purple-400/20 bg-purple-500/10 px-4 py-3 text-sm text-purple-100">{notice}</div>}
       <GuestInvites userId={userId} room={selected} onJoinRoom={(room) => { setSelected(room); setNotice("Guest invitation accepted. You are joining the live room."); }} />
+      <SocialFeed userId={userId} displayName={displayName} avatarUrl={avatarUrl} />
 
       <section id="start-room" className="mt-10 grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
         <div className="rounded-3xl border border-white/10 bg-[#11111d] p-6">
