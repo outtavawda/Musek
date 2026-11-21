@@ -361,7 +361,7 @@ export default function LiveGifts({
                   ? "rounded-xl border border-purple-300 bg-purple-500/20 p-3 text-left ring-1 ring-purple-300/40"
                   : "rounded-xl border border-white/10 bg-black/20 p-3 text-left hover:border-purple-400/50"}
               >
-                <GiftArtwork category={gift.category} name={gift.name} emoji={gift.emoji} tier="small" />
+                <GiftArtwork category={gift.category} name={gift.name} emoji={gift.emoji} tier="catalog" />
                 <span className="mt-2 block text-xs font-bold">{gift.name}</span>
                 <span className="mt-1 block text-[11px] text-gray-400">{formatCoins(gift.coins)} coins</span>
               </button>
