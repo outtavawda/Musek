@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type LiveRoom = {
@@ -12,6 +13,7 @@ type LiveRoom = {
 };
 
 export default function GlobalSocialButton() {
+  const pathname = usePathname();
   const supabase = useMemo(() => createClient(), []);
   const [rooms, setRooms] = useState<LiveRoom[]>([]);
   const [open, setOpen] = useState(false);
@@ -59,6 +61,8 @@ export default function GlobalSocialButton() {
       window.clearInterval(refresh);
     };
   }, [loadLiveRooms, supabase]);
+
+  if (pathname === "/social" || pathname.startsWith("/social/")) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-[90]">
