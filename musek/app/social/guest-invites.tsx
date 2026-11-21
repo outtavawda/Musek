@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type Room = {
@@ -32,7 +32,7 @@ export default function GuestInvites({
   const [notice, setNotice] = useState("");
   const [searching, setSearching] = useState(false);
 
-  const loadIncoming = async () => {
+  const loadIncoming = useCallback(async () => {
     const { data: invites } = await supabase
       .from("social_live_invites")
       .select("id,room_id")
@@ -52,7 +52,7 @@ export default function GuestInvites({
       const liveRoom = roomMap.get(invite.room_id);
       return liveRoom ? [{ id: invite.id, room: liveRoom }] : [];
     }));
-  };
+  }, [supabase, userId]);
 
   useEffect(() => {
     loadIncoming();
@@ -60,10 +60,10 @@ export default function GuestInvites({
       .on("postgres_changes", { event: "*", schema: "public", table: "social_live_invites", filter: "invitee_id=eq." + userId }, loadIncoming)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [userId, supabase]);
+  }, [loadIncoming, userId, supabase]);
 
   const searchArtists = async () => {
-    const term = search.trim().replace(/[,%()]/g, "").slice(0, 60);
+    const term = search.trim().replace(/[,%().*]/g, "").slice(0, 60);
     if (!term) { setResults([]); return; }
     setSearching(true);
     const { data, error } = await supabase
