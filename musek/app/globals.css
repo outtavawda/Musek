@@ -356,3 +356,183 @@ footer {
     flex-wrap: wrap;
   }
 }
+
+
+/* MUSEK AUTHENTICATION */
+.authWrap {
+  min-height: 100svh;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  background: radial-gradient(ellipse at 50% 0%, #21143a 0%, #0c0b15 42%, #08090e 100%);
+}
+.authGlow {
+  position: absolute;
+  z-index: -1;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+.authGlowOne { top: -190px; left: -120px; background: rgba(147, 51, 234, .22); }
+.authGlowTwo { right: -160px; bottom: -190px; background: rgba(192, 38, 211, .16); }
+.authCard {
+  width: min(100%, 460px);
+  padding: clamp(28px, 6vw, 48px);
+  border: 1px solid rgba(216, 180, 254, .17);
+  border-radius: 26px;
+  background: rgba(17, 16, 29, .92);
+  box-shadow: 0 28px 100px rgba(0, 0, 0, .42), 0 0 70px rgba(147, 51, 234, .08);
+  backdrop-filter: blur(18px);
+}
+.authBrand {
+  display: inline-block;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: -1.8px;
+}
+.authBrand span { color: #c084fc; }
+.authIntro { margin-top: 44px; }
+.authEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #c4a5fd;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .2em;
+}
+.authEyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c084fc;
+  box-shadow: 0 0 13px #a855f7;
+}
+.authIntro h1 {
+  margin: 16px 0 10px;
+  color: #fff;
+  font-size: clamp(38px, 8vw, 52px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -2.8px;
+}
+.authIntro h1 span { color: #c084fc; }
+.authDescription {
+  max-width: 340px;
+  color: #a6a3b4;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.authError {
+  display: grid;
+  gap: 5px;
+  margin-top: 24px;
+  padding: 13px 15px;
+  border: 1px solid rgba(248, 113, 113, .28);
+  border-radius: 12px;
+  background: rgba(127, 29, 29, .2);
+  color: #fecaca;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.authForm { display: grid; gap: 10px; margin-top: 30px; }
+.authForm label {
+  margin-top: 8px;
+  color: #e5e1ed;
+  font-size: 12px;
+  font-weight: 750;
+}
+.authForm input {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 15px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(5, 5, 12, .72);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.authForm input::placeholder { color: #777487; }
+.authForm input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, .15);
+}
+.authSubmit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 16px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(100deg, #9333ea, #7c3aed);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+.authSubmit:hover { transform: translateY(-1px); filter: brightness(1.12); }
+.authSubmit:focus-visible, .authSignup:focus-visible, .authBrand:focus-visible {
+  outline: 3px solid #d8b4fe;
+  outline-offset: 4px;
+}
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 28px 0 16px;
+  color: #777487;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+.authDivider::before, .authDivider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: rgba(255,255,255,.1);
+}
+.authSignup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(216,180,254,.25);
+  border-radius: 12px;
+  color: #e9d5ff;
+  font-size: 13px;
+  font-weight: 750;
+  transition: background .18s ease, border-color .18s ease;
+}
+.authSignup:hover { background: rgba(168,85,247,.1); border-color: rgba(216,180,254,.5); }
+.authFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 30px;
+  color: #777487;
+  font-size: 11px;
+}
+.authFooter a:hover { color: #e9d5ff; }
+@media (max-width: 480px) {
+  .authWrap { padding: 22px 14px; }
+  .authCard { border-radius: 21px; }
+  .authIntro { margin-top: 34px; }
+  .authFooter span { display: none; }
+}
