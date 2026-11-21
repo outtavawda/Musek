@@ -249,7 +249,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             <div className="border-t border-white/10 bg-[#151020] p-4 sm:p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><p className="text-xs font-black uppercase tracking-[.18em] text-purple-300">SHOW SOME LOVE</p><p className="mt-1 text-xs text-gray-500">Send a reaction to the room</p></div><span className="text-xs text-gray-500">Community reactions</span></div>
               <div className="flex flex-wrap gap-2">{["❤️","🔥","👏","🎶","😂"].map((emoji) => <button key={emoji} onClick={() => react(emoji)} aria-label={`React ${emoji}`} className="grid h-11 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[.04] text-xl transition hover:-translate-y-0.5 hover:border-purple-400/50 hover:bg-purple-500/15">{emoji}</button>)}</div>
-              <div className="mt-4"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} /></div>
+              <div className="mt-4"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId} /></div>
             </div>
           </div>
           <aside className="flex h-[680px] min-h-[520px] flex-col overflow-hidden rounded-[2rem] border border-purple-400/20 bg-[#100D1B] shadow-[0_25px_90px_rgba(88,28,135,.12)]">
