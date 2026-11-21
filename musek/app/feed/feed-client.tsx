@@ -360,7 +360,7 @@ export default function FeedClient({
   }, [userId]);
   return (
     <main className="musek-feed">
-      <style>{\`
+      <style>{`
         .musek-feed{min-height:100svh;background:radial-gradient(ellipse at 50% 0%,rgba(126,34,206,.18),transparent 42%),#08070d;color:#fff;padding:0 22px 36px}
         .musek-feed *{box-sizing:border-box}
         .feed-topbar{max-width:1180px;height:76px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.09)}
@@ -396,7 +396,7 @@ export default function FeedClient({
         .feed-empty{max-width:700px;margin:40px auto;padding:42px 24px;text-align:center;border:1px solid rgba(192,132,252,.2);border-radius:22px;background:#15101d;color:#c4b5d4}
         @media(max-width:760px){.musek-feed{padding:0 12px 24px}.feed-topbar{height:66px}.feed-intro{padding:24px 2px 18px;align-items:flex-start;flex-direction:column;gap:12px}.feed-intro h1{font-size:34px}.feed-list{height:calc(100svh - 205px);min-height:560px;gap:14px}.feed-card{grid-template-columns:1fr;grid-template-rows:280px auto;min-height:0}.feed-art{min-height:280px}.feed-art-title{left:18px;bottom:17px}.feed-art-title strong{font-size:28px}.feed-details{padding:18px;overflow:visible}.feed-track-name{font-size:22px}.feed-nav a{padding:9px 12px}.feed-pill{font-size:11px}}
         @media(max-width:420px){.feed-logo{font-size:22px}.feed-nav{gap:6px}.feed-nav a{font-size:11px;padding:8px 10px}.feed-list{height:calc(100svh - 215px)}.feed-card{grid-template-rows:240px auto}.feed-art{min-height:240px}.feed-details{padding:15px}.feed-actions button,.feed-actions a{padding:9px 10px;font-size:11px}}
-      \`}</style>
+      `}</style>
 
       <header className="feed-topbar">
         <Link className="feed-logo" href="/">MUSEK<span>.</span></Link>
