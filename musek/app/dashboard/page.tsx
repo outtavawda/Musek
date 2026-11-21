@@ -27,6 +27,12 @@ type Gift = {
   status: string;
 };
 
+const money = (value: number) =>
+  new Intl.NumberFormat("en-CA", {
+    style: "currency",
+    currency: "CAD",
+  }).format(value);
+
 export default async function DashboardPage() {
   const supabase = createClient();
 
@@ -36,10 +42,7 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const {
-    data: profile,
-    error: profileError,
-  } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("user_profiles")
     .select("display_name, account_type")
     .eq("id", user.id)
@@ -53,8 +56,8 @@ export default async function DashboardPage() {
 
   const accountType = String(
     profile?.account_type ||
-    user.user_metadata?.account_type ||
-    "artist"
+      user.user_metadata?.account_type ||
+      "artist"
   ).trim().toLowerCase();
 
   let wallet: Wallet | null = null;
@@ -63,9 +66,7 @@ export default async function DashboardPage() {
   let gifts: Gift[] = [];
   const errors: string[] = [];
 
-  if (profileError) {
-    errors.push("Profile: " + profileError.message);
-  }
+  if (profileError) errors.push("Profile: " + profileError.message);
 
   const walletResult = await supabase
     .from("creator_wallets")
@@ -133,8 +134,6 @@ export default async function DashboardPage() {
     (a, b) => Number(b.play_count || 0) - Number(a.play_count || 0)
   );
 
-  const mostPlayedSong = rankedTracks[0];
-
   const monthlyStats = Array.from({ length: 6 }, (_, index) => {
     const date = new Date();
     date.setDate(1);
@@ -150,10 +149,7 @@ export default async function DashboardPage() {
     }).length;
 
     return {
-      label: date.toLocaleDateString("en-CA", {
-        month: "short",
-        year: "2-digit",
-      }),
+      label: date.toLocaleDateString("en-CA", { month: "short" }),
       plays,
     };
   });
@@ -179,455 +175,465 @@ export default async function DashboardPage() {
   );
 
   const amountToMinimum = Math.max(0, 100 - totalEarnings);
+  const withdrawalProgress = Math.min((totalEarnings / 100) * 100, 100);
 
-  const cardStyle =
-    "rounded-2xl border border-white/10 bg-[#111116] p-5 shadow-lg shadow-black/20";
+  const card =
+    "rounded-2xl border border-white/10 bg-[#11111d] shadow-lg shadow-black/20";
 
-  const mutedStyle = "text-sm text-gray-400";
+  const label =
+    "text-[11px] font-bold uppercase tracking-[0.18em] text-purple-300";
+
+  const navItems = [
+    { href: "/dashboard", icon: "⌂", name: "Dashboard" },
+    { href: "/profile", icon: "●", name: "Profile" },
+    { href: "/discover-music", icon: "♫", name: "Discover Music" },
+    { href: "/favorites", icon: "♡", name: "My Favourites" },
+    { href: "/discover", icon: "♧", name: "Discover Artists" },
+    { href: "/my-music", icon: "♫", name: "My Music" },
+    { href: "/gift-history", icon: "◇", name: "Gift History" },
+  ];
 
   return (
-    <main className="min-h-screen bg-[#08080b] text-white">
-
-      {/* TOP NAVIGATION */}
-
-      <nav className="sticky top-0 z-20 border-b border-white/10 bg-[#08080b]/95 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-          <Link href="/" className="text-2xl font-black tracking-tight">
+    <main className="min-h-screen bg-[#080811] text-white">
+      <div className="flex min-h-screen">
+        {/* DESKTOP SIDEBAR */}
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-purple-500/15 bg-[#0b0b17] px-5 py-7 lg:flex">
+          <Link
+            href="/"
+            className="mb-12 px-3 text-3xl font-black tracking-tight"
+          >
             MUSEK<span className="text-purple-500">.</span>
           </Link>
 
-          <div className="hidden items-center gap-6 text-sm text-gray-400 md:flex">
-            <Link href="/discover-music" className="hover:text-white">
-              Discover Music
-            </Link>
-            <Link href="/discover" className="hover:text-white">
-              Artists
-            </Link>
-            <Link href="/my-music" className="hover:text-white">
-              My Music
-            </Link>
-            <Link href="/favorites" className="hover:text-white">
-              Favourites
-            </Link>
+          <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
+            Your Workspace
+          </p>
+
+          <nav className="space-y-2">
+            {navItems.map((item) => {
+              const active = item.href === "/dashboard";
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                    active
+                      ? "bg-gradient-to-r from-purple-700 to-purple-500 text-white shadow-lg shadow-purple-900/40"
+                      : "text-gray-400 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto border-t border-white/10 pt-6">
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="w-full rounded-xl border border-white/10 px-4 py-3 text-left text-sm font-semibold text-gray-400 transition hover:border-purple-500 hover:text-white"
+              >
+                ↪ Log out
+              </button>
+            </form>
           </div>
+        </aside>
 
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm font-semibold text-gray-300 transition hover:border-purple-500 hover:text-white"
-            >
-              Log out
-            </button>
-          </form>
-        </div>
-      </nav>
+        {/* MAIN CONTENT */}
+        <div className="min-w-0 flex-1">
+          {/* TOP BAR */}
+          <header className="flex items-center justify-between border-b border-white/10 bg-[#080811]/90 px-5 py-4 backdrop-blur-xl sm:px-8">
+            <Link href="/" className="text-xl font-black lg:hidden">
+              MUSEK<span className="text-purple-500">.</span>
+            </Link>
 
-      <div className="mx-auto max-w-7xl px-5 py-9 lg:px-8 lg:py-12">
-
-        {/* WELCOME HEADER */}
-
-        <section className="relative mb-9 overflow-hidden rounded-3xl border border-purple-500/20 bg-gradient-to-br from-[#20132f] via-[#111116] to-[#0b0b0f] p-7 sm:p-10">
-          <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-purple-600/20 blur-3xl" />
-
-          <div className="relative z-10">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-purple-300">
+            <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 sm:block">
               Artist Studio
             </p>
 
-            <h1 className="text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
-              Welcome back, {displayName}
-            </h1>
-
-            <p className="mt-3 max-w-xl text-gray-400">
-              Your music, your audience and your earnings — all in one place.
-            </p>
-
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Account type: {accountType}
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href="/my-music"
-                className="rounded-xl bg-purple-600 px-5 py-3 text-sm font-bold transition hover:bg-purple-500"
-              >
-                Manage My Music
-              </Link>
-
-              <Link
-                href="/profile"
-                className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold transition hover:bg-white/10"
-              >
-                Edit Profile
-              </Link>
-
-              <Link
-                href="/discover-music"
-                className="rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-bold transition hover:bg-white/10"
-              >
-                Explore Music
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* QUICK PERFORMANCE STATS */}
-
-        <section className="mb-10">
-          <div className="mb-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">
-                Performance Overview
-              </p>
-              <h2 className="mt-1 text-2xl font-bold">
-                Your Music at a Glance
-              </h2>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-            <div className={cardStyle}>
-              <p className={mutedStyle}>Total Plays</p>
-              <h3 className="mt-3 text-3xl font-black">
-                {totalPlays.toLocaleString()}
-              </h3>
-              <p className="mt-2 text-xs text-purple-400">
-                Across published songs
-              </p>
-            </div>
-
-            <div className={cardStyle}>
-              <p className={mutedStyle}>Published Songs</p>
-              <h3 className="mt-3 text-3xl font-black">
-                {tracks.length}
-              </h3>
-              <p className="mt-2 text-xs text-purple-400">
-                Your live catalogue
-              </p>
-            </div>
-
-            <div className={cardStyle}>
-              <p className={mutedStyle}>Coin Balance</p>
-              <h3 className="mt-3 text-3xl font-black text-purple-300">
-                {walletBalance.toLocaleString()}
-              </h3>
-              <p className="mt-2 text-xs text-gray-500">
-                Coins in creator wallet
-              </p>
-            </div>
-
-            <div className={cardStyle}>
-              <p className={mutedStyle}>Recorded Earnings</p>
-              <h3 className="mt-3 text-3xl font-black text-[#39ff14]">
-                ${totalEarnings.toFixed(2)}
-              </h3>
-              <p className="mt-2 text-xs text-gray-500">
-                Canadian dollars
-              </p>
-            </div>
-
-          </div>
-        </section>
-
-        {/* ARTIST WALLET */}
-
-        <section id="artist-wallet" className="mb-10">
-          <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">
-              Financial Centre
-            </p>
-            <h2 className="mt-1 text-2xl font-bold">Your Artist Wallet</h2>
-          </div>
-
-          {!wallet && (
-            <p className="mb-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4 text-sm text-yellow-300">
-              Wallet information is not available yet. See dashboard errors below.
-            </p>
-          )}
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-            <div className="relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-[#28153d] to-[#111116] p-7">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-purple-500/20 blur-3xl" />
-
-              <div className="relative">
-                <p className="text-sm font-semibold text-purple-200">
-                  Creator Coin Balance
-                </p>
-                <h3 className="mt-4 text-4xl font-black">
-                  {walletBalance.toLocaleString()}
-                </h3>
-                <p className="mt-2 text-sm text-purple-200/70">
-                  MUSEK Coins
-                </p>
+            <div className="flex items-center gap-3">
+              <span className="hidden text-sm text-gray-400 sm:block">
+                {displayName}
+              </span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-purple-500/40 bg-purple-500/15 text-lg">
+                ♙
               </div>
+              <form action={signOut}>
+                <button className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-gray-300 hover:border-purple-500 hover:text-white">
+                  Log out
+                </button>
+              </form>
             </div>
+          </header>
 
-            <div className="rounded-2xl border border-white/10 bg-[#111116] p-7">
-              <p className="text-sm font-semibold text-gray-400">
-                Total Coins Received
-              </p>
-              <h3 className="mt-4 text-4xl font-black">
-                {totalCoinsReceived.toLocaleString()}
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Lifetime creator coin receipts
-              </p>
-            </div>
+          <div className="mx-auto max-w-[1500px] space-y-7 px-4 py-7 sm:px-7 lg:px-10 lg:py-9">
+            {/* WELCOME BANNER */}
+            <section className="relative overflow-hidden rounded-3xl border border-purple-500/25 bg-gradient-to-r from-[#21103c] via-[#171329] to-[#10101d] p-7 sm:p-10">
+              <div className="pointer-events-none absolute -right-16 -top-24 h-80 w-80 rounded-full bg-purple-600/25 blur-3xl" />
+              <div className="pointer-events-none absolute bottom-0 right-0 h-48 w-2/3 bg-gradient-to-l from-purple-500/10 to-transparent" />
 
-          </div>
+              <div className="relative z-10 max-w-3xl">
+                <p className={label}>Your MUSEK Account</p>
+                <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
+                  Welcome,{" "}
+                  <span className="bg-gradient-to-r from-purple-300 to-fuchsia-500 bg-clip-text text-transparent">
+                    {displayName}
+                  </span>
+                </h1>
+                <p className="mt-3 text-sm text-purple-100/70">
+                  Account type:{" "}
+                  <span className="font-bold capitalize text-purple-300">
+                    {accountType}
+                  </span>
+                </p>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-gray-300">
+                  Your music, your audience and your earnings — all in one
+                  place.
+                </p>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-
-            <div className={cardStyle}>
-              <p className="text-sm font-semibold text-gray-400">
-                Settled Gift Revenue
-              </p>
-
-              <h3 className="mt-3 text-3xl font-black text-[#39ff14]">
-                CAD ${settledGiftEarnings.toFixed(2)}
-              </h3>
-
-              <div className="mt-5 flex flex-wrap gap-3 text-sm">
-                <span className="rounded-lg bg-white/5 px-3 py-2 text-gray-300">
-                  {settledGiftCoins.toLocaleString()} gift coins
-                </span>
-                <span className="rounded-lg bg-purple-500/10 px-3 py-2 text-purple-300">
-                  Creator share: 70%
-                </span>
-                <span className="rounded-lg bg-white/5 px-3 py-2 text-gray-400">
-                  MUSEK share: 30%
-                </span>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link
+                    href="/profile"
+                    className="rounded-full bg-purple-600 px-5 py-3 text-sm font-bold shadow-lg shadow-purple-900/40 transition hover:bg-purple-500"
+                  >
+                    ✎ Edit Profile
+                  </Link>
+                  <Link
+                    href="/discover-music"
+                    className="rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
+                  >
+                    ▷ Discover Music
+                  </Link>
+                  <Link
+                    href="/favorites"
+                    className="rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
+                  >
+                    ♡ My Favourites
+                  </Link>
+                  <Link
+                    href="/discover"
+                    className="rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
+                  >
+                    Discover Artists
+                  </Link>
+                  <Link
+                    href="/my-music"
+                    className="rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold hover:bg-white/10"
+                  >
+                    ♫ My Music
+                  </Link>
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className={cardStyle}>
-              <p className="text-sm font-semibold text-gray-400">
-                Withdrawal Eligibility
-              </p>
+            {/* ARTIST WALLET */}
+            <section>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className={label}>Artist Wallet</p>
+                  <h2 className="mt-1 text-2xl font-black">Your Earnings</h2>
+                </div>
+                <Link
+                  href="/dashboard#artist-wallet"
+                  className="rounded-full border border-purple-500/30 px-4 py-2 text-xs font-semibold text-purple-300 hover:bg-purple-500/10"
+                >
+                  View Details →
+                </Link>
+              </div>
 
-              <h3 className="mt-3 text-3xl font-black">
-                CAD $100.00
-              </h3>
+              {!wallet && (
+                <p className="mb-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4 text-sm text-yellow-300">
+                  Wallet information is not available yet.
+                </p>
+              )}
 
-              <p className="mt-3 text-sm text-gray-400">
-                {amountToMinimum > 0
-                  ? `CAD $${amountToMinimum.toFixed(2)} more in recorded earnings to reach the minimum.`
-                  : "Recorded earnings have reached the minimum. Final eligibility must still be verified."}
-              </p>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className={`${card} bg-gradient-to-br from-[#251440] to-[#11111d] p-6`}>
+                  <p className={label}>Coin Balance</p>
+                  <h3 className="mt-3 text-4xl font-black text-white">
+                    {walletBalance.toLocaleString()}
+                  </h3>
+                  <p className="mt-2 text-xs text-gray-400">MUSEK Coins</p>
+                  <p className="mt-5 text-2xl text-purple-400">◉</p>
+                </div>
 
-              <div className="mt-5 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3">
-                <p className="text-xs leading-5 text-yellow-200">
+                <div className={`${card} p-6`}>
+                  <p className={label}>Total Coins Received</p>
+                  <h3 className="mt-3 text-4xl font-black">
+                    {totalCoinsReceived.toLocaleString()}
+                  </h3>
+                  <p className="mt-2 text-xs text-gray-400">
+                    Lifetime creator coin receipts
+                  </p>
+                  <p className="mt-5 text-2xl text-purple-400">☆</p>
+                </div>
+
+                <div className={`${card} p-6`}>
+                  <p className={label}>Recorded Earnings</p>
+                  <h3 className="mt-3 text-4xl font-black text-purple-300">
+                    {money(totalEarnings)}
+                  </h3>
+                  <p className="mt-2 text-xs text-gray-400">
+                    Canadian dollars
+                  </p>
+                  <p className="mt-5 text-2xl text-purple-400">$</p>
+                </div>
+              </div>
+            </section>
+
+            {/* GIFTS AND WITHDRAWALS */}
+            <section className="grid gap-4 xl:grid-cols-2">
+              <div className={`${card} relative overflow-hidden p-6`}>
+                <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
+                <p className={label}>Gift Revenue</p>
+                <h2 className="mt-4 text-3xl font-black text-white">
+                  {money(settledGiftEarnings)}
+                </h2>
+                <p className="mt-1 text-xs text-gray-400">
+                  Recorded creator share
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="rounded-xl bg-white/5 px-4 py-3">
+                    <p className="text-xs text-gray-400">Settled gift coins</p>
+                    <p className="mt-1 text-xl font-bold">
+                      {settledGiftCoins.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-purple-500/10 px-4 py-3">
+                    <p className="text-xs text-purple-300">Creator share</p>
+                    <p className="mt-1 text-xl font-bold text-purple-300">
+                      70%
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-white/5 px-4 py-3">
+                    <p className="text-xs text-gray-400">MUSEK share</p>
+                    <p className="mt-1 text-xl font-bold">30%</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className={`${card} p-6`}>
+                <p className={label}>Withdrawal Eligibility</p>
+                <h2 className="mt-4 text-3xl font-black">
+                  CAD $100.00 minimum
+                </h2>
+
+                <div className="mt-5 h-3 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-purple-700 to-fuchsia-400"
+                    style={{ width: `${withdrawalProgress}%` }}
+                  />
+                </div>
+
+                <p className="mt-3 text-xs leading-5 text-gray-400">
+                  {amountToMinimum > 0
+                    ? `${money(amountToMinimum)} more in recorded earnings to reach the minimum.`
+                    : "Recorded earnings have reached the minimum. Final eligibility must still be verified."}
+                </p>
+
+                <p className="mt-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3 text-xs leading-5 text-yellow-200">
                   Withdrawals are not yet enabled. Identity verification,
                   payment processing and settlement checks are still required.
                 </p>
               </div>
-            </div>
+            </section>
 
-          </div>
-        </section>
-
-        {/* LISTENING ANALYTICS */}
-
-        <section className="mb-10">
-          <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">
-              Audience Insights
-            </p>
-            <h2 className="mt-1 text-2xl font-bold">
-              Listening Analytics
-            </h2>
-          </div>
-
-          <div className={cardStyle}>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-sm text-gray-400">
-                  Recorded plays over the last six months
-                </p>
-                <h3 className="mt-2 text-4xl font-black">
-                  {monthlyTotal.toLocaleString()}
-                </h3>
+            {/* PERFORMANCE */}
+            <section>
+              <div className="mb-4">
+                <p className={label}>Artist Analytics</p>
+                <h2 className="mt-1 text-2xl font-black">
+                  Your Music Performance
+                </h2>
               </div>
 
-              <span className="rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-2 text-xs font-semibold text-purple-300">
-                Six-month report
-              </span>
-            </div>
-
-            <div className="mt-9 flex h-56 items-end justify-between gap-3 sm:gap-5">
-              {monthlyStats.map((month) => {
-                const height = Math.max(
-                  (month.plays / highestMonthlyPlays) * 150,
-                  5
-                );
-
-                return (
-                  <div
-                    key={month.label}
-                    className="flex h-full flex-1 flex-col items-center justify-end gap-3"
-                  >
-                    <span className="text-xs font-semibold text-gray-300">
-                      {month.plays.toLocaleString()}
-                    </span>
-
-                    <div
-                      className="w-full max-w-14 rounded-t-lg bg-gradient-to-t from-purple-700 to-purple-400 shadow-lg shadow-purple-500/10"
-                      style={{ height: `${height}px` }}
-                    />
-
-                    <span className="text-center text-[10px] text-gray-500 sm:text-xs">
-                      {month.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <p className="mt-6 text-xs text-gray-500">
-              Monthly history starts from the date tracking was installed.
-            </p>
-          </div>
-        </section>
-
-        {/* TOP TRACKS */}
-
-        <section className="mb-10">
-          <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">
-              Your Catalogue
-            </p>
-            <h2 className="mt-1 text-2xl font-bold">
-              Most Popular Songs
-            </h2>
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#111116]">
-
-            {rankedTracks.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-lg font-semibold">
-                  No published songs yet
-                </p>
-                <p className="mt-2 text-sm text-gray-500">
-                  Publish your first song to start building your audience.
-                </p>
-                <Link
-                  href="/my-music"
-                  className="mt-5 inline-block rounded-xl bg-purple-600 px-5 py-3 text-sm font-bold hover:bg-purple-500"
-                >
-                  Manage My Music
-                </Link>
-              </div>
-            ) : (
-              rankedTracks.map((track, index) => (
-                <div
-                  key={track.id}
-                  className="flex items-center justify-between gap-4 border-b border-white/5 p-5 last:border-0 hover:bg-white/[0.03]"
-                >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 font-bold text-purple-300">
-                      {index + 1}
-                    </div>
-
-                    <div className="min-w-0">
-                      <h3 className="truncate font-bold">
-                        {track.title}
-                      </h3>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {track.genre || "Music"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <p className="font-bold">
-                      {Number(track.play_count || 0).toLocaleString()}
+              <div className={`${card} p-5 sm:p-7`}>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl bg-purple-500/10 p-4">
+                    <p className={label}>Total Plays</p>
+                    <p className="mt-2 text-3xl font-black">
+                      {totalPlays.toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-500">Plays</p>
+                  </div>
+                  <div className="rounded-xl bg-white/5 p-4">
+                    <p className={label}>Published Songs</p>
+                    <p className="mt-2 text-3xl font-black">
+                      {tracks.length}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-white/5 p-4">
+                    <p className={label}>Top Song Plays</p>
+                    <p className="mt-2 text-3xl font-black">
+                      {Number(rankedTracks[0]?.play_count || 0).toLocaleString()}
+                    </p>
                   </div>
                 </div>
-              ))
+
+                <div className="mt-8 grid gap-7 xl:grid-cols-[1.7fr_1fr]">
+                  <div>
+                    <p className="text-sm font-bold">Monthly Listening Report</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Recorded plays over the last six months
+                    </p>
+                    <p className="mt-4 text-3xl font-black text-purple-300">
+                      {monthlyTotal.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-500">Total plays</p>
+
+                    <div className="mt-7 flex h-48 items-end gap-3 sm:gap-5">
+                      {monthlyStats.map((month) => {
+                        const height = Math.max(
+                          (month.plays / highestMonthlyPlays) * 135,
+                          5
+                        );
+
+                        return (
+                          <div
+                            key={month.label}
+                            className="flex min-w-0 flex-1 flex-col items-center justify-end gap-2"
+                          >
+                            <span className="text-[10px] font-semibold text-gray-300 sm:text-xs">
+                              {month.plays.toLocaleString()}
+                            </span>
+                            <div
+                              className="w-full max-w-14 rounded-t-lg bg-gradient-to-t from-purple-800 to-fuchsia-400 shadow-lg shadow-purple-500/20"
+                              style={{ height: `${height}px` }}
+                            />
+                            <span className="text-xs text-gray-500">
+                              {month.label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="mt-5 text-xs text-gray-500">
+                      Monthly history starts from the date tracking was installed.
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="mb-4 text-sm font-bold">
+                      Your Published Songs
+                    </p>
+
+                    {rankedTracks.length === 0 ? (
+                      <div className="rounded-xl bg-white/5 p-5">
+                        <p className="text-sm font-semibold">
+                          No published songs yet
+                        </p>
+                        <p className="mt-2 text-xs text-gray-500">
+                          Publish your first song to start building your audience.
+                        </p>
+                        <Link
+                          href="/my-music"
+                          className="mt-4 inline-block text-sm font-bold text-purple-300"
+                        >
+                          Manage My Music →
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {rankedTracks.slice(0, 5).map((track, index) => (
+                          <div
+                            key={track.id}
+                            className="flex items-center justify-between gap-3 rounded-xl bg-white/5 p-3"
+                          >
+                            <div className="flex min-w-0 items-center gap-3">
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/15 text-sm font-bold text-purple-300">
+                                {index + 1}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold">
+                                  {track.title}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {track.genre || "Music"}
+                                </p>
+                              </div>
+                            </div>
+                            <p className="shrink-0 text-xs font-bold text-gray-300">
+                              {Number(track.play_count || 0).toLocaleString()}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* WORKSPACE LINKS */}
+            <section>
+              <p className={label}>Your Workspace</p>
+              <h2 className="mb-4 mt-1 text-2xl font-black">
+                Manage Your Artist Account
+              </h2>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  {
+                    title: "My Music",
+                    description: "Upload and manage your releases.",
+                    href: "/my-music",
+                  },
+                  {
+                    title: "Discover Artists",
+                    description: "Explore the MUSEK community.",
+                    href: "/discover",
+                  },
+                  {
+                    title: "My Favourites",
+                    description: "Visit your saved music.",
+                    href: "/favorites",
+                  },
+                  {
+                    title: "Edit Profile",
+                    description: "Update your artist identity.",
+                    href: "/profile",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className={`${card} p-5 transition hover:-translate-y-1 hover:border-purple-500/50 hover:bg-[#171326]`}
+                  >
+                    <h3 className="font-bold">{item.title}</h3>
+                    <p className="mt-2 text-sm text-gray-500">
+                      {item.description}
+                    </p>
+                    <p className="mt-5 text-sm font-bold text-purple-300">
+                      Open section →
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            {/* ERRORS */}
+            {errors.length > 0 && (
+              <section className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-red-300">
+                  Dashboard Data Errors
+                </p>
+                {errors.map((error, index) => (
+                  <p key={index} className="mt-2 text-sm text-red-200">
+                    {error}
+                  </p>
+                ))}
+              </section>
             )}
 
+            <footer className="border-t border-white/10 py-7 text-center text-xs text-gray-600">
+              MUSEK. Artist Studio
+            </footer>
           </div>
-        </section>
-
-        {/* QUICK LINKS */}
-
-        <section className="mb-8">
-          <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">
-              Your Workspace
-            </p>
-            <h2 className="mt-1 text-2xl font-bold">
-              Manage Your Artist Account
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-            {[
-              {
-                title: "My Music",
-                description: "Upload and manage your releases.",
-                href: "/my-music",
-              },
-              {
-                title: "Discover Artists",
-                description: "Explore the MUSEK community.",
-                href: "/discover",
-              },
-              {
-                title: "My Favourites",
-                description: "Visit your saved music.",
-                href: "/favorites",
-              },
-              {
-                title: "Edit Profile",
-                description: "Update your artist identity.",
-                href: "/profile",
-              },
-            ].map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                className="rounded-2xl border border-white/10 bg-[#111116] p-5 transition hover:-translate-y-1 hover:border-purple-500/40 hover:bg-[#17121e]"
-              >
-                <h3 className="font-bold">{item.title}</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  {item.description}
-                </p>
-                <p className="mt-5 text-sm font-semibold text-purple-400">
-                  Open section →
-                </p>
-              </Link>
-            ))}
-
-          </div>
-        </section>
-
-        {/* DATA ERRORS */}
-
-        {errors.length > 0 && (
-          <section className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
-            <p className="text-xs font-bold uppercase tracking-wider text-red-300">
-              Dashboard Data Errors
-            </p>
-
-            {errors.map((error, index) => (
-              <p key={index} className="mt-2 text-sm text-red-200">
-                {error}
-              </p>
-            ))}
-          </section>
-        )}
-
-        <footer className="border-t border-white/10 py-7 text-center text-xs text-gray-600">
-          MUSEK. Artist Studio
-        </footer>
-
+        </div>
       </div>
     </main>
   );
