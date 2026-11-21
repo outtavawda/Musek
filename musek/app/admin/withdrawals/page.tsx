@@ -56,83 +56,7 @@ export default async function AdminWithdrawalsPage() {
         <h1>Admin Withdrawals</h1>
         <p>Unable to load withdrawal requests.</p>
         <p>{error.message}</p>
-  
-      <style jsx global>{`
-        main.admin-shell {
-          max-width: 1280px !important;
-          min-height: 100vh;
-          padding: 42px 28px !important;
-          color: #f8f7ff;
-          background: radial-gradient(ellipse at 85% 0%, rgba(124,58,237,.18), transparent 38%), #080811;
-          font-family: inherit;
-        }
-        main.admin-shell > a {
-          display: inline-flex;
-          padding: 10px 15px;
-          border: 1px solid rgba(168,85,247,.35);
-          border-radius: 999px;
-          color: #d8b4fe;
-          text-decoration: none;
-          background: rgba(168,85,247,.08);
-        }
-        main.admin-shell h1 {
-          font-size: clamp(30px, 4vw, 44px) !important;
-          font-weight: 900;
-          letter-spacing: -.04em;
-          color: #fff;
-        }
-        main.admin-shell h2 { color: #fff; font-weight: 850; letter-spacing: -.025em; }
-        main.admin-shell p { color: #a7a4b8; }
-        main.admin-shell > div:first-of-type {
-          gap: 14px !important;
-        }
-        main.admin-shell > div:first-of-type > div {
-          background: linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98)) !important;
-          border: 1px solid rgba(168,85,247,.22) !important;
-          border-radius: 20px !important;
-          padding: 23px !important;
-          box-shadow: 0 16px 45px rgba(0,0,0,.22);
-        }
-        main.admin-shell > div:first-of-type > div p {
-          color: #aaa4bd !important;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: .09em;
-          font-weight: 700;
-        }
-        main.admin-shell > div:first-of-type > div h2 {
-          font-size: 32px !important;
-          color: #e9d5ff;
-        }
-        main.admin-shell > div:last-of-type > section {
-          background: linear-gradient(145deg, rgba(24,21,39,.98), rgba(13,13,24,.98)) !important;
-          border: 1px solid rgba(168,85,247,.2) !important;
-          border-radius: 22px !important;
-          padding: 25px !important;
-          box-shadow: 0 18px 50px rgba(0,0,0,.2);
-        }
-        main.admin-shell > div:last-of-type > section p { line-height: 1.65; }
-        main.admin-shell > div:last-of-type > section p strong { color: #eee8fa; }
-        main.admin-shell button {
-          border-radius: 999px !important;
-          padding: 11px 19px !important;
-          font-weight: 750;
-          transition: transform .18s ease, filter .18s ease;
-        }
-        main.admin-shell button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.15); }
-        main.admin-shell button:disabled { opacity: .55; cursor: wait; }
-        main.admin-shell input, main.admin-shell textarea {
-          color: #fff !important;
-          background: #0b0b16 !important;
-          border: 1px solid rgba(168,85,247,.3) !important;
-        }
-        main.admin-shell label { color: #d8b4fe; font-size: 13px; font-weight: 700; }
-        @media (max-width: 640px) {
-          main.admin-shell { padding: 26px 16px !important; }
-          main.admin-shell > div:last-of-type > section { padding: 18px !important; }
-        }
-      `}</style>
-    </main>
+      </main>
     );
   }
 
@@ -191,14 +115,17 @@ export default async function AdminWithdrawalsPage() {
     <main
       className="admin-shell"
       style={{
-        maxWidth: "1100px",
+        maxWidth: "1280px",
+        minHeight: "100vh",
         margin: "0 auto",
-        padding: "32px 20px",
+        padding: "42px 28px",
+        color: "#f8f7ff",
+        background: "radial-gradient(ellipse at 85% 0%, rgba(124,58,237,.18), transparent 38%), #080811",
       }}
     >
-      <Link href="/dashboard">← Back to Dashboard</Link>
+      <Link href="/dashboard" style={{ display: "inline-flex", padding: "10px 15px", border: "1px solid rgba(168,85,247,.35)", borderRadius: "999px", color: "#d8b4fe", textDecoration: "none", background: "rgba(168,85,247,.08)" }}>← Back to Dashboard</Link>
 
-      <h1 style={{ fontSize: "30px", marginTop: "24px" }}>
+      <h1 style={{ fontSize: "clamp(30px, 4vw, 44px)", fontWeight: 900, letterSpacing: "-.04em", color: "#fff", marginTop: "24px" }}>
         Admin Withdrawal Management
       </h1>
 
@@ -210,96 +137,108 @@ export default async function AdminWithdrawalsPage() {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
+          gap: "14px",
           marginBottom: "28px",
         }}
       >
         <div
           style={{
-            padding: "20px",
-            border: "1px solid #333",
-            borderRadius: "12px",
+            padding: "23px",
+            border: "1px solid rgba(168,85,247,.22)",
+            borderRadius: "20px",
+            background: "linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98))",
+            boxShadow: "0 16px 45px rgba(0,0,0,.22)",
           }}
         >
-          <p style={{ color: "#888", margin: 0 }}>
+          <p style={{ color: "#aaa4bd", margin: 0, fontSize: "12px", textTransform: "uppercase", letterSpacing: ".09em", fontWeight: 700 }}>
             Total withdrawal requests
           </p>
-          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+          <h2 style={{ fontSize: "32px", margin: "8px 0 0", color: "#e9d5ff", fontWeight: 850 }}>
             {requests.length}
           </h2>
         </div>
 
         <div
           style={{
-            padding: "20px",
-            border: "1px solid #333",
-            borderRadius: "12px",
+            padding: "23px",
+            border: "1px solid rgba(168,85,247,.22)",
+            borderRadius: "20px",
+            background: "linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98))",
+            boxShadow: "0 16px 45px rgba(0,0,0,.22)",
           }}
         >
-          <p style={{ color: "#888", margin: 0 }}>
+          <p style={{ color: "#aaa4bd", margin: 0, fontSize: "12px", textTransform: "uppercase", letterSpacing: ".09em", fontWeight: 700 }}>
             Pending requests
           </p>
-          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+          <h2 style={{ fontSize: "32px", margin: "8px 0 0", color: "#e9d5ff", fontWeight: 850 }}>
             {pendingCount}
           </h2>
         </div>
 
         <div
           style={{
-            padding: "20px",
-            border: "1px solid #333",
-            borderRadius: "12px",
+            padding: "23px",
+            border: "1px solid rgba(168,85,247,.22)",
+            borderRadius: "20px",
+            background: "linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98))",
+            boxShadow: "0 16px 45px rgba(0,0,0,.22)",
           }}
         >
-          <p style={{ color: "#888", margin: 0 }}>
+          <p style={{ color: "#aaa4bd", margin: 0, fontSize: "12px", textTransform: "uppercase", letterSpacing: ".09em", fontWeight: 700 }}>
             Approved requests
           </p>
-          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+          <h2 style={{ fontSize: "32px", margin: "8px 0 0", color: "#e9d5ff", fontWeight: 850 }}>
             {approvedCount}
           </h2>
         </div>
 
         <div
           style={{
-            padding: "20px",
-            border: "1px solid #333",
-            borderRadius: "12px",
+            padding: "23px",
+            border: "1px solid rgba(168,85,247,.22)",
+            borderRadius: "20px",
+            background: "linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98))",
+            boxShadow: "0 16px 45px rgba(0,0,0,.22)",
           }}
         >
-          <p style={{ color: "#888", margin: 0 }}>
+          <p style={{ color: "#aaa4bd", margin: 0, fontSize: "12px", textTransform: "uppercase", letterSpacing: ".09em", fontWeight: 700 }}>
             Processing requests
           </p>
-          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+          <h2 style={{ fontSize: "32px", margin: "8px 0 0", color: "#e9d5ff", fontWeight: 850 }}>
             {processingCount}
           </h2>
         </div>
 
         <div
           style={{
-            padding: "20px",
-            border: "1px solid #333",
-            borderRadius: "12px",
+            padding: "23px",
+            border: "1px solid rgba(168,85,247,.22)",
+            borderRadius: "20px",
+            background: "linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98))",
+            boxShadow: "0 16px 45px rgba(0,0,0,.22)",
           }}
         >
-          <p style={{ color: "#888", margin: 0 }}>
+          <p style={{ color: "#aaa4bd", margin: 0, fontSize: "12px", textTransform: "uppercase", letterSpacing: ".09em", fontWeight: 700 }}>
             Paid requests
           </p>
-          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+          <h2 style={{ fontSize: "32px", margin: "8px 0 0", color: "#e9d5ff", fontWeight: 850 }}>
             {paidCount}
           </h2>
         </div>
 
         <div
           style={{
-            padding: "20px",
-            border: "1px solid #333",
-            borderRadius: "12px",
+            padding: "23px",
+            border: "1px solid rgba(168,85,247,.22)",
+            borderRadius: "20px",
+            background: "linear-gradient(145deg, rgba(31,25,51,.96), rgba(15,15,27,.98))",
+            boxShadow: "0 16px 45px rgba(0,0,0,.22)",
           }}
         >
-          <p style={{ color: "#888", margin: 0 }}>
+          <p style={{ color: "#aaa4bd", margin: 0, fontSize: "12px", textTransform: "uppercase", letterSpacing: ".09em", fontWeight: 700 }}>
             Total amount requested
           </p>
-          <h2 style={{ fontSize: "30px", margin: "8px 0 0" }}>
+          <h2 style={{ fontSize: "32px", margin: "8px 0 0", color: "#e9d5ff", fontWeight: 850 }}>
             CAD ${totalRequested.toFixed(2)}
           </h2>
         </div>
@@ -313,12 +252,14 @@ export default async function AdminWithdrawalsPage() {
             <section
               key={request.id}
               style={{
-                border: "1px solid #333",
-                borderRadius: "12px",
-                padding: "20px",
+                border: "1px solid rgba(168,85,247,.2)",
+                borderRadius: "22px",
+                padding: "25px",
+                background: "linear-gradient(145deg, rgba(24,21,39,.98), rgba(13,13,24,.98))",
+                boxShadow: "0 18px 50px rgba(0,0,0,.2)",
               }}
             >
-              <h2 style={{ fontSize: "20px", marginTop: 0 }}>
+              <h2 style={{ fontSize: "22px", marginTop: 0, color: "#fff", fontWeight: 850 }}>
                 {getArtistName(request.user_id)}
               </h2>
 
