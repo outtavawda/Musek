@@ -18,115 +18,168 @@ type Profile = {
 
 export default function DiscoverSearch({ profiles }: { profiles: Profile[] }) {
   const [search, setSearch] = useState("");
+  const [activeGenre, setActiveGenre] = useState("All sounds");
+
+  const artists = profiles.filter((profile) => profile.account_type === "artist");
+  const labels = profiles.filter((profile) => profile.account_type === "label");
+  const genres = Array.from(
+    new Set(artists.flatMap((profile) => profile.genres || []).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b));
 
   const filteredProfiles = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return profiles;
     return profiles.filter((profile) => {
-      const searchableText = [
-        profile.display_name, profile.artist_name, profile.label_name,
-        profile.bio, profile.location, ...(profile.genres || []),
-      ].filter(Boolean).join(" ").toLowerCase();
-      return searchableText.includes(term);
+      const matchesSearch = !term || [
+        profile.display_name,
+        profile.artist_name,
+        profile.label_name,
+        profile.bio,
+        profile.location,
+        ...(profile.genres || []),
+      ].filter(Boolean).join(" ").toLowerCase().includes(term);
+      const matchesGenre =
+        activeGenre === "All sounds" ||
+        (profile.account_type === "artist" && (profile.genres || []).includes(activeGenre));
+      return matchesSearch && matchesGenre;
     });
-  }, [profiles, search]);
+  }, [profiles, search, activeGenre]);
 
-  const labels = filteredProfiles.filter((profile) => profile.account_type === "label");
-  const artists = filteredProfiles.filter((profile) => profile.account_type === "artist");
+  const filteredArtists = filteredProfiles.filter((profile) => profile.account_type === "artist");
+  const filteredLabels = filteredProfiles.filter((profile) => profile.account_type === "label");
 
   return (
-    <div className="discoverContent">
+    <div className="musekDiscover">
       <style>{`
-        .discoverContent{width:100%;color:#fff}
-        .discoverSearchBox{margin:30px 0 38px;padding:20px;border:1px solid rgba(168,85,247,.24);border-radius:18px;background:linear-gradient(135deg,rgba(126,34,206,.13),rgba(255,255,255,.025))}
-        .discoverSearchInput{width:100%;padding:16px 18px;border-radius:12px;border:1px solid rgba(192,132,252,.32);background:#100d18;color:#fff;font-size:16px;outline:none}
-        .discoverSearchInput:focus{border-color:#c084fc;box-shadow:0 0 0 3px rgba(168,85,247,.15)}
-        .discoverGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:16px;margin-top:20px}
-        .discoverCard{min-width:0;padding:22px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:linear-gradient(145deg,rgba(30,24,43,.96),rgba(13,11,19,.98));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-        .discoverCard:hover{transform:translateY(-3px);border-color:rgba(192,132,252,.55);box-shadow:0 14px 36px rgba(0,0,0,.24)}
-        .discoverAvatar{width:84px;height:84px;object-fit:cover;border-radius:50%;border:2px solid rgba(192,132,252,.55);background:#21172d}
-        .discoverAvatar.labelAvatar{border-radius:18px}
-        .discoverType{margin:17px 0 7px;color:#c084fc;font-size:11px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase}
-        .discoverName{margin:0 0 9px;font-size:21px;line-height:1.25}
-        .discoverName a{color:#fff;text-decoration:none}
+        .musekDiscover{--purple:#a855f7;--lavender:#d8b4fe;color:#f8f6fb;width:100%;padding-bottom:24px}
+        .discoverHero{position:relative;isolation:isolate;overflow:hidden;margin:28px 0 34px;padding:clamp(28px,5vw,58px);border:1px solid rgba(192,132,252,.2);border-radius:28px;background:radial-gradient(ellipse at 82% 18%,rgba(147,51,234,.32),transparent 38%),radial-gradient(ellipse at 100% 100%,rgba(91,33,182,.24),transparent 42%),linear-gradient(120deg,#17111f 0%,#0d0b12 65%,#171020 100%);box-shadow:0 25px 80px rgba(0,0,0,.3)}
+        .discoverHero:after{content:"";position:absolute;z-index:-1;width:330px;height:330px;right:4%;top:5%;border:1px solid rgba(216,180,254,.13);border-radius:50%;box-shadow:0 0 0 35px rgba(168,85,247,.025),0 0 100px rgba(168,85,247,.13) inset}
+        .discoverKicker{color:#d8b4fe;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase}
+        .discoverHero h2{max-width:680px;margin:18px 0 14px;font-size:clamp(38px,6vw,68px);line-height:.99;letter-spacing:-3px}
+        .discoverHero h2 span{color:#c084fc}
+        .discoverLead{max-width:540px;color:#b8afc2;font-size:15px;line-height:1.75}
+        .discoverStats{display:flex;flex-wrap:wrap;gap:28px;margin-top:30px}
+        .discoverStat strong{display:block;font-size:23px;color:#fff}
+        .discoverStat span{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#91869e}
+        .discoverSearchPanel{margin:0 0 34px;padding:18px;border:1px solid rgba(255,255,255,.09);border-radius:18px;background:linear-gradient(120deg,rgba(30,23,39,.95),rgba(15,13,20,.95))}
+        .discoverSearchInput{width:100%;padding:16px 18px;border:1px solid rgba(192,132,252,.22);border-radius:12px;background:#0b0910;color:#fff;font-size:15px;outline:none}
+        .discoverSearchInput:focus{border-color:#b56af2;box-shadow:0 0 0 3px rgba(168,85,247,.12)}
+        .discoverGenreRow{display:flex;gap:8px;overflow-x:auto;padding:14px 0 2px;scrollbar-width:thin}
+        .discoverGenre{flex:0 0 auto;padding:9px 14px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:#17131d;color:#bdb3c8;font-size:12px;cursor:pointer;transition:.2s}
+        .discoverGenre:hover,.discoverGenre.active{border-color:rgba(192,132,252,.7);background:linear-gradient(110deg,#6b21a8,#9333ea);color:white}
+        .discoverSection{margin-top:44px}
+        .discoverSectionHead{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:18px}
+        .discoverSectionTitle{margin:7px 0 0;color:#fff;font-size:clamp(25px,3vw,34px);letter-spacing:-1px}
+        .discoverSectionCopy{margin:7px 0 0;color:#9d94a8;font-size:13px;line-height:1.6}
+        .discoverCount{color:#9e8bad;font-size:11px;white-space:nowrap}
+        .discoverArtistGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:17px}
+        .discoverArtistCard{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(255,255,255,.09);border-radius:20px;background:linear-gradient(155deg,#21172c,#100d15 68%);transition:transform .22s,border-color .22s,box-shadow .22s}
+        .discoverArtistCard:hover{transform:translateY(-5px);border-color:rgba(192,132,252,.48);box-shadow:0 20px 45px rgba(0,0,0,.32)}
+        .discoverArtistImage{position:relative;height:220px;overflow:hidden;background:radial-gradient(circle at 50% 35%,rgba(168,85,247,.55),transparent 55%),linear-gradient(145deg,#38214e,#17111f)}
+        .discoverArtistImage img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+        .discoverArtistCard:hover .discoverArtistImage img{transform:scale(1.06)}
+        .discoverImageShade{position:absolute;inset:35% 0 0;background:linear-gradient(transparent,rgba(12,9,16,.72))}
+        .discoverArtistBody{padding:18px}
+        .discoverType{color:#c084fc;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+        .discoverName{margin:7px 0 8px;font-size:21px;line-height:1.2}
+        .discoverName a{color:white}
         .discoverName a:hover{color:#d8b4fe}
-        .discoverBio{min-height:44px;color:#aaa3b5;font-size:14px;line-height:1.6}
-        .discoverMeta{margin:12px 0;color:#c4bacf;font-size:12px;line-height:1.6}
-        .discoverTags{display:flex;flex-wrap:wrap;gap:7px;margin:13px 0}
-        .discoverTag{padding:6px 10px;border:1px solid rgba(192,132,252,.22);border-radius:999px;background:rgba(126,34,206,.12);color:#d8b4fe;font-size:11px}
-        .discoverAction{display:inline-flex;margin-top:14px;padding:10px 14px;border-radius:10px;background:linear-gradient(100deg,#7e22ce,#a855f7);color:white;text-decoration:none;font-size:13px;font-weight:700}
-        .discoverAction:hover{filter:brightness(1.12)}
-        .discoverWebsite{display:inline-block;margin:12px 0 0 12px;color:#c4b5fd;font-size:12px}
-        .discoverSection{margin-top:42px}
-        .discoverSectionTitle{margin:0;color:#fff;font-size:26px}
-        .discoverSectionCopy{margin:8px 0;color:#aaa3b5;font-size:14px}
-        .discoverEyebrow{margin:0 0 8px;color:#c084fc;font-size:11px;font-weight:800;letter-spacing:2px}
-        .discoverEmpty{padding:22px;border:1px dashed rgba(192,132,252,.25);border-radius:14px;color:#aaa3b5;background:rgba(255,255,255,.025)}
-        @media(max-width:600px){.discoverSearchBox{padding:15px}.discoverGrid{grid-template-columns:1fr}.discoverCard{padding:18px}.discoverSectionTitle{font-size:23px}}
+        .discoverBio{min-height:40px;margin:0;color:#a9a0b2;font-size:12px;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .discoverTags{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 10px}
+        .discoverTag{padding:5px 9px;border:1px solid rgba(192,132,252,.18);border-radius:999px;background:rgba(126,34,206,.12);color:#d8b4fe;font-size:10px}
+        .discoverMeta{margin:10px 0 0;color:#92889d;font-size:11px}
+        .discoverCardBottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+        .discoverAction{color:#e9d5ff;font-size:11px;font-weight:800;letter-spacing:.5px}
+        .discoverAction:hover{color:#fff}
+        .discoverWebsite{color:#9e91ad;font-size:10px}
+        .discoverLabelGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:13px}
+        .discoverLabelCard{display:flex;align-items:center;gap:15px;min-width:0;padding:17px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:linear-gradient(120deg,#1b1424,#100d15);transition:.2s}
+        .discoverLabelCard:hover{border-color:rgba(192,132,252,.45);transform:translateY(-2px)}
+        .discoverLabelImage{width:66px;height:66px;flex:0 0 66px;overflow:hidden;border-radius:15px;background:linear-gradient(145deg,#67369a,#21172d)}
+        .discoverLabelImage img{width:100%;height:100%;object-fit:cover}
+        .discoverLabelInfo{min-width:0}
+        .discoverLabelInfo h3{margin:5px 0;color:#fff;font-size:16px}
+        .discoverLabelInfo p{margin:0;color:#9f96a9;font-size:11px;line-height:1.5}
+        .discoverEmpty{padding:24px;border:1px dashed rgba(192,132,252,.25);border-radius:15px;color:#a99fb2;background:rgba(255,255,255,.02)}
+        @media(max-width:600px){.discoverHero{border-radius:20px}.discoverHero h2{letter-spacing:-2px}.discoverArtistGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.discoverArtistImage{height:155px}.discoverArtistBody{padding:12px}.discoverName{font-size:16px}.discoverBio{font-size:11px}.discoverCardBottom{align-items:flex-start;flex-direction:column}.discoverLabelGrid{grid-template-columns:1fr}}
+        @media(max-width:380px){.discoverArtistGrid{grid-template-columns:1fr}.discoverArtistImage{height:210px}}
       `}</style>
 
-      <section className="discoverSearchBox">
-        <p className="discoverEyebrow">FIND YOUR NEXT FAVOURITE</p>
-        <h2 style={{ margin: "0 0 14px", fontSize: "22px" }}>Search artists, labels and sounds</h2>
+      <section className="discoverHero">
+        <p className="discoverKicker">MUSEK • ARTIST DISCOVERY</p>
+        <h2>Find the sound<br />you <span>haven’t heard</span><br />yet.</h2>
+        <p className="discoverLead">Explore independent artists, discover fresh genres and connect with the people shaping what comes next.</p>
+        <div className="discoverStats">
+          <div className="discoverStat"><strong>{artists.length}</strong><span>Artists</span></div>
+          <div className="discoverStat"><strong>{labels.length}</strong><span>Labels</span></div>
+          <div className="discoverStat"><strong>{genres.length}</strong><span>Genres</span></div>
+        </div>
+      </section>
+
+      <section className="discoverSearchPanel">
         <input className="discoverSearchInput" type="search" value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Try an artist name, genre or location..."
-          aria-label="Search artists, labels or genres" />
-        {search.trim() && <p style={{ margin: "12px 0 0", color: "#b8afc2", fontSize: "13px" }}>
-          {filteredProfiles.length} matching {filteredProfiles.length === 1 ? "profile" : "profiles"}
-        </p>}
+          placeholder="Search artists, labels, genres or locations..."
+          aria-label="Search artists, labels, genres or locations" />
+        <div className="discoverGenreRow" aria-label="Filter artists by genre">
+          <button type="button" className={activeGenre === "All sounds" ? "discoverGenre active" : "discoverGenre"} onClick={() => setActiveGenre("All sounds")}>All sounds</button>
+          {genres.map((genre) => (
+            <button type="button" key={genre} className={activeGenre === genre ? "discoverGenre active" : "discoverGenre"} onClick={() => setActiveGenre(genre)}>{genre}</button>
+          ))}
+        </div>
       </section>
 
       <section className="discoverSection">
-        <p className="discoverEyebrow">THE TEAMS BEHIND THE SOUND</p>
-        <h2 className="discoverSectionTitle">Record Labels</h2>
-        <p className="discoverSectionCopy">Explore independent labels and the artists they represent.</p>
-        {labels.length === 0 ? (
-          <p className="discoverEmpty">{search.trim() ? "No record labels match your search." : "No public record labels yet."}</p>
+        <div className="discoverSectionHead">
+          <div><p className="discoverKicker">MEET THE CREATORS</p><h2 className="discoverSectionTitle">Artists to explore</h2><p className="discoverSectionCopy">Independent voices. Distinct sounds. New favourites waiting to be found.</p></div>
+          <span className="discoverCount">{filteredArtists.length} artists</span>
+        </div>
+        {filteredArtists.length === 0 ? (
+          <p className="discoverEmpty">{search.trim() || activeGenre !== "All sounds" ? "No artists match these filters. Try another search or genre." : "No public artists yet."}</p>
         ) : (
-          <div className="discoverGrid">
-            {labels.map((profile) => {
-              const name = profile.label_name || profile.display_name || "Record label";
-              return <article className="discoverCard" key={profile.id}>
-                {profile.avatar_url ? <img className="discoverAvatar labelAvatar" src={profile.avatar_url} alt={name} /> : <div className="discoverAvatar labelAvatar" aria-hidden="true" />}
-                <p className="discoverType">Record label</p>
-                <h3 className="discoverName"><Link href={`/label/${profile.id}`}>{name}</Link></h3>
-                <p className="discoverBio">{profile.bio || "No description added yet."}</p>
-                {profile.location && <p className="discoverMeta">⌖ {profile.location}</p>}
-                <Link className="discoverAction" href={`/label/${profile.id}`}>Explore label →</Link>
-                {profile.website_url && <a className="discoverWebsite" href={profile.website_url} target="_blank" rel="noopener noreferrer">Website ↗</a>}
-              </article>;
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="discoverSection">
-        <p className="discoverEyebrow">MEET THE MUSIC CREATORS</p>
-        <h2 className="discoverSectionTitle">Discover Artists</h2>
-        <p className="discoverSectionCopy">Find new voices, explore genres and visit artist profiles.</p>
-        {artists.length === 0 ? (
-          <p className="discoverEmpty">{search.trim() ? "No artists match your search." : "No public artists yet."}</p>
-        ) : (
-          <div className="discoverGrid">
-            {artists.map((profile) => {
+          <div className="discoverArtistGrid">
+            {filteredArtists.map((profile) => {
               const name = profile.artist_name || profile.display_name || "Artist";
-              return <article className="discoverCard" key={profile.id}>
-                {profile.avatar_url ? <img className="discoverAvatar" src={profile.avatar_url} alt={name} /> : <div className="discoverAvatar" aria-hidden="true" />}
-                <p className="discoverType">Artist</p>
-                <h3 className="discoverName"><Link href={`/artist/${profile.id}`}>{name}</Link></h3>
-                <p className="discoverBio">{profile.bio || "This artist is building their story on MUSEK."}</p>
-                {profile.genres && profile.genres.length > 0 && <div className="discoverTags">
-                  {profile.genres.slice(0, 4).map((genre) => <span className="discoverTag" key={genre}>{genre}</span>)}
-                </div>}
-                {profile.location && <p className="discoverMeta">⌖ {profile.location}</p>}
-                <Link className="discoverAction" href={`/artist/${profile.id}`}>View artist →</Link>
-                {profile.website_url && <a className="discoverWebsite" href={profile.website_url} target="_blank" rel="noopener noreferrer">Website ↗</a>}
+              return <article className="discoverArtistCard" key={profile.id}>
+                <div className="discoverArtistImage">
+                  {profile.avatar_url && <img src={profile.avatar_url} alt={name} loading="lazy" />}
+                  <div className="discoverImageShade" />
+                </div>
+                <div className="discoverArtistBody">
+                  <span className="discoverType">MUSEK ARTIST</span>
+                  <h3 className="discoverName"><Link href={`/artist/${profile.id}`}>{name}</Link></h3>
+                  <p className="discoverBio">{profile.bio || "Discover this artist’s music and story on MUSEK."}</p>
+                  {profile.genres && profile.genres.length > 0 && <div className="discoverTags">{profile.genres.slice(0, 3).map((genre) => <span className="discoverTag" key={genre}>{genre}</span>)}</div>}
+                  {profile.location && <p className="discoverMeta">⌖ {profile.location}</p>}
+                  <div className="discoverCardBottom">
+                    <Link className="discoverAction" href={`/artist/${profile.id}`}>EXPLORE ARTIST ↗</Link>
+                    {profile.website_url && <a className="discoverWebsite" href={profile.website_url} target="_blank" rel="noopener noreferrer">Website ↗</a>}
+                  </div>
+                </div>
               </article>;
             })}
           </div>
         )}
       </section>
+
+      {activeGenre === "All sounds" && (
+        <section className="discoverSection">
+          <div className="discoverSectionHead">
+            <div><p className="discoverKicker">THE TEAMS BEHIND THE SOUND</p><h2 className="discoverSectionTitle">Record labels</h2><p className="discoverSectionCopy">Meet the independent labels building artist communities.</p></div>
+            <span className="discoverCount">{filteredLabels.length} labels</span>
+          </div>
+          {filteredLabels.length === 0 ? <p className="discoverEmpty">{search.trim() ? "No labels match your search." : "No public record labels yet."}</p> : (
+            <div className="discoverLabelGrid">
+              {filteredLabels.map((profile) => {
+                const name = profile.label_name || profile.display_name || "Record label";
+                return <Link className="discoverLabelCard" href={`/label/${profile.id}`} key={profile.id}>
+                  <div className="discoverLabelImage">{profile.avatar_url && <img src={profile.avatar_url} alt={name} loading="lazy" />}</div>
+                  <div className="discoverLabelInfo"><span className="discoverType">RECORD LABEL</span><h3>{name}</h3><p>{profile.location || profile.bio || "Explore label profile and roster"}</p></div>
+                </Link>;
+              })}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
