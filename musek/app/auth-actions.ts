@@ -69,6 +69,59 @@ export async function signIn(formData: FormData) {
   redirect("/fan-dashboard");
 }
 
+export async function requestPasswordReset(formData: FormData) {
+  const email = String(formData.get("email") || "").trim();
+
+  if (!email) {
+    redirect("/forgot-password?error=Enter%20your%20email%20address.");
+  }
+
+  const supabase = createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
+  if (!siteUrl) {
+    redirect("/forgot-password?error=Password%20recovery%20is%20not%20configured.%20Please%20contact%20support.");
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/callback?next=/reset-password`
+  });
+
+  if (error) {
+    redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect("/forgot-password?message=If%20an%20account%20exists%20for%20that%20email%2C%20a%20password%20reset%20link%20has%20been%20sent.");
+}
+
+export async function updatePassword(formData: FormData) {
+  const password = String(formData.get("password") || "");
+  const confirmPassword = String(formData.get("confirm_password") || "");
+
+  if (password.length < 8) {
+    redirect("/reset-password?error=Your%20password%20must%20be%20at%20least%208%20characters.");
+  }
+
+  if (password !== confirmPassword) {
+    redirect("/reset-password?error=Your%20passwords%20do%20not%20match.");
+  }
+
+  const supabase = createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    redirect("/forgot-password?error=Your%20reset%20link%20may%20have%20expired.%20Please%20request%20a%20new%20one.");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    redirect(`/reset-password?error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect("/login?message=Your%20password%20has%20been%20updated.%20Please%20log%20in.");
+}
+
 export async function signOut() {
   const supabase = createClient();
 
