@@ -18,7 +18,7 @@ After adding the variables, redeploy the `square-sandbox` branch preview so the 
 
 ## 2. Apply the Supabase migration
 
-Before using rooms and chat, apply `supabase/migrations/004_musek_social.sql` in the Supabase SQL Editor.
+Before using rooms and chat, apply `supabase/migrations/004_musek_social.sql` and `supabase/migrations/005_social_guest_invites.sql` in order in the Supabase SQL Editor.
 
 ## 3. Test the video room
 
