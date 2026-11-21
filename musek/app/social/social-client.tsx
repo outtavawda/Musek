@@ -27,6 +27,8 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [draft, setDraft] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+  const [chatConnection, setChatConnection] = useState<"connecting" | "connected" | "disconnected">("connecting");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [ending, setEnding] = useState(false);
@@ -63,8 +65,10 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   }, [loadRooms, supabase]);
 
   useEffect(() => {
-    if (!selected) { setMessages([]); return; }
+    if (!selected) { setMessages([]); setChatConnection("connecting"); return; }
     let active = true;
+    setMessages([]);
+    setChatConnection("connecting");
     supabase.from("social_live_messages")
       .select("id,room_id,user_id,display_name,message,created_at")
       .eq("room_id", selected.id).order("created_at", { ascending: true }).limit(100)
@@ -76,8 +80,13 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     const channel = supabase.channel("musek-social-chat-" + selected.id)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "social_live_messages", filter: "room_id=eq." + selected.id },
         (payload) => setMessages((current) => current.some((m) => m.id === (payload.new as Message).id) ? current : [...current, payload.new as Message]))
-      .subscribe();
-    return () => { active = false; supabase.removeChannel(channel); };
+      .subscribe((status) => {
+        if (!active) return;
+        if (status === "SUBSCRIBED") setChatConnection("connected");
+        else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") setChatConnection("disconnected");
+        else setChatConnection("connecting");
+      });
+    return () => { active = false; setChatConnection("connecting"); supabase.removeChannel(channel); };
   }, [selected, supabase]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
@@ -122,13 +131,23 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
   const sendMessage = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!selected || !draft.trim()) return;
+    if (!selected || !draft.trim() || chatSending) return;
+    const roomId = selected.id;
     const message = draft.trim().slice(0, 1000);
-    setDraft("");
-    const { error } = await supabase.from("social_live_messages").insert({
-      room_id: selected.id, user_id: userId, display_name: displayName, message
-    });
-    if (error) setNotice("Message could not be sent. Check your room access and database migration.");
+    setChatSending(true);
+    setNotice("");
+    const { data, error } = await supabase.from("social_live_messages").insert({
+      room_id: roomId, user_id: userId, display_name: displayName, message
+    }).select("id,room_id,user_id,display_name,message,created_at").single();
+    setChatSending(false);
+    if (error) {
+      setNotice(`Message could not be sent: ${error.message}. Check that migrations 004 and 008 are applied and that this room is still live.`);
+      return;
+    }
+    setDraft((current) => current === message ? "" : current);
+    if (data && selected?.id === roomId) {
+      setMessages((current) => current.some((item) => item.id === data.id) ? current : [...current, data as Message]);
+    }
   };
 
   const endRoom = async () => {
@@ -235,7 +254,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           </div>
           <aside className="flex h-[680px] min-h-[520px] flex-col overflow-hidden rounded-[2rem] border border-purple-400/20 bg-[#100D1B] shadow-[0_25px_90px_rgba(88,28,135,.12)]">
             <div className="border-b border-white/10 bg-gradient-to-r from-[#241536] to-[#151020] p-5">
-              <div className="flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.22em] text-purple-300">COMMUNITY</p><h3 className="mt-1 text-xl font-black text-white">Live chat</h3></div><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Connected</span></div>
+              <div className="flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.22em] text-purple-300">COMMUNITY</p><h3 className="mt-1 text-xl font-black text-white">Live chat</h3></div><span className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${chatConnection === "connected" ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300" : chatConnection === "disconnected" ? "border-rose-400/20 bg-rose-400/10 text-rose-300" : "border-amber-400/20 bg-amber-400/10 text-amber-200"}`}>{chatConnection === "connected" ? "Connected" : chatConnection === "disconnected" ? "Reconnecting" : "Connecting…"}</span></div>
               <p className="mt-2 text-xs leading-5 text-gray-400">Talk with the host and everyone watching this room.</p>
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_rgba(111,65,151,.12),_transparent_60%)] p-4">
@@ -244,7 +263,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               <div ref={bottomRef}/>
             </div>
             <form onSubmit={sendMessage} className="border-t border-white/10 bg-[#151020] p-3">
-              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1.5 focus-within:border-purple-400/50"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Message the room…" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-600"/><button disabled={!draft.trim()} className="rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-500 disabled:opacity-40">Send</button></div>
+              <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/30 p-1.5 focus-within:border-purple-400/50"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Message the room…" className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-white outline-none placeholder:text-gray-600"/><button type="submit" disabled={!draft.trim() || chatSending} className="rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-40">{chatSending ? "Sending…" : "Send"}</button></div>
               <p className="mt-2 px-1 text-[10px] text-gray-600">Keep it kind. Everyone is part of the MUSEK community.</p>
             </form>
           </aside>
