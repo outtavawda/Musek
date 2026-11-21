@@ -240,6 +240,9 @@ export default async function FanDashboardPage() {
                 <Link href="/discover-music" className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-white hover:bg-white/10">
                   Discover Music
                 </Link>
+                <Link href="/social" className="rounded-xl border border-fuchsia-300/30 bg-fuchsia-500/15 px-5 py-3 text-sm font-bold text-white hover:bg-fuchsia-500/25">
+                  MUSEK Social · Live
+                </Link>
               </div>
             </div>
           </div>
