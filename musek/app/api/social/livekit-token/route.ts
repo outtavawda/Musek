@@ -54,6 +54,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Live video is not configured yet. Add the LiveKit server settings to the deployment environment." }, { status: 503 });
     }
 
+    let canPublish = room.host_id === user.id;
+    if (!canPublish) {
+      const { data: invitation } = await supabase
+        .from("social_live_invites")
+        .select("id")
+        .eq("room_id", room.id)
+        .eq("invitee_id", user.id)
+        .eq("status", "accepted")
+        .maybeSingle();
+      canPublish = Boolean(invitation);
+    }
+
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("display_name,artist_name")
@@ -72,7 +84,7 @@ export async function POST(request: Request) {
     token.addGrant({
       roomJoin: true,
       room: `musek-${room.id}`,
-      canPublish: true,
+      canPublish,
       canSubscribe: true,
       canPublishData: true,
     });
