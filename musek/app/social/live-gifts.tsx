@@ -459,6 +459,8 @@ export default function LiveGifts({
         <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => previewGift(10)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview small ✨</button>
+          <button type="button" onClick={() => previewGift(100)} className="rounded-lg border border-rose-300/20 bg-rose-500/[.08] px-3 py-2 text-xs font-bold text-rose-100 hover:border-rose-300/50">Preview Rose 🌹</button>
+          <button type="button" onClick={() => previewGift(100000)} className="rounded-lg border border-sky-300/20 bg-sky-500/[.08] px-3 py-2 text-xs font-bold text-sky-100 hover:border-sky-300/50">Preview Galaxy 🌌</button>
           <button type="button" onClick={() => previewGift(2500)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview medium 💎</button>
           <button type="button" onClick={() => previewGift(60000)} className="rounded-lg border border-amber-300/20 bg-amber-400/[.08] px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/50">Preview premium 🌌</button>
           <button type="button" onClick={() => previewGift(150000)} className="rounded-lg border border-fuchsia-300/30 bg-gradient-to-r from-amber-400/10 to-fuchsia-500/15 px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/60">Preview legendary 🐉</button>
