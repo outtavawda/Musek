@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const items = [
   { href: "/", label: "Home", icon: "⌂", match: (path: string) => path === "/" },
@@ -13,19 +14,33 @@ const items = [
 
 export default function MobileAppNav() {
   const pathname = usePathname();
+  const [hash, setHash] = useState("");
+
+  useEffect(() => {
+    const syncHash = () => setHash(window.location.hash);
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, [pathname]);
+
   if (pathname === "/login" || pathname === "/signup") return null;
 
   return (
     <>
       <nav className="musek-mobile-nav" aria-label="Mobile app navigation">
         {items.map((item) => {
-          const active = item.match(pathname);
+          const active = item.label === "Live"
+            ? pathname === "/social" && hash === "#live-rooms"
+            : item.label === "Social"
+              ? pathname === "/social" && hash !== "#live-rooms"
+              : item.match(pathname);
           return (
             <Link
               key={item.label}
               href={item.href}
               className={active ? "musek-mobile-nav-item active" : "musek-mobile-nav-item"}
               aria-current={active ? "page" : undefined}
+              aria-label={item.label}
             >
               <span className="musek-mobile-nav-icon" aria-hidden="true">{item.icon}</span>
               <span>{item.label}</span>
@@ -59,6 +74,7 @@ export default function MobileAppNav() {
           }
           .musek-mobile-nav-item {
             min-width: 0;
+            min-height: 44px;
             display: flex;
             flex-direction: column;
             align-items: center;
