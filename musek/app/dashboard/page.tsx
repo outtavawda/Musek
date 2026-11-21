@@ -190,6 +190,7 @@ export default async function DashboardPage() {
     { href: "/dashboard", icon: "⌂", name: "Dashboard" },
     { href: "/profile", icon: "●", name: "Profile" },
     { href: "/discover-music", icon: "♫", name: "Discover Music" },
+    { href: "/social", icon: "◉", name: "MUSEK Social" },
     { href: "/favorites", icon: "♡", name: "My Favourites" },
     { href: "/discover", icon: "♧", name: "Discover Artists" },
     { href: "/my-music", icon: "♫", name: "My Music" },
