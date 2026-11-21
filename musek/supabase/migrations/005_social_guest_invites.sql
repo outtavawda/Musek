@@ -18,6 +18,10 @@ create index if not exists social_live_invites_invitee_status_idx
 
 alter table public.social_live_invites enable row level security;
 
+-- Guests may respond only by changing status and response time; invitation ownership and room are immutable.
+revoke update on public.social_live_invites from authenticated;
+grant update (status, responded_at) on public.social_live_invites to authenticated;
+
 drop policy if exists "Participants can view their social invitations" on public.social_live_invites;
 create policy "Participants can view their social invitations"
   on public.social_live_invites for select to authenticated
