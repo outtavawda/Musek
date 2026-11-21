@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import GlobalNotifications from "./notifications/global-notifications";
+import "@/app/globals.css";
+import GlobalNotifications from "@/app/notifications/global-notifications";
+import MobileAppNav from "@/components/mobile-app-nav";
 
 export const metadata: Metadata = {
   title: "MUSEK — Music, creators & community",
@@ -10,7 +11,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}<GlobalNotifications /></body>
+      <body>
+        {children}
+        <MobileAppNav />
+        <GlobalNotifications />
+      </body>
     </html>
   );
 }
