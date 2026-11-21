@@ -143,7 +143,7 @@ export async function POST(request: Request) {
             ],
           },
           checkout_options: {
-            redirect_url: `${siteUrl}/buy-coins?checkout=complete`,
+            redirect_url: `${siteUrl}/dashboard?coinPurchase=returned`,
           },
         }),
       }
