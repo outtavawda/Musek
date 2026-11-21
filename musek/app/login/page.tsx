@@ -4,18 +4,34 @@ import { signIn } from "../auth-actions";
 export default function LoginPage({ searchParams }: { searchParams?: { error?: string } }) {
   return (
     <main className="authWrap">
-      <section className="authCard">
-        <Link className="brand" href="/">MUSEK<span>.</span></Link>
-        <p className="eyebrow">WELCOME BACK</p>
-        <h1>Log in</h1>
-        <p className="muted">Sign in to continue to MUSEK.</p>
-        {searchParams?.error && <p className="notice error">{searchParams.error}</p>}
-        <form action={signIn} className="form">
-          <label>Email address<input name="email" type="email" autoComplete="email" required /></label>
-          <label>Password<input name="password" type="password" autoComplete="current-password" required /></label>
-          <button className="primaryButton" type="submit">Log in</button>
+      <div className="authGlow authGlowOne" aria-hidden="true" />
+      <div className="authGlow authGlowTwo" aria-hidden="true" />
+      <section className="authCard" aria-labelledby="login-heading">
+        <Link className="authBrand" href="/" aria-label="MUSEK home">MUSEK<span>.</span></Link>
+        <div className="authIntro">
+          <p className="authEyebrow"><span className="authEyebrowDot" /> YOUR MUSIC. YOUR PEOPLE.</p>
+          <h1 id="login-heading">Welcome <span>back.</span></h1>
+          <p className="authDescription">Log in to your MUSEK account and get back to the music, creators and community you love.</p>
+        </div>
+
+        {searchParams?.error && (
+          <div className="authError" role="alert">
+            <strong>We couldn't log you in.</strong>
+            <span>{searchParams.error}</span>
+          </div>
+        )}
+
+        <form action={signIn} className="authForm">
+          <label htmlFor="login-email">Email address</label>
+          <input id="login-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" inputMode="email" required />
+          <label htmlFor="login-password">Password</label>
+          <input id="login-password" name="password" type="password" placeholder="Enter your password" autoComplete="current-password" required />
+          <button className="authSubmit" type="submit">Log in <span aria-hidden="true">→</span></button>
         </form>
-        <p className="muted small">New to MUSEK? <Link href="/signup">Create an account</Link></p>
+
+        <div className="authDivider"><span>NEW TO MUSEK?</span></div>
+        <Link className="authSignup" href="/signup">Create an account <span aria-hidden="true">→</span></Link>
+        <p className="authFooter"><Link href="/">← Back to MUSEK</Link><span>Music brings us together.</span></p>
       </section>
     </main>
   );
