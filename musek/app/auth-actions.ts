@@ -45,16 +45,28 @@ export async function signIn(formData: FormData) {
 
   const supabase = createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password
   });
 
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  if (error || !data.user) {
+    redirect(`/login?error=${encodeURIComponent(error?.message || "Unable to sign in.")}`);
   }
 
-  redirect("/dashboard");
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("account_type")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  const accountType = String(
+    profile?.account_type || data.user.user_metadata?.account_type || "fan"
+  ).trim().toLowerCase();
+
+  if (accountType === "artist") redirect("/dashboard");
+  if (accountType === "label") redirect("/label-dashboard");
+  redirect("/fan-dashboard");
 }
 
 export async function signOut() {
