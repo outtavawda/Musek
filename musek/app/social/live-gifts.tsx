@@ -88,7 +88,6 @@ export default function LiveGifts({
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
   const [activeGift, setActiveGift] = useState<LiveGift | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(false);
 
   const visibleGifts = useMemo(
     () => category === "All" ? GIFT_CATALOG : GIFT_CATALOG.filter((gift) => gift.category === category),
@@ -107,7 +106,7 @@ export default function LiveGifts({
     setActiveGift(preview);
     window.setTimeout(() => {
       setActiveGift((current) => current?.gift_id === preview.gift_id ? null : current);
-    }, coins >= 20000 ? 6500 : coins >= 2500 ? 4200 : 2400);
+    }, coins >= 60000 ? 8000 : coins >= 20000 ? 6500 : coins >= 2500 ? 4500 : 2800);
   };
 
   const loadGifts = useCallback(async () => {
@@ -145,7 +144,7 @@ export default function LiveGifts({
           setActiveGift(enrichedGift);
           window.setTimeout(() => {
             setActiveGift((current) => current?.gift_id === gift.gift_id ? null : current);
-          }, Number(gift.coins) >= 20000 ? 6500 : Number(gift.coins) >= 2500 ? 4200 : 2400);
+          }, Number(gift.coins) >= 60000 ? 8000 : Number(gift.coins) >= 20000 ? 6500 : Number(gift.coins) >= 2500 ? 4500 : 2800);
           setGifts((current) =>
             current.some((item) => item.gift_id === gift.gift_id)
               ? current
@@ -310,12 +309,12 @@ export default function LiveGifts({
       </>
 
       <div className="mt-4 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p><button type="button" onClick={() => setSoundEnabled((value) => !value)} className={`rounded-full border px-3 py-1.5 text-[10px] font-bold ${soundEnabled ? "border-purple-300/50 bg-purple-500/20 text-purple-100" : "border-white/10 text-gray-400"}`}>{soundEnabled ? "Sound effects on" : "Sound effects off"}</button></div>
+        <p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p>
         <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => previewGift(10)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview small ✨</button>
           <button type="button" onClick={() => previewGift(2500)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview medium 💎</button>
-          <button type="button" onClick={() => previewGift(20000)} className="rounded-lg border border-amber-300/20 bg-amber-400/[.08] px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/50">Preview premium 🌌</button>
+          <button type="button" onClick={() => previewGift(60000)} className="rounded-lg border border-amber-300/20 bg-amber-400/[.08] px-3 py-2 text-xs font-bold text-amber-100 hover:border-amber-300/50">Preview premium 🌌</button>
         </div>
       </div>
       {notice && <p role="status" className="mt-3 text-xs text-purple-200">{notice}</p>}
