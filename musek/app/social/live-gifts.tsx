@@ -232,8 +232,7 @@ export default function LiveGifts({
         )}
       </div>
 
-      {accountType === "fan" && creatorId !== "" && (
-        <>
+      <>
           <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
             {CATEGORIES.map((item) => (
               <button
@@ -266,16 +265,17 @@ export default function LiveGifts({
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={sendGift}
-            disabled={sending || !selectedGift}
-            className="mt-4 w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-bold hover:bg-purple-500 disabled:opacity-50"
-          >
-            {sending ? "Sending gift…" : "Send " + (selectedGift?.name || "gift")}
-          </button>
-        </>
-      )}
+          {accountType === "fan" && creatorId !== "" && (
+            <button
+              type="button"
+              onClick={sendGift}
+              disabled={sending || !selectedGift}
+              className="mt-4 w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-bold hover:bg-purple-500 disabled:opacity-50"
+            >
+              {sending ? "Sending gift…" : "Send " + (selectedGift?.name || "gift")}
+            </button>
+          )}
+      </>
 
       <div className="mt-4 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-3">
         <p className="text-[10px] font-black tracking-[.18em] text-purple-200">ANIMATION TEST · NO COINS SPENT</p>
