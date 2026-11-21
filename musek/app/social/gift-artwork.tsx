@@ -6,7 +6,7 @@ type GiftArtworkProps = {
   category: string;
   name: string;
   emoji: string;
-  tier: "small" | "medium" | "premium" | "legendary";
+  tier: "catalog" | "small" | "medium" | "premium" | "legendary";
 };
 
 export default function GiftArtwork({ category, name, emoji, tier }: GiftArtworkProps) {
@@ -84,6 +84,9 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
         .musek-gift-art-svg { position:relative; z-index:1; width:100%; height:100%; overflow:visible; transform-style:preserve-3d; filter:drop-shadow(0 18px 14px rgba(0,0,0,.4)); animation:gift-object-turn 5s ease-in-out infinite; }
         .musek-gift-art-svg .gift-object { transform-origin:110px 110px; animation:gift-object-float 2.6s ease-in-out infinite; }
         .musek-gift-art-fallback { position:absolute; right:8%; bottom:9%; z-index:2; font-size:clamp(22px,4vw,36px); filter:drop-shadow(0 3px 5px rgba(0,0,0,.55)); }
+        .musek-gift-art-catalog { width:58px; flex:0 0 58px; }
+        .musek-gift-art-catalog .musek-gift-art-svg,.musek-gift-art-catalog .gift-object { animation:none !important; }
+        .musek-gift-art-catalog .musek-gift-art-fallback { display:none; }
         .musek-gift-art-small { width:58px; flex:0 0 58px; }
         .musek-gift-art-small .musek-gift-art-fallback { display:none; }
         .musek-gift-art-medium { animation:gift-art-entry .8s cubic-bezier(.2,.8,.2,1) both; }
