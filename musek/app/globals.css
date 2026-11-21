@@ -536,3 +536,19 @@ footer {
   .authIntro { margin-top: 34px; }
   .authFooter span { display: none; }
 }
+
+
+/* PASSWORD RECOVERY */
+.authForgot { display: flex; justify-content: flex-end; margin-top: 2px; }
+.authForgot a { color: #c4a5fd; font-size: 12px; font-weight: 700; }
+.authForgot a:hover { color: #fff; text-decoration: underline; }
+.authMessage {
+  margin-top: 22px; padding: 13px 15px; border: 1px solid rgba(192,132,252,.28);
+  border-radius: 12px; background: rgba(88,28,135,.18); color: #e9d5ff;
+  font-size: 13px; line-height: 1.55; overflow-wrap: anywhere;
+}
+.authForm select {
+  width: 100%; min-height: 50px; padding: 0 15px; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; outline: none; background: #11101d; color: #fff; font: inherit; font-size: 14px;
+}
+.authForm select:focus { border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,.15); }
