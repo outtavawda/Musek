@@ -268,7 +268,36 @@ export default async function LabelDashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white">
+    <main className="labelDashboard min-h-screen bg-gray-950 text-white">
+      <style>{`
+        .labelDashboard{--label-purple:#b56af2;--label-lavender:#dec0ff;background:radial-gradient(ellipse at 80% 0%,rgba(107,33,168,.18),transparent 34%),#08070c!important}
+        .labelDashboard>.mx-auto{max-width:1440px!important;padding-top:42px!important;padding-bottom:90px!important}
+        .labelDashboard header{padding:22px 0 28px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:30px!important}
+        .labelDashboard header p:first-child{letter-spacing:4px;color:#c084fc!important}
+        .labelDashboard header h1{font-size:clamp(32px,4vw,48px)!important;letter-spacing:-2px;background:linear-gradient(100deg,#fff 20%,#d8b4fe 85%);-webkit-background-clip:text;background-clip:text;color:transparent}
+        .labelDashboard .bg-gray-950{background:#0c0911!important}
+        .labelDashboard .bg-gray-900{background:linear-gradient(145deg,rgba(32,23,43,.96),rgba(15,12,20,.98))!important}
+        .labelDashboard .border-gray-800{border-color:rgba(192,132,252,.15)!important}
+        .labelDashboard .rounded-2xl{border-radius:22px!important}
+        .labelDashboard .rounded-xl{border-radius:16px!important}
+        .labelDashboard section.rounded-2xl{position:relative;overflow:hidden;box-shadow:0 18px 55px rgba(0,0,0,.2)}
+        .labelDashboard section.rounded-2xl:before{content:"";position:absolute;pointer-events:none;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,rgba(216,180,254,.35),transparent)}
+        .labelDashboard section.rounded-2xl.p-6{padding:clamp(20px,3vw,32px)!important}
+        .labelDashboard .text-purple-400{color:#c084fc!important}
+        .labelDashboard .bg-purple-500{background:linear-gradient(180deg,#d8b4fe,#9333ea)!important;box-shadow:0 0 20px rgba(168,85,247,.18)}
+        .labelDashboard .bg-purple-700,.labelDashboard .bg-purple-800{background:linear-gradient(135deg,#9333ea,#4c1d95)!important}
+        .labelDashboard .text-gray-400{color:#aaa0b5!important}
+        .labelDashboard .text-gray-500{color:#82778e!important}
+        .labelDashboard a.rounded-lg,.labelDashboard button.rounded-lg{transition:all .2s ease}
+        .labelDashboard a.rounded-lg:hover,.labelDashboard button.rounded-lg:hover{border-color:rgba(216,180,254,.65);transform:translateY(-1px)}
+        .labelDashboard .grid>div.rounded-xl,.labelDashboard [style*="border: 1px solid"]{background:linear-gradient(145deg,rgba(45,30,59,.58),rgba(17,13,23,.8));border-color:rgba(192,132,252,.2)!important;border-radius:17px!important}
+        .labelDashboard h2{letter-spacing:-.7px}
+        .labelDashboard h3{letter-spacing:-.35px}
+        .labelDashboard .text-green-400{color:#86efac!important}
+        .labelDashboard .text-yellow-400{color:#fcd34d!important}
+        .labelDashboard #label-analytics,.labelDashboard #label-earnings,.labelDashboard #music-releases{scroll-margin-top:24px}
+        @media(max-width:640px){.labelDashboard>.mx-auto{padding-left:16px!important;padding-right:16px!important;padding-top:24px!important}.labelDashboard header{align-items:flex-start}.labelDashboard header h1{font-size:34px!important}}
+      `}</style>
       <div className="mx-auto max-w-7xl px-6 py-10">
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
           <div>
