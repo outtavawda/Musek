@@ -372,7 +372,7 @@ export default function FeedClient({
         .feed-intro p{color:#a7a0b2;font-size:14px;line-height:1.6;margin:10px 0 0}
         .feed-pill{white-space:nowrap;border:1px solid rgba(192,132,252,.25);background:rgba(126,34,206,.12);color:#e9d5ff;border-radius:999px;padding:10px 14px;font-size:12px;font-weight:700}
         .feed-status{max-width:1180px;margin:0 auto 14px;text-align:center;color:#e9d5ff;font-size:13px}
-        .feed-list{max-width:1180px;height:min(690px,calc(100svh - 190px));min-height:560px;margin:0 auto;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;display:flex;flex-direction:column;gap:18px;padding:2px 3px 20px;scrollbar-width:thin;scrollbar-color:#6b21a8 #17111f}
+        .feed-list{max-width:1180px;height:min(690px,calc(100svh - 190px));min-height:560px;margin:0 auto;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;display:flex;flex-direction:column;gap:18px;padding:2px 3px 20px;scrollbar-width:thin;scrollbar-color:#000 #000}
         .feed-card{flex:0 0 100%;min-height:540px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);border:1px solid rgba(192,132,252,.22);border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#17111f,#0e0c14);scroll-snap-align:start;scroll-snap-stop:always;box-shadow:0 18px 60px rgba(0,0,0,.28)}
         .feed-art{position:relative;min-height:540px;background:linear-gradient(135deg,#321052,#100d18);overflow:hidden}
         .feed-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
