@@ -312,12 +312,17 @@ export default async function LabelDashboardPage() {
             </p>
           </div>
 
-          <Link
-            href="/dashboard"
-            className="rounded-lg border border-gray-700 px-5 py-3 text-sm hover:bg-gray-800"
-          >
-            Main Dashboard
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/social" className="rounded-lg border border-purple-400/30 bg-purple-500/10 px-5 py-3 text-sm font-semibold text-purple-200">
+              MUSEK Social
+            </Link>
+            <Link
+              href="/dashboard"
+              className="rounded-lg border border-gray-700 px-5 py-3 text-sm hover:bg-gray-800"
+            >
+              Main Dashboard
+            </Link>
+          </div>
         </header>
 
         <section className="mb-8 rounded-2xl border border-gray-800 bg-gray-900 p-6">
