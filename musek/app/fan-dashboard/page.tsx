@@ -186,6 +186,20 @@ export default async function FanDashboardPage() {
         </aside>
 
         <section className="min-w-0 flex-1 px-5 py-6 sm:px-8 lg:px-10 lg:py-9">
+          <nav aria-label="Quick navigation" className="mb-6 flex gap-2 overflow-x-auto border-b border-white/[0.06] pb-3 lg:hidden">
+            {[
+              { href: "/fan-dashboard", name: "Overview" },
+              { href: "/feed", name: "For You" },
+              { href: "/discover-music", name: "Music" },
+              { href: "/social", name: "Live Social" },
+              { href: "/following", name: "Following" },
+              { href: "/profile", name: "Profile" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href} className={`shrink-0 rounded-full border px-4 py-2 text-xs font-semibold transition ${item.href === "/fan-dashboard" ? "border-purple-400/40 bg-purple-500/15 text-purple-100" : "border-white/10 bg-white/[0.03] text-gray-400 hover:border-purple-400/30 hover:text-white"}`}>
+                {item.name}
+              </Link>
+            ))}
+          </nav>
           <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
               <div className="hidden h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-purple-300/25 bg-gradient-to-br from-purple-600 to-fuchsia-700 sm:flex sm:items-center sm:justify-center">
