@@ -3,6 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+const ALLOWED_SOCIAL_MEDIA_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "video/mp4",
+  "video/webm",
+];
+
 type Post = {
   id: string;
   user_id: string;
@@ -87,6 +95,10 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     if (posting) return;
     if (!caption.trim() && !file && !musicUrl.trim()) {
       setNotice("Add a caption, photo/video or music link before publishing.");
+      return;
+    }
+    if (file && !ALLOWED_SOCIAL_MEDIA_TYPES.includes(file.type)) {
+      setNotice("Use a JPG, PNG or WebP photo, or an MP4/WebM video.");
       return;
     }
     if (file && file.size > 100 * 1024 * 1024) {
@@ -196,7 +208,33 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/[.03] px-4 py-3 text-sm text-gray-300 hover:border-purple-400/40">
             <span className="text-xl">▧</span><span className="min-w-0 flex-1 truncate">{file ? file.name : "Add photo or video"}</span>
-            <input id="musek-social-media" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" className="sr-only" onChange={e => setFile(e.target.files?.[0] || null)} />
+            <input
+              id="musek-social-media"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+              className="sr-only"
+              onChange={e => {
+                const selectedFile = e.target.files?.[0] || null;
+                if (!selectedFile) {
+                  setFile(null);
+                  return;
+                }
+                if (!ALLOWED_SOCIAL_MEDIA_TYPES.includes(selectedFile.type)) {
+                  setFile(null);
+                  e.target.value = "";
+                  setNotice("Unsupported file type. Use JPG, PNG or WebP photos, or MP4/WebM videos.");
+                  return;
+                }
+                if (selectedFile.size > 100 * 1024 * 1024) {
+                  setFile(null);
+                  e.target.value = "";
+                  setNotice("Media must be 100 MB or smaller.");
+                  return;
+                }
+                setFile(selectedFile);
+                setNotice("");
+              }}
+            />
           </label>
           <div className="rounded-xl border border-white/10 bg-white/[.03] px-4 py-2.5">
             <input value={musicTitle} onChange={e => setMusicTitle(e.target.value)} placeholder="Track title (optional)" className="w-full bg-transparent text-xs text-white outline-none placeholder:text-gray-500" />
