@@ -128,14 +128,14 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
         )}
         <path d="M34 43 40 30m145 18 8-12M26 145l-12 5m174 12 12 5" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".8"/>
       </svg>
-      <span className="musek-gift-art-fallback">{emoji}</span>
+      <span className="musek-gift-art-fallback" aria-hidden="true">{emoji}</span>
 
       <style jsx>{`
         .musek-gift-art { position:relative; display:grid; width:clamp(150px,24vw,250px); aspect-ratio:1; place-items:center; perspective:900px; transform-style:preserve-3d; }
         .musek-gift-art-aura { position:absolute; inset:12%; border-radius:50%; background:radial-gradient(circle,rgba(192,132,252,.42),rgba(124,58,237,.12) 48%,transparent 72%); transform:translateZ(-35px); }
         .musek-gift-art-svg { position:relative; z-index:1; width:100%; height:100%; overflow:visible; transform-style:preserve-3d; filter:drop-shadow(0 18px 14px rgba(0,0,0,.4)); animation:gift-object-turn 5s ease-in-out infinite; }
         .musek-gift-art-svg .gift-object { transform-origin:110px 110px; animation:gift-object-float 2.6s ease-in-out infinite; }
-        .musek-gift-art-fallback { position:absolute; right:8%; bottom:9%; z-index:2; font-size:clamp(22px,4vw,36px); filter:drop-shadow(0 3px 5px rgba(0,0,0,.55)); }
+        .musek-gift-art-fallback { position:absolute; left:50%; top:50%; z-index:2; display:grid; width:46%; aspect-ratio:1; place-items:center; transform:translate(-50%,-50%); font-size:clamp(38px,8vw,76px); line-height:1; filter:drop-shadow(0 5px 10px rgba(0,0,0,.65)); animation:gift-emoji-float 2.2s ease-in-out infinite; }
         .musek-gift-art-catalog { width:58px; flex:0 0 58px; }
         .musek-gift-art-catalog .musek-gift-art-svg,.musek-gift-art-catalog .gift-object { animation:none !important; }
         .musek-gift-art-catalog .musek-gift-art-fallback { display:none; }
@@ -159,7 +159,7 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
         @keyframes gift-rocket-motion { 0%,100% { transform:translateY(5px) rotate(-3deg); } 50% { transform:translateY(-13px) rotate(3deg); } }
         @keyframes gift-money-motion { 0%,100% { transform:rotateY(-10deg) translateY(0); } 50% { transform:rotateY(10deg) translateY(-8px); } }
         @keyframes gift-cosmos-motion { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-        @keyframes gift-object-turn { 0%,100% { transform:rotateY(-13deg) rotateX(5deg) translateY(0); } 50% { transform:rotateY(13deg) rotateX(-5deg) translateY(-10px); } }
+        @keyframes gift-emoji-float { 0%,100% { margin-top:0; filter:drop-shadow(0 5px 8px rgba(0,0,0,.6)); } 50% { margin-top:-7px; filter:drop-shadow(0 9px 15px rgba(192,132,252,.65)); } }\n        @keyframes gift-object-turn { 0%,100% { transform:rotateY(-13deg) rotateX(5deg) translateY(0); } 50% { transform:rotateY(13deg) rotateX(-5deg) translateY(-10px); } }
         @keyframes gift-object-float { 0%,100% { transform:translateY(0) rotateZ(-2deg); } 50% { transform:translateY(-8px) rotateZ(2deg); } }
         @keyframes gift-art-entry { 0% { transform:scale(.35) rotateY(70deg); opacity:0; } 70% { transform:scale(1.08) rotateY(-8deg); opacity:1; } 100% { transform:scale(1) rotateY(0); } }
         @media (prefers-reduced-motion:reduce) { .musek-gift-art,.musek-gift-art * { animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
