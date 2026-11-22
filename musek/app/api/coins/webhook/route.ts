@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createClient } from "@supabase/supabase-js";
@@ -161,11 +160,14 @@ export async function POST(request: Request) {
       },
     });
 
-    const { error } = await admin.rpc("credit_coin_purchase", {
-      p_square_order_id: payment.order_id,
-      p_square_payment_id: payment.id,
-      p_amount_cents: payment.amount_money.amount,
-    });
+    const { data: creditResult, error } = await admin.rpc(
+      "credit_coin_purchase_v2",
+      {
+        p_square_order_id: payment.order_id,
+        p_square_payment_id: payment.id,
+        p_amount_cents: payment.amount_money.amount,
+      }
+    );
 
     if (error) {
       console.error("Coin credit failed:", error.message);
@@ -176,12 +178,50 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Square payment processed:", payment.id);
+    if (creditResult === "credited") {
+      console.log("Square payment credited:", payment.id);
 
-    return NextResponse.json({
-      received: true,
-      credited: true,
-    });
+      return NextResponse.json({
+        received: true,
+        credited: true,
+        outcome: "credited",
+      });
+    }
+
+    if (creditResult === "already_processed") {
+      console.log("Square payment was already credited:", payment.id);
+
+      return NextResponse.json({
+        received: true,
+        credited: false,
+        outcome: "already_processed",
+      });
+    }
+
+    if (
+      creditResult === "not_found" ||
+      creditResult === "amount_mismatch" ||
+      creditResult === "not_eligible"
+    ) {
+      console.error("Square payment requires reconciliation:", {
+        paymentId: payment.id,
+        orderId: payment.order_id,
+        outcome: creditResult,
+      });
+
+      return NextResponse.json({
+        received: true,
+        credited: false,
+        outcome: creditResult,
+      });
+    }
+
+    console.error("Unexpected coin credit result:", creditResult);
+
+    return NextResponse.json(
+      { error: "Unexpected coin credit result." },
+      { status: 500 }
+    );
   } catch (error) {
     console.error(
       "Square webhook processing failed:",
