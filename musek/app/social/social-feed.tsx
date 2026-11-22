@@ -111,6 +111,7 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     setPosting(true);
     setNotice("");
     let mediaUrl: string | null = null;
+    let uploadedMediaPath: string | null = null;
     let postType: Post["post_type"] = "text";
     if (file) {
       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
@@ -123,6 +124,7 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
         setNotice("Media upload failed: " + uploadError.message + ". Check that migration 010 has been applied.");
         return;
       }
+      uploadedMediaPath = path;
       mediaUrl = supabase.storage.from("social-posts").getPublicUrl(path).data.publicUrl;
       postType = file.type.startsWith("video/") ? "video" : "image";
     } else if (musicUrl.trim()) postType = "music";
@@ -137,7 +139,18 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     });
     setPosting(false);
     if (error) {
-      setNotice("Post could not be published: " + error.message);
+      if (uploadedMediaPath) {
+        const { error: cleanupError } = await supabase.storage
+          .from("social-posts")
+          .remove([uploadedMediaPath]);
+        setNotice(
+          cleanupError
+            ? "Post could not be published: " + error.message + ". The uploaded media could not be cleaned up: " + cleanupError.message
+            : "Post could not be published: " + error.message + ". The uploaded media was removed."
+        );
+      } else {
+        setNotice("Post could not be published: " + error.message);
+      }
       return;
     }
     setCaption(""); setMusicUrl(""); setMusicTitle(""); setFile(null);
