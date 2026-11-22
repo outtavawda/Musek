@@ -91,6 +91,10 @@ export async function POST(request: Request) {
 
     const accessToken = process.env.SQUARE_ACCESS_TOKEN;
     const locationId = process.env.SQUARE_LOCATION_ID;
+    const squareApiBase =
+      process.env.SQUARE_ENVIRONMENT === "production"
+        ? "https://connect.squareup.com"
+        : "https://connect.squareupsandbox.com";
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -118,7 +122,7 @@ export async function POST(request: Request) {
     );
 
     const squareResponse = await fetch(
-      "https://connect.squareupsandbox.com/v2/online-checkout/payment-links",
+      `${squareApiBase}/v2/online-checkout/payment-links`,
       {
         method: "POST",
         headers: {
