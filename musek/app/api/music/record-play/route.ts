@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createHmac, randomUUID } from "crypto";
-import { isIP } from "net";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
@@ -46,20 +45,7 @@ export async function POST(request: Request) {
       shouldSetCookie = true;
     }
 
-    // Use the last proxy address in the forwarded chain, rather than a
-    // client-supplied first entry. If no valid address is available, the
-    // visitor-cookie limit still applies.
-    const forwardedFor = request.headers.get("x-forwarded-for");
-    const forwardedAddresses = forwardedFor
-      ? forwardedFor.split(",").map((value) => value.trim()).filter(Boolean)
-      : [];
-    const candidateIp = forwardedAddresses.at(-1) || "";
-    const ipAddress = isIP(candidateIp) ? candidateIp : null;
-
     const visitorHash = hashIdentity(serviceKey, `visitor:${visitorId}`);
-    const ipHash = ipAddress
-      ? hashIdentity(serviceKey, `ip:${ipAddress}`)
-      : null;
 
     const admin = createClient(supabaseUrl, serviceKey, {
       auth: {
@@ -71,7 +57,6 @@ export async function POST(request: Request) {
     const { data, error } = await admin.rpc("record_track_play", {
       p_track_id: trackId,
       p_visitor_hash: visitorHash,
-      p_ip_hash: ipHash,
     });
 
     if (error) {
