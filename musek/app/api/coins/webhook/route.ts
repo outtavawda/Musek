@@ -10,7 +10,6 @@ function signatureMatches(
   body: string,
   received: string
 ): boolean {
-  // Square signatures are Base64-encoded HMAC-SHA256 values.
   const expected = createHmac("sha256", key)
     .update(url + body)
     .digest();
@@ -19,11 +18,7 @@ function signatureMatches(
 
   try {
     receivedBuffer = Buffer.from(received, "base64");
-
-    // Reject malformed or non-canonical Base64 signatures.
-    if (receivedBuffer.toString("base64") !== received) {
-      return false;
-    }
+    if (receivedBuffer.toString("base64") !== received) return false;
   } catch {
     return false;
   }
@@ -52,7 +47,6 @@ export async function POST(request: Request) {
       !locationId
     ) {
       console.error("Webhook configuration is incomplete.");
-
       return NextResponse.json(
         { error: "Webhook configuration is incomplete." },
         { status: 500 }
@@ -60,7 +54,6 @@ export async function POST(request: Request) {
     }
 
     const rawBody = await request.text();
-
     const receivedSignature = request.headers.get(
       "x-square-hmacsha256-signature"
     );
@@ -72,16 +65,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const validSignature = signatureMatches(
-      signatureKey,
-      notificationUrl,
-      rawBody,
-      receivedSignature
-    );
-
-    if (!validSignature) {
+    if (
+      !signatureMatches(
+        signatureKey,
+        notificationUrl,
+        rawBody,
+        receivedSignature
+      )
+    ) {
       console.error("Square webhook rejected: Invalid signature.");
-
       return NextResponse.json(
         { error: "Invalid Square signature." },
         { status: 401 }
@@ -89,7 +81,6 @@ export async function POST(request: Request) {
     }
 
     let event: any;
-
     try {
       event = JSON.parse(rawBody);
     } catch {
@@ -104,7 +95,6 @@ export async function POST(request: Request) {
     }
 
     const paymentId = event.data?.object?.payment?.id;
-
     if (typeof paymentId !== "string" || !paymentId) {
       return NextResponse.json(
         { error: "Payment ID missing." },
@@ -125,7 +115,6 @@ export async function POST(request: Request) {
 
     if (!paymentResponse.ok) {
       console.error("Square payment lookup failed:", paymentResponse.status);
-
       return NextResponse.json(
         { error: "Could not verify payment with Square." },
         { status: 502 }
@@ -135,8 +124,18 @@ export async function POST(request: Request) {
     const paymentData = await paymentResponse.json();
     const payment = paymentData.payment;
 
+    // Intermediate payment states are normal; Square will send another
+    // payment.updated event when the payment reaches a final state.
+    if (payment?.status !== "COMPLETED") {
+      return NextResponse.json({
+        received: true,
+        credited: false,
+        outcome: "not_completed",
+      });
+    }
+
+    // A completed payment must satisfy every MUSEK checkout invariant.
     if (
-      payment?.status !== "COMPLETED" ||
       payment?.location_id !== locationId ||
       payment?.amount_money?.currency !== "CAD" ||
       typeof payment?.order_id !== "string" ||
@@ -145,12 +144,19 @@ export async function POST(request: Request) {
       !Number.isSafeInteger(payment?.amount_money?.amount) ||
       payment.amount_money.amount <= 0
     ) {
-      console.error("Payment not eligible for coin credit.");
-
-      return NextResponse.json({
-        received: true,
-        credited: false,
+      console.error("Completed Square payment failed MUSEK validation.", {
+        paymentId,
+        orderId: payment?.order_id ?? null,
+        locationMatches: payment?.location_id === locationId,
+        currency: payment?.amount_money?.currency ?? null,
       });
+
+      // Do not silently acknowledge a completed payment that could not be
+      // credited. A non-2xx response allows Square to retry delivery.
+      return NextResponse.json(
+        { error: "Completed payment requires reconciliation." },
+        { status: 500 }
+      );
     }
 
     const admin = createClient(supabaseUrl, serviceKey, {
@@ -171,7 +177,6 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("Coin credit failed:", error.message);
-
       return NextResponse.json(
         { error: "Could not credit the coin purchase." },
         { status: 500 }
@@ -180,7 +185,6 @@ export async function POST(request: Request) {
 
     if (creditResult === "credited") {
       console.log("Square payment credited:", payment.id);
-
       return NextResponse.json({
         received: true,
         credited: true,
@@ -190,7 +194,6 @@ export async function POST(request: Request) {
 
     if (creditResult === "already_processed") {
       console.log("Square payment was already credited:", payment.id);
-
       return NextResponse.json({
         received: true,
         credited: false,
@@ -208,16 +211,13 @@ export async function POST(request: Request) {
         orderId: payment.order_id,
         outcome: creditResult,
       });
-
-      return NextResponse.json({
-        received: true,
-        credited: false,
-        outcome: creditResult,
-      });
+      return NextResponse.json(
+        { error: `Payment reconciliation required: ${creditResult}.` },
+        { status: 500 }
+      );
     }
 
     console.error("Unexpected coin credit result:", creditResult);
-
     return NextResponse.json(
       { error: "Unexpected coin credit result." },
       { status: 500 }
@@ -227,7 +227,6 @@ export async function POST(request: Request) {
       "Square webhook processing failed:",
       error instanceof Error ? error.message : "Unknown error"
     );
-
     return NextResponse.json(
       { error: "Webhook processing failed." },
       { status: 500 }
