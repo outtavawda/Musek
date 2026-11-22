@@ -94,6 +94,7 @@ export default function LiveGifts({
   const [activeGift, setActiveGift] = useState<LiveGift | null>(null);
   const [giftQueue, setGiftQueue] = useState<LiveGift[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const visibleGifts = useMemo(
@@ -274,7 +275,7 @@ export default function LiveGifts({
   };
 
   return (
-    <section className="relative mt-5 rounded-2xl border border-purple-400/20 bg-[#171326] p-5">
+    <section className="relative w-full">
       {activeGift && (() => {
         const details = giftForCoins(Number(activeGift.coins));
         const tier = Number(activeGift.coins) >= 60000 ? "legendary" : Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 2500 ? "medium" : "small";
@@ -404,6 +405,10 @@ export default function LiveGifts({
         @media (max-width: 640px) { .musek-gift-content { max-width: calc(100vw - 32px); padding: 18px 20px; } .musek-gift-small { right: 10px; bottom: 12px; } }
         @media (prefers-reduced-motion: reduce) { .musek-gift-overlay, .musek-gift-overlay * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
       `}</style>
+      <button type="button" onClick={() => setShopOpen((open) => !open)} aria-expanded={shopOpen} className="ml-auto flex items-center gap-2 rounded-full border border-fuchsia-300/35 bg-gradient-to-r from-fuchsia-600 to-violet-600 px-4 py-3 text-xs font-black text-white shadow-[0_0_24px_rgba(168,85,247,.35)]">
+        <span className="text-lg">🎁</span>{shopOpen ? "Close gifts" : "Gift Store"}<span className="rounded-full bg-black/20 px-2 py-1 text-[9px]">40 GIFTS</span>
+      </button>
+      {shopOpen && <div className="absolute bottom-full right-0 z-[120] mb-3 max-h-[72dvh] w-[min(92vw,430px)] overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-4 shadow-[0_20px_80px_rgba(0,0,0,.75)] backdrop-blur-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black tracking-[.2em] text-purple-300">SUPPORT THE ARTIST</p>
@@ -494,6 +499,7 @@ export default function LiveGifts({
             })}
           </ul>
         )}
+      </div>}
       </div>
     </section>
   );
