@@ -170,7 +170,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-7xl bg-[#080811] pb-24 text-white sm:px-5">
+    <div className="relative min-h-[100dvh] w-full bg-[#080811] pb-24 text-white">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080811]/95 px-4 py-3 backdrop-blur-xl sm:rounded-b-2xl">
         <div className="flex items-center gap-2"><span className="text-xl font-black tracking-tight">MUSEK<span className="text-fuchsia-400">.</span></span><span className="rounded-full bg-fuchsia-500/15 px-2 py-1 text-[9px] font-black tracking-widest text-fuchsia-200">LIVE</span></div>
         <div className="flex items-center gap-3 text-xs"><Link href="/feed" className="text-gray-400 hover:text-white">Music</Link><Link href="/profile" className="rounded-full border border-white/10 px-3 py-2 font-semibold">Profile</Link></div>
@@ -229,23 +229,47 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <div className="flex items-center justify-between gap-3 p-3"><span className="text-[10px] text-gray-400">Camera {cameraOn ? "on" : "off"} · Mic {micOn ? "on" : "off"}</span>{!cameraOn ? <button onClick={enableMedia} className="rounded-lg bg-white px-3 py-2 text-[11px] font-bold text-black">Enable camera</button> : <button onClick={stopMedia} className="rounded-lg border border-white/15 px-3 py-2 text-[11px] font-bold">Turn off</button>}</div>
         </section>
 
-        {selected && <section className="fixed inset-0 z-50 flex flex-col bg-[#080811] sm:absolute sm:inset-auto sm:left-1/2 sm:top-24 sm:w-[min(960px,calc(100%-2rem))] sm:-translate-x-1/2 sm:rounded-3xl sm:border sm:border-white/10 sm:shadow-2xl">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div className="min-w-0"><p className="text-[9px] font-black tracking-[.2em] text-rose-300">● LIVE NOW</p><h2 className="truncate text-sm font-black">{selected.title}</h2><p className="text-[10px] text-gray-400">{selected.host_name} · MUSEK LIVE</p></div><button onClick={() => { setSelected(null); stopMedia(); }} className="rounded-full bg-white/10 px-3 py-2 text-xs font-bold">✕ Close</button></div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <div className="relative mx-auto w-full max-w-[560px] bg-black sm:rounded-xl">
-              <div className="aspect-[9/13] max-h-[56vh] sm:max-h-[620px]"><LiveVideoRoom roomId={selected.id} displayName={displayName}/></div>
-              <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-end justify-between"><div className="max-w-[75%] rounded-xl bg-black/45 p-3 backdrop-blur"><p className="text-xs font-black">{selected.host_name}</p><p className="mt-1 text-[10px] text-white/75">{selected.description || "Join the conversation."}</p></div><div className="flex flex-col gap-3 text-center text-xl"><button onClick={() => react("❤️")}>❤️</button><button onClick={() => react("🔥")}>🔥</button><button onClick={() => react("👏")}>👏</button></div></div>
+        {selected && <section className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
+          <div className="absolute inset-0">
+            <LiveVideoRoom roomId={selected.id} displayName={displayName}/>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/90"/>
+          </div>
+
+          <div className="relative z-10 flex items-start justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))]">
+            <div className="flex min-w-0 items-center gap-3 rounded-full border border-white/15 bg-black/35 p-2 pr-4 backdrop-blur-xl">
+              {selected.avatar_url ? <img src={selected.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover"/> : <span className="grid h-10 w-10 place-items-center rounded-full bg-fuchsia-500/30 font-black">{selected.host_name.slice(0,1).toUpperCase()}</span>}
+              <div className="min-w-0"><p className="max-w-[170px] truncate text-xs font-black">{selected.host_name}</p><p className="text-[10px] text-white/70">MUSEK LIVE · {messages.length} messages</p></div>
+              <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] font-black tracking-widest">● LIVE</span>
             </div>
-            <div className="mx-auto max-w-[560px] p-3">
-              <div className="mb-3 flex items-center justify-between"><p className="text-xs font-black">LIVE CHAT <span className="text-emerald-300">●</span></p><span className="text-[9px] text-gray-500">{chatConnection === "connected" ? "Connected" : chatConnection === "disconnected" ? "Reconnecting" : "Connecting…"}</span></div>
-              <div className="max-h-36 space-y-2 overflow-y-auto rounded-xl bg-white/[.04] p-3">
-                {messages.length === 0 ? <p className="py-5 text-center text-xs text-gray-500">Say hello and join the conversation.</p> : messages.map((message) => <div key={message.id} className="text-xs"><span className={message.user_id === selected.host_id ? "font-bold text-fuchsia-300" : "font-semibold text-gray-300"}>{message.display_name}: </span><span className="break-words text-gray-200">{message.message}</span></div>)}
+            <button onClick={() => { setSelected(null); stopMedia(); }} aria-label="Close live" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
+          </div>
+
+          <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-3">
+            <div className="min-w-0 flex-1">
+              <div className="mb-3 max-h-[31dvh] space-y-2 overflow-y-auto pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_12%)]">
+                {messages.slice(-8).map((message) => <div key={message.id} className="w-fit max-w-full rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-xs shadow-lg backdrop-blur-md"><span className={message.user_id === selected.host_id ? "font-black text-fuchsia-200" : "font-bold text-white/80"}>{message.display_name} </span><span className="break-words text-white">{message.message}</span></div>)}
                 <div ref={bottomRef}/>
               </div>
-              <form onSubmit={sendMessage} className="mt-2 flex gap-2"><input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Add a comment…" className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/[.06] px-4 py-3 text-xs outline-none focus:border-fuchsia-400"/><button type="submit" disabled={!draft.trim() || chatSending} className="rounded-full bg-fuchsia-600 px-4 text-xs font-bold disabled:opacity-40">{chatSending ? "…" : "Send"}</button></form>
-              <div className="mt-3"><LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/></div>
-              {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="mt-3 w-full rounded-xl bg-rose-600 px-4 py-3 text-xs font-black disabled:opacity-50">{ending ? "Ending LIVE…" : "End LIVE"}</button>}
+              <div className="mb-3 rounded-2xl border border-white/10 bg-black/35 p-3 backdrop-blur-xl">
+                <p className="text-xs font-black">{selected.title}</p>
+                <p className="mt-1 line-clamp-2 text-[11px] text-white/75">{selected.description || "Join the conversation and show this creator some love."}</p>
+              </div>
+              <form onSubmit={sendMessage} className="flex gap-2">
+                <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Say something…" className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/45 px-4 py-3 text-xs text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
+                <button type="submit" disabled={!draft.trim() || chatSending} className="rounded-full bg-fuchsia-600 px-4 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
+              </form>
             </div>
+            <div className="flex shrink-0 flex-col items-center gap-4 pb-14 text-center">
+              <button onClick={() => react("❤️")} className="text-2xl drop-shadow-lg">❤️<span className="mt-1 block text-[9px] font-bold">Love</span></button>
+              <button onClick={() => react("🔥")} className="text-2xl drop-shadow-lg">🔥<span className="mt-1 block text-[9px] font-bold">Fire</span></button>
+              <button onClick={() => react("👏")} className="text-2xl drop-shadow-lg">👏<span className="mt-1 block text-[9px] font-bold">Clap</span></button>
+              {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="rounded-full bg-rose-600 px-3 py-2 text-[9px] font-black disabled:opacity-50">{ending ? "ENDING" : "END LIVE"}</button>}
+            </div>
+          </div>
+
+          <div className="relative z-10 border-t border-white/10 bg-black/35 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+            <div className="mb-2 flex items-center justify-between"><span className="text-[9px] font-black tracking-[.18em] text-fuchsia-200">SEND A GIFT</span><span className="text-[9px] text-white/55">{chatConnection === "connected" ? "CHAT CONNECTED" : chatConnection === "disconnected" ? "RECONNECTING…" : "CONNECTING…"}</span></div>
+            <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
           </div>
         </section>}
       </main>
