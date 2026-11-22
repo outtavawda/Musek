@@ -78,14 +78,17 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
     countedPlayForSong.current = songId;
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.rpc("increment_track_play", {
-        track_uuid: songId,
+      const response = await fetch("/api/music/record-play", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ trackId: songId }),
       });
 
-      if (error) {
+      if (!response.ok) {
         countedPlayForSong.current = null;
-        console.error("MUSEK play count error:", error);
+        console.error("MUSEK play count request failed:", response.status);
       }
     } catch (error) {
       countedPlayForSong.current = null;
