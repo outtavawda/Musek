@@ -62,7 +62,114 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     const channel = supabase.channel("musek-social-room-list")
       .on("postgres_changes", { event: "*", schema: "public", table: "social_live_rooms" }, loadRooms)
       .subscribe();
-    return (
+    return () => { supabase.removeChannel(channel); };
+  }, [loadRooms, supabase]);
+
+  useEffect(() => {
+    if (!selected) { setMessages([]); setChatConnection("connecting"); return; }
+    let active = true;
+    setMessages([]);
+    setChatConnection("connecting");
+    supabase.from("social_live_messages")
+      .select("id,room_id,user_id,display_name,message,created_at")
+      .eq("room_id", selected.id).order("created_at", { ascending: true }).limit(100)
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) setNotice("Chat is not ready. Check that the MUSEK Social migration has been applied.");
+        else setMessages((data || []) as Message[]);
+      });
+    const channel = supabase.channel("musek-social-chat-" + selected.id)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "social_live_messages", filter: "room_id=eq." + selected.id },
+        (payload) => setMessages((current) => current.some((m) => m.id === (payload.new as Message).id) ? current : [...current, payload.new as Message]))
+      .subscribe((status) => {
+        if (!active) return;
+        if (status === "SUBSCRIBED") setChatConnection("connected");
+        else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") setChatConnection("disconnected");
+        else setChatConnection("connecting");
+      });
+    return () => { active = false; setChatConnection("connecting"); supabase.removeChannel(channel); };
+  }, [selected, supabase]);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  const stopMedia = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setCameraOn(false); setMicOn(false);
+  };
+
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
+  const enableMedia = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setCameraOn(true); setMicOn(true);
+      setNotice("Your local camera and microphone preview is ready. Join a LiveKit room to broadcast to other participants once the service credentials are configured.");
+    } catch {
+      setNotice("Camera or microphone permission was denied, or no device is available.");
+    }
+  };
+
+  const startRoom = async () => {
+    if (!title.trim()) { setNotice("Give your live room a title first."); return; }
+    setBusy(true); setNotice("");
+    const { data, error } = await supabase.from("social_live_rooms").insert({
+      title: title.trim(), description: description.trim() || null,
+      host_id: userId, host_name: displayName, status: "live"
+    }).select("id,title,description,host_id,host_name,status,created_at").single();
+    setBusy(false);
+    if (error) { console.error("MUSEK live room creation failed:", error); setNotice(`Could not create the room: ${error.message}${error.code ? ` (code ${error.code})` : ""}`); return; }
+    const newRoom = { ...(data as Room), avatar_url: avatarUrl };
+    setRooms((current) => [newRoom, ...current]);
+    setSelected(newRoom); setTitle(""); setDescription("");
+    setNotice("Your MUSEK Social room is open. Chat is live; video broadcasting will activate after the video provider is connected.");
+  };
+
+  const sendMessage = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!selected || !draft.trim() || chatSending) return;
+    const roomId = selected.id;
+    const message = draft.trim().slice(0, 1000);
+    setChatSending(true);
+    setNotice("");
+    const { data, error } = await supabase.from("social_live_messages").insert({
+      room_id: roomId, user_id: userId, display_name: displayName, message
+    }).select("id,room_id,user_id,display_name,message,created_at").single();
+    setChatSending(false);
+    if (error) {
+      setNotice(`Message could not be sent: ${error.message}. Check that migrations 004 and 008 are applied and that this room is still live.`);
+      return;
+    }
+    setDraft((current) => current === message ? "" : current);
+    if (data && selected?.id === roomId) {
+      setMessages((current) => current.some((item) => item.id === data.id) ? current : [...current, data as Message]);
+    }
+  };
+
+  const endRoom = async () => {
+    if (!selected || selected.host_id !== userId || ending) return;
+    if (!window.confirm("End this live room? Viewers will no longer be able to join.")) return;
+    setEnding(true);
+    const { error } = await supabase.from("social_live_rooms")
+      .update({ status: "ended", ended_at: new Date().toISOString() })
+      .eq("id", selected.id).eq("host_id", userId);
+    setEnding(false);
+    if (error) { setNotice("Could not end the live room. Please try again."); return; }
+    stopMedia(); setSelected(null); await loadRooms(); setNotice("Your live room has ended.");
+  };
+
+  const react = async (emoji: string) => {
+    if (!selected) return;
+    const { error } = await supabase.from("social_live_reactions").insert({ room_id: selected.id, user_id: userId, emoji });
+    if (error) setNotice("Reactions will be available after the social database migration is applied.");
+  };
+
+  return (
     <div className="mx-auto min-h-screen max-w-7xl bg-[#080811] pb-24 text-white sm:px-5">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080811]/95 px-4 py-3 backdrop-blur-xl sm:rounded-b-2xl">
         <div className="flex items-center gap-2"><span className="text-xl font-black tracking-tight">MUSEK<span className="text-fuchsia-400">.</span></span><span className="rounded-full bg-fuchsia-500/15 px-2 py-1 text-[9px] font-black tracking-widest text-fuchsia-200">LIVE</span></div>
