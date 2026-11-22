@@ -500,7 +500,6 @@ export default function LiveGifts({
           </ul>
         )}
       </div>}
-      </div>
     </section>
   );
 }
