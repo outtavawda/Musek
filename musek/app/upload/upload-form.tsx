@@ -91,10 +91,21 @@ export default function UploadForm({ userId }: { userId: string }) {
     try {
       audioPath = `${userId}/${crypto.randomUUID()}.${extension}`;
 
+      // Normalize browser-specific audio MIME labels to the exact types
+      // allowed by the private music-tracks bucket.
+      const uploadContentType =
+        extension === "mp3" ? "audio/mpeg" :
+        extension === "wav" ? "audio/wav" :
+        extension === "m4a" ? "audio/mp4" : "";
+
+      if (!uploadContentType) {
+        throw new Error("Unsupported audio file type.");
+      }
+
       const { error: uploadError } = await supabase.storage
         .from("music-tracks")
         .upload(audioPath, audio, {
-          contentType: audio.type || "application/octet-stream",
+          contentType: uploadContentType,
           upsert: false
         });
 
