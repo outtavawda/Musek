@@ -89,6 +89,7 @@ export default function LiveGifts({
   const [selectedCoins, setSelectedCoins] = useState(100);
   const [category, setCategory] = useState("All");
   const [sending, setSending] = useState(false);
+  const [giftRequestKey, setGiftRequestKey] = useState("");
   const [notice, setNotice] = useState("");
   const [activeGift, setActiveGift] = useState<LiveGift | null>(null);
   const [giftQueue, setGiftQueue] = useState<LiveGift[]>([]);
@@ -248,19 +249,28 @@ export default function LiveGifts({
 
   const sendGift = async () => {
     if (sending || !selectedGift) return;
+    const gift = selectedGift;
+    const requestKey = giftRequestKey || crypto.randomUUID();
+    setGiftRequestKey(requestKey);
     setSending(true);
     setNotice("");
-    const { error } = await supabase.rpc("send_social_live_gift", {
-      p_room_id: roomId,
-      p_coins: selectedGift.coins,
-      p_idempotency_key: crypto.randomUUID(),
-    });
-    setSending(false);
-    if (error) {
-      setNotice(error.message || "The gift could not be sent.");
-      return;
+    try {
+      const { error } = await supabase.rpc("send_social_live_gift", {
+        p_room_id: roomId,
+        p_coins: gift.coins,
+        p_idempotency_key: requestKey,
+      });
+      if (error) {
+        setNotice(error.message || "The gift could not be confirmed. Retry the same gift to safely check its status.");
+        return;
+      }
+      setGiftRequestKey("");
+      setNotice(gift.emoji + " " + gift.name + " sent!");
+    } catch {
+      setNotice("We could not confirm the gift. Retry the same gift; MUSEK will reuse the same transaction key to prevent a duplicate charge.");
+    } finally {
+      setSending(false);
     }
-    setNotice(selectedGift.emoji + " " + selectedGift.name + " sent!");
   };
 
   return (
@@ -429,7 +439,7 @@ export default function LiveGifts({
               <button
                 key={gift.coins}
                 type="button"
-                disabled={sending}
+                disabled={sending || Boolean(giftRequestKey)}
                 onClick={() => setSelectedCoins(gift.coins)}
                 aria-pressed={selectedCoins === gift.coins}
                 className={selectedCoins === gift.coins
