@@ -37,6 +37,10 @@ export async function POST(request: Request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const locationId = process.env.SQUARE_LOCATION_ID;
+    const squareApiBase =
+      process.env.SQUARE_ENVIRONMENT === "production"
+        ? "https://connect.squareup.com"
+        : "https://connect.squareupsandbox.com";
 
     if (
       !signatureKey ||
@@ -103,7 +107,7 @@ export async function POST(request: Request) {
     }
 
     const paymentResponse = await fetch(
-      `https://connect.squareupsandbox.com/v2/payments/${encodeURIComponent(paymentId)}`,
+      `${squareApiBase}/v2/payments/${encodeURIComponent(paymentId)}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
