@@ -124,6 +124,7 @@ export default async function AdminWithdrawalsPage() {
       }}
     >
       <Link href="/dashboard" style={{ display: "inline-flex", padding: "10px 15px", border: "1px solid rgba(168,85,247,.35)", borderRadius: "999px", color: "#d8b4fe", textDecoration: "none", background: "rgba(168,85,247,.08)" }}>← Back to Dashboard</Link>
+      <Link href="/admin/payout-eligibility" style={{ display: "inline-flex", padding: "10px 15px", marginLeft: "10px", border: "1px solid rgba(168,85,247,.35)", borderRadius: "999px", color: "#d8b4fe", textDecoration: "none", background: "rgba(168,85,247,.08)" }}>Creator Payout Verification</Link>
 
       <h1 style={{ fontSize: "clamp(30px, 4vw, 44px)", fontWeight: 900, letterSpacing: "-.04em", color: "#fff", marginTop: "24px" }}>
         Admin Withdrawal Management
