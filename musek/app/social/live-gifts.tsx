@@ -105,6 +105,7 @@ export default function LiveGifts({
   const audioContextRef = useRef<AudioContext | null>(null);
   const shopPanelRef = useRef<HTMLDivElement | null>(null);
   const shopTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const giftTapRef = useRef<{ coins: number; at: number } | null>(null);
 
   useEffect(() => {
     if (!shopOpen) return;
@@ -270,9 +271,9 @@ export default function LiveGifts({
     };
   }, [enqueueGift, loadGifts, playGiftSound, roomId, supabase]);
 
-  const sendGift = async () => {
-    if (sending || !selectedGift) return;
-    const gift = selectedGift;
+  const sendGift = async (giftOverride?: Gift) => {
+    const gift = giftOverride || selectedGift;
+    if (sending || !gift || accountType !== "fan" || !creatorId) return;
     const requestKey = giftRequestKey || crypto.randomUUID();
     setGiftRequestKey(requestKey);
     setSending(true);
@@ -460,7 +461,7 @@ export default function LiveGifts({
       </button>
       {shopOpen && <>
       <button type="button" aria-label="Close gift gallery" onClick={() => setShopOpen(false)} className="fixed inset-0 z-[119] cursor-default bg-black/40 backdrop-blur-[2px]" />
-      <div ref={shopPanelRef} onClick={(event) => event.stopPropagation()} className="fixed left-1/2 top-[40%] sm:top-1/2 z-[120] max-h-[66dvh] sm:max-h-[76dvh] w-[min(440px,calc(100vw-16px))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl">
+      <div ref={shopPanelRef} onClick={(event) => event.stopPropagation()} className="fixed left-1/2 top-[max(12px,env(safe-area-inset-top))] bottom-[calc(76px+env(safe-area-inset-bottom))] z-[120] h-auto max-h-none w-[min(520px,calc(100vw-16px))] -translate-x-1/2 overflow-y-auto overscroll-y-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black tracking-[.2em] text-purple-300">SUPPORT THE ARTIST</p>
@@ -497,7 +498,19 @@ export default function LiveGifts({
                 key={gift.coins}
                 type="button"
                 disabled={sending || Boolean(giftRequestKey)}
-                onClick={() => setSelectedCoins(gift.coins)}
+                onClick={() => {
+                  const now = Date.now();
+                  const previousTap = giftTapRef.current;
+                  if (previousTap?.coins === gift.coins && now - previousTap.at <= 380) {
+                    giftTapRef.current = null;
+                    void sendGift(gift);
+                    return;
+                  }
+                  giftTapRef.current = { coins: gift.coins, at: now };
+                  setSelectedCoins(gift.coins);
+                }}
+                aria-label={`${gift.name}, ${formatCoins(gift.coins)} coins. Tap to select, double-tap to send.`}
+                title="Tap to select · double-tap to send"
                 aria-pressed={selectedCoins === gift.coins}
                 className={selectedCoins === gift.coins
                   ? "min-w-0 rounded-lg border border-purple-300 bg-purple-500/20 p-1.5 text-left ring-1 ring-purple-300/40"
@@ -530,7 +543,7 @@ export default function LiveGifts({
 
       <div className="mt-2 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-2">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p><button type="button" onClick={toggleSound} className={soundEnabled ? "rounded-full border border-purple-300/40 bg-purple-500/20 px-3 py-1.5 text-[10px] font-bold text-purple-100" : "rounded-full border border-white/10 px-3 py-1.5 text-[10px] font-bold text-gray-400"}>{soundEnabled ? "♫ Sound on" : "♫ Sound off"}</button></div>
-        <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
+        <p className="mt-1 text-xs text-gray-400">Preview effects free. Tap a gift to select it or double-tap to send it.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" onClick={() => previewGift(10)} className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold hover:border-purple-300/50">Preview small ✨</button>
           <button type="button" onClick={() => previewGift(100)} className="rounded-lg border border-rose-300/20 bg-rose-500/[.08] px-3 py-2 text-xs font-bold text-rose-100 hover:border-rose-300/50">Preview Rose 🌹</button>
