@@ -292,10 +292,8 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <p className="text-xs font-black">{selected.title}</p>
                 <p className="mt-1 line-clamp-2 text-[11px] text-white/75">{selected.description || "Join the conversation and show this creator some love."}</p>
               </div>
-              <form onSubmit={sendMessage} className="fixed bottom-[calc(68px+env(safe-area-inset-bottom))] left-3 right-3 z-[115] mx-auto flex max-w-2xl items-center gap-2 rounded-full border border-white/10 bg-black/35 p-1.5 shadow-[0_8px_30px_rgba(0,0,0,.45)] backdrop-blur-xl">
-                <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Say something…" className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/45 px-4 py-2.5 text-xs text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
-                <button type="submit" disabled={!draft.trim() || chatSending} className="shrink-0 rounded-full bg-fuchsia-600 px-4 py-2.5 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
-                <div className="relative z-[130] flex shrink-0 items-center gap-2">
+              <form onSubmit={sendMessage} className="fixed bottom-[calc(68px+env(safe-area-inset-bottom))] left-3 right-3 z-[115] mx-auto flex max-w-2xl flex-col gap-2 rounded-2xl border border-white/10 bg-black/45 p-2.5 shadow-[0_8px_30px_rgba(0,0,0,.5)] backdrop-blur-xl">
+                <div className="relative z-[130] flex w-full items-center justify-end gap-2">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
                   {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
                   {(selected.host_id === userId || liveCameraControl?.canPublish) && (
@@ -314,6 +312,10 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                       </svg>
                     </button>
                   )}
+                </div>
+                <div className="flex w-full items-end gap-2">
+                  <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={2} placeholder="Say something…" aria-label="Say something" className="min-h-[56px] min-w-0 flex-1 resize-none rounded-xl border border-white/20 bg-black/55 px-4 py-3 text-sm leading-5 text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
+                  <button type="submit" disabled={!draft.trim() || chatSending} className="shrink-0 self-stretch rounded-xl bg-fuchsia-600 px-5 text-sm font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
                 </div>
               </form>
             </div>
