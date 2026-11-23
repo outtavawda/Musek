@@ -1,10 +1,38 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { LiveKitRoom, VideoConference } from "@livekit/components-react";
+import { LiveKitRoom, VideoConference, useLocalParticipant } from "@livekit/components-react";
 import "@livekit/components-styles";
 
-export default function LiveVideoRoom({ roomId, displayName }: { roomId: string; displayName: string }) {
+export type LiveCameraControl = {
+  toggle: () => Promise<void>;
+  enabled: boolean;
+  canPublish: boolean;
+};
+
+function CameraControlBridge({ canPublish, onCameraControl }: {
+  canPublish: boolean;
+  onCameraControl?: (control: LiveCameraControl | null) => void;
+}) {
+  const { localParticipant, isCameraEnabled } = useLocalParticipant();
+  const toggle = useCallback(async () => {
+    if (!canPublish) return;
+    await localParticipant.setCameraEnabled(!isCameraEnabled);
+  }, [canPublish, isCameraEnabled, localParticipant]);
+
+  useEffect(() => {
+    onCameraControl?.({ toggle, enabled: isCameraEnabled, canPublish });
+    return () => onCameraControl?.(null);
+  }, [toggle, isCameraEnabled, canPublish, onCameraControl]);
+
+  return null;
+}
+
+export default function LiveVideoRoom({ roomId, displayName, onCameraControl }: {
+  roomId: string;
+  displayName: string;
+  onCameraControl?: (control: LiveCameraControl | null) => void;
+}) {
   const [token, setToken] = useState("");
   const [serverUrl, setServerUrl] = useState("");
   const [canPublish, setCanPublish] = useState(false);
@@ -17,6 +45,7 @@ export default function LiveVideoRoom({ roomId, displayName }: { roomId: string;
     setError("");
     setToken("");
     setCanPublish(false);
+    onCameraControl?.(null);
     fetch("/api/social/livekit-token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -37,8 +66,8 @@ export default function LiveVideoRoom({ roomId, displayName }: { roomId: string;
         if (active) setError(reason instanceof Error ? reason.message : "Unable to join video.");
       })
       .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [roomId]);
+    return () => { active = false; onCameraControl?.(null); };
+  }, [roomId, onCameraControl]);
 
   const handleError = useCallback((reason: Error) => setError(reason.message), []);
 
@@ -52,7 +81,8 @@ export default function LiveVideoRoom({ roomId, displayName }: { roomId: string;
         <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Connected room</span>
       </div>
       <div data-lk-theme="default" className="h-full min-h-[100dvh] w-full">
-        <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={canPublish} onError={handleError}>
+        <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={false} onError={handleError}>
+          <CameraControlBridge canPublish={canPublish} onCameraControl={onCameraControl}/>
           <VideoConference />
         </LiveKitRoom>
       </div>
