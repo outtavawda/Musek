@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type JoinRequest = { id: string; room_id: string; requester_id: string; status: string; created_at: string };
+type JoinRequest = { id: string; room_id: string; requester_id: string; status: "pending" | "accepted" | "declined"; created_at: string };
 type RequesterProfile = { id: string; display_name: string | null; artist_name: string | null; avatar_url: string | null };
 
 export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApproved }: { roomId: string; hostId: string; userId: string; onApproved?: () => void }) {
