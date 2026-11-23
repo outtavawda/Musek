@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 type JoinRequest = { id: string; room_id: string; requester_id: string; status: "pending" | "accepted" | "declined"; created_at: string };
 type RequesterProfile = { id: string; display_name: string | null; artist_name: string | null; avatar_url: string | null };
 
-export default function LiveRoomJoinRequests({ roomId, hostId, userId }: { roomId: string; hostId: string; userId: string }) {
+export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApproved }: { roomId: string; hostId: string; userId: string; onApproved?: () => void }) {
   const supabase = createClient();
   const isHost = hostId === userId;
   const [requests, setRequests] = useState<JoinRequest[]>([]);
@@ -69,9 +69,9 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId }: { roomI
   </div>;
 
   return <div className="relative">
-    <button type="button" disabled={busy || myRequest?.status === "pending" || myRequest?.status === "accepted"} onClick={requestToJoin} aria-label="Request to join live as a guest" title="Request to join" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-fuchsia-300/40 bg-[#21152e] text-lg text-fuchsia-100 shadow-[0_0_16px_rgba(168,85,247,.18)] transition hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60">
+    {myRequest?.status === "accepted" ? <button type="button" onClick={onApproved} className="rounded-lg border border-emerald-300/30 bg-emerald-500/15 px-3 py-2 text-[10px] font-bold text-emerald-100">Approved · reconnect to join stage</button> : <button type="button" disabled={busy || myRequest?.status === "pending"} onClick={requestToJoin} aria-label="Request to join live as a guest" title="Request to join" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-fuchsia-300/40 bg-[#21152e] text-lg text-fuchsia-100 shadow-[0_0_16px_rgba(168,85,247,.18)] transition hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60">
       {busy ? "…" : myRequest?.status === "pending" ? "⌛" : myRequest?.status === "accepted" ? "✓" : <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>}
-    </button>
+    </button>}
     {notice && <span role="status" className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-fuchsia-300/20 bg-[#140d20] p-2 text-[10px] text-fuchsia-100 shadow-xl">{notice}</span>}
   </div>;
 }
