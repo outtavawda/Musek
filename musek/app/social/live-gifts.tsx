@@ -205,7 +205,7 @@ export default function LiveGifts({
     }
     if (!activeGift) return;
     const coins = Number(activeGift.coins);
-    const duration = coins >= 60000 ? 8000 : coins >= 20000 ? 6500 : coins >= 2500 ? 4500 : 2800;
+    const duration = coins >= 60000 ? 9000 : coins >= 20000 ? 8000 : coins >= 2500 ? 4500 : 2800;
     const timeout = window.setTimeout(() => setActiveGift(null), duration);
     return () => window.clearTimeout(timeout);
   }, [activeGift, giftQueue]);
@@ -361,8 +361,8 @@ export default function LiveGifts({
         @keyframes cosmic-gift-float { 0%,100% { transform:translateY(0) rotateY(-7deg); } 50% { transform:translateY(-12px) rotateY(7deg); } }
         .musek-gift-flight { position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; max-width: 100vw; will-change: transform, opacity; animation: musek-gift-flight 2.8s cubic-bezier(.22,.72,.22,1) both; }
         .musek-gift-medium .musek-gift-flight { animation-duration: 4.5s; }
-        .musek-gift-premium .musek-gift-flight { animation-duration: 6.5s; }
-        .musek-gift-legendary .musek-gift-flight { animation-duration: 8s; }
+        .musek-gift-premium .musek-gift-flight { animation-duration: 8s; }
+        .musek-gift-legendary .musek-gift-flight { animation-duration: 9s; }
         @keyframes musek-gift-flight { 0% { opacity:0; transform:translate3d(-115vw,18vh,0) scale(.62) rotate(-9deg); } 16% { opacity:1; transform:translate3d(-55vw,7vh,0) scale(.78) rotate(-5deg); } 42% { opacity:1; transform:translate3d(0,0,0) scale(1.04) rotate(0); } 62% { opacity:1; transform:translate3d(0,0,0) scale(1) rotate(0); } 84% { opacity:1; transform:translate3d(58vw,-5vh,0) scale(.82) rotate(5deg); } 100% { opacity:0; transform:translate3d(115vw,-18vh,0) scale(.62) rotate(9deg); } }
         .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 22px; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
         .musek-gift-art { position: relative; display: grid; width: clamp(150px, 24vw, 250px); aspect-ratio: 1; place-items: center; perspective: 900px; transform-style: preserve-3d; }
@@ -390,13 +390,13 @@ export default function LiveGifts({
         .musek-gift-small .musek-gift-sender { display: none; }
         .musek-gift-medium { background: radial-gradient(circle, rgba(147,51,234,.3), rgba(0,0,0,.58) 70%); animation: gift-fade 4.5s ease both; }
         .musek-gift-medium .musek-gift-art-svg { animation: gift-object-turn 2.5s ease-in-out infinite; }
-        .musek-gift-premium { background: radial-gradient(circle, rgba(147,51,234,.48), rgba(4,3,14,.84) 72%); animation: gift-fade 6.5s ease both; }
+        .musek-gift-premium { background: radial-gradient(circle, rgba(147,51,234,.48), rgba(4,3,14,.84) 72%); animation: gift-fade 8s ease both; }
         .musek-gift-premium .musek-gift-content { border-color: rgba(250,204,21,.75); background: linear-gradient(145deg,rgba(73,42,101,.98),rgba(12,8,28,.98)); box-shadow: 0 0 70px rgba(250,204,21,.34), 0 0 150px rgba(168,85,247,.48), inset 0 1px rgba(255,255,255,.35); animation: gift-legend 1.2s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-premium .musek-gift-flight,.musek-gift-legendary .musek-gift-flight { width:100vw; height:100dvh; }
-        .musek-gift-premium .musek-gift-content,.musek-gift-legendary .musek-gift-content { width:100vw; height:100dvh; max-width:none; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; animation:none; }
+        .musek-gift-premium .musek-gift-flight,.musek-gift-legendary .musek-gift-flight { animation:none; width:100vw; height:100dvh; }\n        .musek-gift-premium .musek-gift-content,.musek-gift-legendary .musek-gift-content { width:100vw; height:100dvh; max-width:none; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; animation:none; }
         .musek-gift-premium .musek-gift-eyebrow { color: #fde68a; }
         .musek-gift-premium .musek-gift-art-svg { animation-duration: 3.2s; }
-        .musek-gift-legendary { background: radial-gradient(circle at 50% 48%,rgba(234,179,8,.34),rgba(88,28,135,.48) 38%,rgba(2,2,12,.94) 78%); animation: gift-fade 8s ease both; }
+        .musek-gift-legendary { background: radial-gradient(circle at 50% 48%,rgba(234,179,8,.34),rgba(88,28,135,.48) 38%,rgba(2,2,12,.94) 78%); animation: gift-fade 9s ease both; }
         .musek-gift-legendary .musek-gift-content { border: 1px solid rgba(253,224,71,.9); background: linear-gradient(145deg,rgba(89,52,16,.96),rgba(34,14,60,.98) 48%,rgba(7,7,20,.98)); box-shadow: 0 0 35px rgba(253,224,71,.75),0 0 120px rgba(168,85,247,.72),0 0 220px rgba(217,70,239,.35),inset 0 1px rgba(255,255,255,.5); animation: gift-legendary-entry 1.5s cubic-bezier(.16,1,.3,1) both; }
         .musek-gift-legendary .musek-gift-eyebrow { color: #fef08a; }
         .musek-gift-legendary .musek-gift-art-svg { animation-duration: 2.8s; }
