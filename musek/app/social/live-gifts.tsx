@@ -293,7 +293,23 @@ export default function LiveGifts({
             )}
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-content">
-              <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
+              {["Galaxy", "Universe", "MUSEK Legend"].includes(details?.name || "") ? (
+                <div className="musek-cosmic-reveal" aria-label={details?.name + " animated gift reveal"}>
+                  <div className="musek-cosmic-nebula" />
+                  <div className="musek-cosmic-stars">{Array.from({ length: 28 }, (_, index) => <i key={index} style={{ "--star": index } as React.CSSProperties} />)}</div>
+                  <span className="musek-cosmic-planet musek-cosmic-planet-one" />
+                  <span className="musek-cosmic-planet musek-cosmic-planet-two" />
+                  <div className="musek-cosmic-orbit musek-cosmic-orbit-one" />
+                  <div className="musek-cosmic-orbit musek-cosmic-orbit-two" />
+                  <div className="musek-cosmic-gift">
+                    <div className="musek-cosmic-bow"><i /><b /><span /></div>
+                    <div className="musek-cosmic-box"><i /><b /><span /></div>
+                  </div>
+                  <div className="musek-cosmic-caption"><span className="musek-cosmic-sender">{(activeGift.sender_name || "A fan").slice(0, 1).toUpperCase()}</span><strong>{activeGift.sender_name || "A fan"}</strong><span>sent</span><b>{details?.name}</b><strong>×1</strong></div>
+                </div>
+              ) : (
+                <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
+              )}
               <p className="musek-gift-eyebrow">{tier === "legendary" ? "✦ MUSEK ICONIC MOMENT ✦" : tier === "premium" ? "MUSEK PREMIUM GIFT" : tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
               <p className="musek-gift-name">{details?.name || "Live gift"}</p>
               <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
@@ -304,6 +320,30 @@ export default function LiveGifts({
       })()}
       <style jsx>{`
         .musek-gift-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; }
+        .musek-cosmic-reveal { position:relative; width:min(82vw,437px); height:clamp(240px,58vw,390px); overflow:hidden; display:flex; align-items:center; justify-content:center; isolation:isolate; background:radial-gradient(ellipse at 50% 55%,#172c89 0%,#111044 38%,#05051d 72%,#02020d 100%); border-radius:18px; box-shadow:0 0 55px rgba(99,102,241,.45); }
+        .musek-cosmic-nebula { position:absolute; inset:-35%; background:radial-gradient(ellipse at 28% 42%,rgba(0,140,255,.7),transparent 28%),radial-gradient(ellipse at 70% 30%,rgba(168,85,247,.65),transparent 30%),radial-gradient(ellipse at 52% 70%,rgba(14,165,233,.48),transparent 32%); filter:blur(16px); animation:cosmic-nebula 16s linear infinite; }
+        .musek-cosmic-stars { position:absolute; inset:0; }
+        .musek-cosmic-stars i { position:absolute; left:calc((var(--star) * 37.1%) - 350%); top:calc((var(--star) * 23.7%) - 190%); width:3px; height:3px; border-radius:50%; background:#fff; box-shadow:0 0 9px #a5f3fc,0 0 18px #c084fc; animation:cosmic-star calc(2.2s + (var(--star) * .09s)) ease-in-out infinite; }
+        .musek-cosmic-planet { position:absolute; border-radius:50%; background:radial-gradient(circle at 32% 28%,#a5f3fc,#2563eb 45%,#101044 78%); box-shadow:0 0 20px rgba(96,165,250,.6); }
+        .musek-cosmic-planet-one { width:34px; height:34px; left:9%; top:48%; }
+        .musek-cosmic-planet-two { width:17px; height:17px; right:12%; top:35%; background:radial-gradient(circle at 30% 30%,#fde68a,#b45309 60%,#451a03); }
+        .musek-cosmic-orbit { position:absolute; left:50%; top:59%; width:86%; height:27%; border:2px solid rgba(251,191,36,.88); border-radius:50%; transform:translate(-50%,-50%) rotate(-9deg); box-shadow:0 0 14px #f59e0b,inset 0 0 14px rgba(168,85,247,.75); animation:cosmic-orbit 3.8s linear infinite; }
+        .musek-cosmic-orbit-two { width:96%; height:34%; border-color:rgba(192,132,252,.75); transform:translate(-50%,-50%) rotate(12deg); animation-direction:reverse; }
+        .musek-cosmic-gift { position:relative; z-index:2; width:42%; aspect-ratio:1; margin-top:5%; filter:drop-shadow(0 18px 18px rgba(0,0,0,.6)); animation:cosmic-gift-float 2.4s ease-in-out infinite; transform-style:preserve-3d; }
+        .musek-cosmic-box { position:absolute; left:12%; top:37%; width:76%; height:55%; background:linear-gradient(110deg,#17104e 0%,#4c1d95 42%,#1e1b4b 100%); border:3px solid #fbbf24; transform:skewY(-3deg) rotateX(4deg); box-shadow:inset 0 0 22px rgba(56,189,248,.38),0 0 24px rgba(250,204,21,.38); }
+        .musek-cosmic-box:before { content:""; position:absolute; left:43%; top:0; width:15%; height:100%; background:linear-gradient(90deg,#b45309,#fde68a,#f59e0b); }
+        .musek-cosmic-box:after { content:""; position:absolute; left:-4%; top:-12%; width:108%; height:18%; background:linear-gradient(#fef3c7,#f59e0b 45%,#92400e); border:2px solid #fde68a; }
+        .musek-cosmic-box i { position:absolute; left:0; top:50%; width:100%; height:5px; background:#fcd34d; box-shadow:0 0 10px #fef08a; }
+        .musek-cosmic-box b { position:absolute; right:9%; top:23%; width:18%; height:35%; border:2px solid #fcd34d; border-radius:50%; transform:rotate(24deg); }
+        .musek-cosmic-box span { position:absolute; left:9%; top:23%; width:18%; height:35%; border:2px solid #fcd34d; border-radius:50%; transform:rotate(-24deg); }
+        .musek-cosmic-bow { position:absolute; z-index:3; left:29%; top:16%; width:42%; height:25%; }
+        .musek-cosmic-bow i,.musek-cosmic-bow b { position:absolute; top:0; width:48%; height:72%; border:5px solid #fde68a; border-radius:80% 80% 12% 80%; background:linear-gradient(135deg,#fef3c7,#d97706); box-shadow:0 0 12px #fbbf24; }
+        .musek-cosmic-bow i { left:0; transform:rotate(25deg); } .musek-cosmic-bow b { right:0; transform:scaleX(-1) rotate(25deg); }
+        .musek-cosmic-bow span { position:absolute; left:40%; top:35%; width:20%; height:25%; border-radius:50%; background:#fff7cc; box-shadow:0 0 12px #fef08a; }
+        .musek-cosmic-caption { position:absolute; z-index:4; top:12px; left:12px; right:12px; display:flex; align-items:center; gap:7px; padding:8px 10px; border-radius:30px; background:rgba(3,3,20,.68); color:white; font-size:clamp(10px,2.5vw,14px); text-shadow:0 1px 5px #000; }
+        .musek-cosmic-caption b { color:#fde047; } .musek-cosmic-sender { display:grid; width:27px; height:27px; flex:0 0 27px; place-items:center; border-radius:50%; background:linear-gradient(135deg,#c084fc,#2563eb); font-weight:900; }
+        @keyframes cosmic-orbit { from { transform:translate(-50%,-50%) rotate(-9deg); } to { transform:translate(-50%,-50%) rotate(351deg); } }
+        @keyframes cosmic-gift-float { 0%,100% { transform:translateY(0) rotateY(-7deg); } 50% { transform:translateY(-12px) rotateY(7deg); } }
         .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 34px; border: 1px solid rgba(216,180,254,.55); border-radius: 28px; background: linear-gradient(145deg,rgba(36,20,60,.97),rgba(9,7,20,.96)); box-shadow: 0 0 45px rgba(168,85,247,.45), inset 0 1px rgba(255,255,255,.18); backdrop-filter: blur(16px); }
         .musek-gift-art { position: relative; display: grid; width: clamp(150px, 24vw, 250px); aspect-ratio: 1; place-items: center; perspective: 900px; transform-style: preserve-3d; }
         .musek-gift-art-aura { position: absolute; inset: 12%; border-radius: 50%; background: radial-gradient(circle,rgba(192,132,252,.42),rgba(124,58,237,.12) 48%,transparent 72%); transform: translateZ(-35px); }
