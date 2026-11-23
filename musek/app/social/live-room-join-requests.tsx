@@ -40,7 +40,18 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
   }, [load, roomId, supabase]);
 
   const requestToJoin = async () => {
+    if (pending || isOnStage) return;
     setBusy(true); setNotice("");
+    if (myRequest?.status === "accepted") {
+      const { data, error } = await supabase.from("social_live_join_requests")
+        .update({ status: "pending", responded_at: null })
+        .eq("id", myRequest.id).eq("requester_id", userId).eq("status", "accepted")
+        .select("id,room_id,requester_id,status,created_at").single();
+      setBusy(false);
+      if (error) setNotice("Could not resend your request. Please try again.");
+      else { setMyRequest(data as JoinRequest); setNotice("Request sent. The host must approve you before you return to the stage."); }
+      return;
+    }
     const { data, error } = await supabase.from("social_live_join_requests").insert({ room_id: roomId, requester_id: userId }).select("id,room_id,requester_id,status,created_at").single();
     setBusy(false);
     if (error) setNotice(error.code === "23505" ? "Your request is already pending." : "Could not send your request. Apply migration 009 and try again.");
@@ -82,7 +93,7 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
     }
   };
   return <div className="relative">
-    <button type="button" disabled={busy || (isOnStage ? !onLeaveStage : pending || accepted)} onClick={isOnStage ? leaveStage : requestToJoin} aria-label={isOnStage ? "Return to live chat" : accepted ? "Request to join live as a guest — approved" : pending ? "Guest request pending" : "Request to join live as a guest"} title={isOnStage ? "Return to live chat" : accepted ? "Approved — request icon" : pending ? "Request pending" : "Request to join"} className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-base shadow-[0_0_16px_rgba(168,85,247,.18)] transition sm:h-11 sm:w-11 sm:text-lg " + (isOnStage ? "border-rose-300/40 bg-rose-500/20 text-rose-100 hover:bg-rose-500/35" : accepted ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-200" : "border-fuchsia-300/40 bg-[#21152e] text-fuchsia-100 hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60")}>
+    <button type="button" disabled={busy || (isOnStage ? !onLeaveStage : pending)} onClick={isOnStage ? leaveStage : requestToJoin} aria-label={isOnStage ? "Return to live chat" : accepted ? "Request to join live as a guest — approved" : pending ? "Guest request pending" : "Request to join live as a guest"} title={isOnStage ? "Return to live chat" : accepted ? "Approved — request icon" : pending ? "Request pending" : "Request to join"} className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-base shadow-[0_0_16px_rgba(168,85,247,.18)] transition sm:h-11 sm:w-11 sm:text-lg " + (isOnStage ? "border-rose-300/40 bg-rose-500/20 text-rose-100 hover:bg-rose-500/35" : accepted ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-200" : "border-fuchsia-300/40 bg-[#21152e] text-fuchsia-100 hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60")}>
       {busy ? "…" : isOnStage ? <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg> : pending ? "⌛" : <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>}
     </button>
     {notice && <span role="status" className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-fuchsia-300/20 bg-[#140d20] p-2 text-[10px] text-fuchsia-100 shadow-xl">{notice}</span>}
