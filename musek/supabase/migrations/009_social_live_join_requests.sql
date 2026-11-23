@@ -13,6 +13,7 @@ create index if not exists social_live_join_requests_room_status_idx
 create unique index if not exists social_live_join_requests_one_pending_per_user
   on public.social_live_join_requests(room_id, requester_id) where status = 'pending';
 alter table public.social_live_join_requests enable row level security;
+grant select, insert on public.social_live_join_requests to authenticated;
 revoke update on public.social_live_join_requests from authenticated;
 grant update (status, responded_at) on public.social_live_join_requests to authenticated;
 drop policy if exists "Hosts and requesters can view join requests" on public.social_live_join_requests;
