@@ -36,7 +36,7 @@ function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string
   const hostTrack = cameraTracks.find((track) => track.participant.identity === hostId);
   const guestTracks = cameraTracks
     .filter((track) => track.participant.identity !== hostId)
-    .sort((a, b) => a.participant.name.localeCompare(b.participant.name));
+    .sort((a, b) => (a.participant.name ?? "").localeCompare(b.participant.name ?? ""));
 
   return (
     <div className="absolute inset-0 overflow-y-auto bg-[#05040a] px-3 pb-40 pt-24 sm:px-5 sm:pb-32">
