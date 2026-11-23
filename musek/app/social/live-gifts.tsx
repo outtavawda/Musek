@@ -448,7 +448,7 @@ export default function LiveGifts({
       <button type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-2xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105">
         🎁
       </button>
-      {shopOpen && <div className="fixed left-1/2 top-1/2 z-[120] max-h-[56dvh] w-[min(420px,calc(100vw-20px))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl">
+      {shopOpen && <div className="fixed left-1/2 top-1/2 z-[120] max-h-[48dvh] w-[min(440px,calc(100vw-16px))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black tracking-[.2em] text-purple-300">SUPPORT THE ARTIST</p>
@@ -479,7 +479,7 @@ export default function LiveGifts({
               </button>
             ))}
           </div>
-          <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+          <div className="mt-1.5 grid grid-cols-4 gap-1 sm:grid-cols-5">
             {visibleGifts.map((gift) => (
               <button
                 key={gift.coins}
@@ -509,7 +509,7 @@ export default function LiveGifts({
           )}
       </>
 
-      <div className="mt-2.5 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-2.5">
+      <div className="mt-2 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-2">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p><button type="button" onClick={toggleSound} className={soundEnabled ? "rounded-full border border-purple-300/40 bg-purple-500/20 px-3 py-1.5 text-[10px] font-bold text-purple-100" : "rounded-full border border-white/10 px-3 py-1.5 text-[10px] font-bold text-gray-400"}>{soundEnabled ? "♫ Sound on" : "♫ Sound off"}</button></div>
         <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -522,8 +522,8 @@ export default function LiveGifts({
         </div>
       </div>
       {notice && <p role="status" className="mt-3 text-xs text-purple-200">{notice}</p>}
-      <div className="mt-4 border-t border-white/10 pt-3">
-        <p className="mb-2 text-xs font-bold text-gray-300">Recent gifts in this room</p>
+      <div className="mt-2 border-t border-white/10 pt-2">
+        <p className="mb-1 text-[10px] font-bold text-gray-300">Recent gifts in this room</p>
         {gifts.length === 0 ? (
           <p className="text-xs text-gray-500">Be the first to support this artist live.</p>
         ) : (
