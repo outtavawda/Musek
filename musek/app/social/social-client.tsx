@@ -300,7 +300,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <button type="submit" disabled={!draft.trim() || chatSending} className="h-9 shrink-0 rounded-lg bg-fuchsia-600 px-2 text-[11px] font-black disabled:opacity-40 sm:h-11 sm:rounded-xl sm:px-2.5 sm:text-xs">{chatSending ? "…" : "Send"}</button>
                 <div className="relative z-[130] flex shrink-0 items-center gap-0.5 sm:gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
-                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} isOnStage={Boolean(liveCameraControl?.enabled)} onLeaveStage={handleReturnToChat}/>}
+                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} isOnStage={liveCameraControl?.enabled === true} onLeaveStage={handleReturnToChat}/>}
                   {(selected.host_id === userId || liveCameraControl?.canPublish) && (
                     <button
                       type="button"
