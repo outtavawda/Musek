@@ -50,8 +50,19 @@ export async function POST(request: Request) {
     const livekitUrl = process.env.LIVEKIT_URL;
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
-    if (!livekitUrl || !apiKey || !apiSecret) {
-      return NextResponse.json({ error: "Live video is not configured yet. Add the LiveKit server settings to the deployment environment." }, { status: 503 });
+    const missingSettings = [
+      ["LIVEKIT_URL", livekitUrl],
+      ["LIVEKIT_API_KEY", apiKey],
+      ["LIVEKIT_API_SECRET", apiSecret],
+    ]
+      .filter(([, value]) => !value?.trim())
+      .map(([name]) => name);
+
+    if (missingSettings.length > 0) {
+      return NextResponse.json({
+        error: `Live video configuration is incomplete. Missing deployment setting(s): ${missingSettings.join(", ")}.`,
+        missingSettings,
+      }, { status: 503 });
     }
 
     let canPublish = room.host_id === user.id;
@@ -75,7 +86,7 @@ export async function POST(request: Request) {
     const displayName = profile?.artist_name || profile?.display_name ||
       user.user_metadata?.display_name || "MUSEK Member";
 
-    const token = new AccessToken(apiKey, apiSecret, {
+    const token = new AccessToken(apiKey!, apiSecret!, {
       identity: user.id,
       name: String(displayName).slice(0, 100),
       ttl: "2h",
