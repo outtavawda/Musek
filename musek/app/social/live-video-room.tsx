@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { LiveKitRoom, RoomAudioRenderer, VideoTrack, useLocalParticipant, useTracks } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import { Track, VideoPresets } from "livekit-client";
 import "@livekit/components-styles";
 
 export type LiveCameraControl = {
@@ -18,7 +18,7 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   const { localParticipant, isCameraEnabled } = useLocalParticipant();
   const toggle = useCallback(async () => {
     if (!canPublish) return;
-    await localParticipant.setCameraEnabled(!isCameraEnabled);
+    await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution });
   }, [canPublish, isCameraEnabled, localParticipant]);
 
   useEffect(() => {
