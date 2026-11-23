@@ -299,7 +299,7 @@ export default function LiveGifts({
   };
 
   return (
-    <section className="relative w-full">
+    <section className="relative w-auto shrink-0">
       {activeGift && typeof document !== "undefined" && createPortal((() => {
         const details = giftForCoins(Number(activeGift.coins));
         const tier = Number(activeGift.coins) >= 60000 ? "legendary" : Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 2500 ? "medium" : "small";
@@ -470,7 +470,7 @@ export default function LiveGifts({
         .musek-gift-overlay.musek-gift-premium .musek-gift-content,.musek-gift-overlay.musek-gift-legendary .musek-gift-content { width:100vw; height:100dvh; max-width:none; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; animation:none; }
         .musek-gift-overlay.musek-gift-premium .musek-gift-flight,.musek-gift-overlay.musek-gift-legendary .musek-gift-flight { animation:none; width:100vw; height:100dvh; }
       `}</style>
-      <button ref={shopTriggerRef} type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-2xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105">
+      <button ref={shopTriggerRef} type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105 sm:h-11 sm:w-11 sm:text-2xl">
         🎁
       </button>
       {shopOpen && typeof document !== "undefined" && createPortal(<>
