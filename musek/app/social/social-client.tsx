@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import LiveVideoRoom from "./live-video-room";
+import LiveVideoRoom, { type LiveCameraControl } from "./live-video-room";
+import LiveRoomJoinRequests from "./live-room-join-requests";
 import GuestInvites from "./guest-invites";
 import LiveGifts from "./live-gifts";
 import SocialFeed from "./social-feed";
@@ -39,9 +40,11 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const [micOn, setMicOn] = useState(false);
   const [viewingProfile, setViewingProfile] = useState<ChatProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [liveCameraControl, setLiveCameraControl] = useState<LiveCameraControl | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const handleLiveCameraControl = useCallback((control: LiveCameraControl | null) => setLiveCameraControl(control), []);
 
   const loadRooms = useCallback(async () => {
     const { data, error } = await supabase.from("social_live_rooms")
@@ -177,7 +180,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       .eq("id", selected.id).eq("host_id", userId);
     setEnding(false);
     if (error) { setNotice("Could not end the live room. Please try again."); return; }
-    stopMedia(); setSelected(null); await loadRooms(); setNotice("Your live room has ended.");
+    stopMedia(); setLiveCameraControl(null); setSelected(null); await loadRooms(); setNotice("Your live room has ended. Viewers have been disconnected.");
   };
 
   const openChatProfile = async (profileId: string) => {
@@ -264,7 +267,8 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
         {selected && <section className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
           <div className="absolute inset-0">
-            <LiveVideoRoom roomId={selected.id} displayName={displayName}/>
+            <LiveVideoRoom roomId={selected.id} displayName={displayName} onCameraControl={handleLiveCameraControl}/>
+            <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/90"/>
           </div>
 
@@ -274,7 +278,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               <div className="min-w-0"><p className="max-w-[170px] truncate text-xs font-black">{selected.host_name}</p><p className="text-[10px] text-white/70">MUSEK LIVE · {messages.length} messages</p></div>
               <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] font-black tracking-widest">● LIVE</span>
             </div>
-            <button onClick={() => { setSelected(null); stopMedia(); }} aria-label="Close live" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
+            <button onClick={() => { if (selected.host_id === userId) { endRoom(); } else { setLiveCameraControl(null); setSelected(null); stopMedia(); } }} aria-label={selected.host_id === userId ? "End live room" : "Leave live room"} title={selected.host_id === userId ? "End live for everyone" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
           </div>
 
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
@@ -290,8 +294,23 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               <form onSubmit={sendMessage} className="fixed bottom-[calc(68px+env(safe-area-inset-bottom))] left-3 right-3 z-[115] mx-auto flex max-w-2xl items-center gap-2 rounded-full border border-white/10 bg-black/35 p-1.5 shadow-[0_8px_30px_rgba(0,0,0,.45)] backdrop-blur-xl">
                 <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Say something…" className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/45 px-4 py-2.5 text-xs text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
                 <button type="submit" disabled={!draft.trim() || chatSending} className="shrink-0 rounded-full bg-fuchsia-600 px-4 py-2.5 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
-                <div className="relative z-[130] shrink-0">
+                <div className="relative z-[130] flex shrink-0 items-center gap-2">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
+                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
+                  <button
+                    type="button"
+                    disabled={!liveCameraControl?.canPublish}
+                    onClick={() => liveCameraControl?.toggle().catch(() => setNotice("Could not change your live camera. Check camera permission and try again."))}
+                    aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
+                    aria-pressed={Boolean(liveCameraControl?.enabled)}
+                    title={!liveCameraControl?.canPublish ? "The host must approve you to publish video" : liveCameraControl.enabled ? "Turn camera off" : "Turn camera on"}
+                    className={"grid h-11 w-11 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 " + (liveCameraControl?.enabled ? "border-fuchsia-200 bg-fuchsia-600 shadow-fuchsia-950/40" : "border-fuchsia-300/35 bg-[#21152e] hover:bg-fuchsia-600/30")}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>
+                      {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
+                    </svg>
+                  </button>
                 </div>
               </form>
             </div>
