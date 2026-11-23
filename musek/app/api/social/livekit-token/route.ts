@@ -59,9 +59,25 @@ export async function POST(request: Request) {
       .map(([name]) => name);
 
     if (missingSettings.length > 0) {
+      const deploymentEnvironment = process.env.VERCEL_ENV || "unknown";
+      const deploymentBranch = process.env.VERCEL_GIT_COMMIT_REF || "unknown";
+      const deploymentCommit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || "unknown";
+      const settingStatus = {
+        LIVEKIT_URL: Boolean(livekitUrl?.trim()),
+        LIVEKIT_API_KEY: Boolean(apiKey?.trim()),
+        LIVEKIT_API_SECRET: Boolean(apiSecret?.trim()),
+      };
+      console.warn("MUSEK LiveKit configuration diagnostic:", {
+        deploymentEnvironment,
+        deploymentBranch,
+        deploymentCommit,
+        settingStatus,
+      });
+
       return NextResponse.json({
-        error: `Live video configuration is incomplete. Missing deployment setting(s): ${missingSettings.join(", ")}.`,
+        error: `Live video configuration is incomplete. Missing deployment setting(s): ${missingSettings.join(", ")}. Deployment: ${deploymentEnvironment}; branch: ${deploymentBranch}; commit: ${deploymentCommit}.`,
         missingSettings,
+        diagnostic: { deploymentEnvironment, deploymentBranch, deploymentCommit, settingStatus },
       }, { status: 503 });
     }
 
