@@ -532,7 +532,7 @@ export default function LiveGifts({
           {accountType === "fan" && creatorId !== "" && (
             <button
               type="button"
-              onClick={sendGift}
+              onClick={() => void sendGift()}
               disabled={sending || !selectedGift}
               className="mt-2.5 w-full rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold hover:bg-purple-500 disabled:opacity-50"
             >
