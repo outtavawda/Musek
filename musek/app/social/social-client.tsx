@@ -19,6 +19,7 @@ type Room = {
   avatar_url?: string | null;
 };
 type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string; avatar_url?: string | null };
+type ChatProfile = { id: string; display_name: string | null; artist_name: string | null; account_type: string | null; avatar_url: string | null; bio: string | null; location: string | null; is_public: boolean | null };
 
 export default function SocialClient({ userId, displayName, accountType, avatarUrl }: { userId: string; displayName: string; accountType: string; avatarUrl: string | null }) {
   const supabase = createClient();
@@ -36,6 +37,8 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const [notice, setNotice] = useState("");
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
+  const [viewingProfile, setViewingProfile] = useState<ChatProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -177,6 +180,22 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     stopMedia(); setSelected(null); await loadRooms(); setNotice("Your live room has ended.");
   };
 
+  const openChatProfile = async (profileId: string) => {
+    setProfileLoading(true);
+    setViewingProfile(null);
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("id,display_name,artist_name,account_type,avatar_url,bio,location,is_public")
+      .eq("id", profileId)
+      .maybeSingle();
+    setProfileLoading(false);
+    if (error || !data || data.is_public === false) {
+      setNotice("This member's profile is not publicly available.");
+      return;
+    }
+    setViewingProfile(data as ChatProfile);
+  };
+
   const react = async (emoji: string) => {
     if (!selected) return;
     const { error } = await supabase.from("social_live_reactions").insert({ room_id: selected.id, user_id: userId, emoji });
@@ -261,7 +280,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
             <div className="min-w-0 flex-1">
               <div className="mb-3 max-h-[31dvh] space-y-2 overflow-y-auto pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_12%)]">
-                {messages.slice(-8).map((message) => <div key={message.id} className="flex w-fit max-w-full items-start gap-2 rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-xs shadow-lg backdrop-blur-md"><span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full border border-white/15 bg-fuchsia-500/20 text-[10px] font-black text-white">{message.avatar_url ? <img src={message.avatar_url} alt="" className="h-full w-full object-cover"/> : message.display_name.slice(0, 1).toUpperCase()}</span><span className="min-w-0 break-words"><span className={message.user_id === selected.host_id ? "font-black text-fuchsia-200" : "font-bold text-white/80"}>{message.display_name} </span><span className="text-white">{message.message}</span></span></div>)}
+                {messages.slice(-8).map((message) => <div key={message.id} className="flex w-fit max-w-full items-start gap-2 rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-xs shadow-lg backdrop-blur-md"><button type="button" onClick={() => openChatProfile(message.user_id)} aria-label={"View " + message.display_name + "'s profile"} className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full border border-white/15 bg-fuchsia-500/20 text-[10px] font-black text-white transition hover:border-fuchsia-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-400">{message.avatar_url ? <img src={message.avatar_url} alt="" className="h-full w-full object-cover"/> : message.display_name.slice(0, 1).toUpperCase()}</button><span className="min-w-0 break-words"><button type="button" onClick={() => openChatProfile(message.user_id)} className={message.user_id === selected.host_id ? "font-black text-fuchsia-200 hover:underline" : "font-bold text-white/80 hover:underline"}>{message.display_name}</button>{" "}<span className="text-white">{message.message}</span></span></div>)}
                 <div ref={bottomRef}/>
               </div>
               <div className="mb-3 rounded-2xl border border-white/10 bg-black/35 p-3 backdrop-blur-xl">
@@ -285,6 +304,16 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           </div>
 
         </section>}
+        {(profileLoading || viewingProfile) && <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm" onClick={() => { if (!profileLoading) setViewingProfile(null); }}>
+          <section role="dialog" aria-modal="true" aria-label="Member profile" onClick={(event) => event.stopPropagation()} className="w-full max-w-sm rounded-3xl border border-fuchsia-300/20 bg-[#171321] p-5 shadow-2xl">
+            {profileLoading ? <p className="py-8 text-center text-sm text-gray-300">Loading profile…</p> : viewingProfile && <>
+              <div className="flex items-start justify-between"><div className="flex items-center gap-3">{viewingProfile.avatar_url ? <img src={viewingProfile.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover"/> : <span className="grid h-14 w-14 place-items-center rounded-full bg-fuchsia-500/20 text-xl font-black">{(viewingProfile.artist_name || viewingProfile.display_name || "M").slice(0,1).toUpperCase()}</span>}<div><p className="text-base font-black">{viewingProfile.artist_name || viewingProfile.display_name || "MUSEK Member"}</p><p className="mt-1 text-[10px] uppercase tracking-widest text-fuchsia-200">{viewingProfile.account_type || "member"}</p></div></div><button type="button" onClick={() => setViewingProfile(null)} aria-label="Close profile" className="grid h-8 w-8 place-items-center rounded-full border border-white/10 text-gray-300">✕</button></div>
+              {viewingProfile.location && <p className="mt-4 text-xs text-gray-400">{viewingProfile.location}</p>}
+              {viewingProfile.bio && <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-200">{viewingProfile.bio}</p>}
+              <Link href={"/profile/" + viewingProfile.id} onClick={() => setViewingProfile(null)} className="mt-5 block rounded-xl bg-fuchsia-600 px-4 py-3 text-center text-sm font-black text-white hover:bg-fuchsia-500">View full profile</Link>
+            </>}
+          </section>
+        </div>}
       </main>
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-white/10 bg-[#0b0a12]/95 px-2 py-3 backdrop-blur-xl sm:hidden">
         <Link href="/feed" className="flex flex-col items-center gap-1 text-[9px] text-gray-400"><span className="text-lg">♫</span>Music</Link>
