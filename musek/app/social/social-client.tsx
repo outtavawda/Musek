@@ -292,10 +292,10 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <p className="text-xs font-black">{selected.title}</p>
                 <p className="mt-1 line-clamp-2 text-[11px] text-white/75">{selected.description || "Join the conversation and show this creator some love."}</p>
               </div>
-              <form onSubmit={sendMessage} className="fixed bottom-[calc(68px+env(safe-area-inset-bottom))] left-2 right-2 z-[115] mx-auto flex w-auto max-w-2xl flex-row flex-nowrap items-center gap-1 rounded-2xl border border-white/10 bg-black/45 p-1.5 shadow-[0_8px_30px_rgba(0,0,0,.5)] backdrop-blur-xl">
-                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={1} placeholder="Say something…" aria-label="Say something" className="h-11 min-h-0 min-w-0 flex-1 rounded-xl border border-white/20 bg-black/55 px-2 py-2 text-xs leading-4 text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
-                <button type="submit" disabled={!draft.trim() || chatSending} className="h-11 shrink-0 rounded-xl bg-fuchsia-600 px-2.5 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
-                <div className="relative z-[130] flex shrink-0 items-center gap-1">
+              <form onSubmit={sendMessage} className="fixed bottom-[calc(68px+env(safe-area-inset-bottom))] left-2 right-2 z-[115] mx-auto flex w-auto max-w-2xl flex-row flex-nowrap items-center gap-0.5 rounded-2xl border border-white/10 bg-black/50 p-1 shadow-[0_8px_30px_rgba(0,0,0,.5)] backdrop-blur-xl sm:gap-1.5 sm:p-1.5">
+                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={1} placeholder="Say something…" aria-label="Say something" className="h-9 min-h-0 min-w-0 flex-1 basis-0 rounded-lg border border-white/20 bg-black/55 px-2 py-1.5 text-[11px] leading-4 text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300 sm:h-11 sm:rounded-xl sm:text-xs"/>
+                <button type="submit" disabled={!draft.trim() || chatSending} className="h-9 shrink-0 rounded-lg bg-fuchsia-600 px-2 text-[11px] font-black disabled:opacity-40 sm:h-11 sm:rounded-xl sm:px-2.5 sm:text-xs">{chatSending ? "…" : "Send"}</button>
+                <div className="relative z-[130] flex shrink-0 items-center gap-0.5 sm:gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
                   {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
                   {(selected.host_id === userId || liveCameraControl?.canPublish) && (
@@ -306,7 +306,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                       aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
                       aria-pressed={Boolean(liveCameraControl?.enabled)}
                       title={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
-                      className={"grid h-11 w-11 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 " + (liveCameraControl?.enabled ? "border-fuchsia-200 bg-fuchsia-600 shadow-fuchsia-950/40" : "border-fuchsia-300/35 bg-[#21152e] hover:bg-fuchsia-600/30")}
+                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.enabled ? "border-fuchsia-200 bg-fuchsia-600 shadow-fuchsia-950/40" : "border-fuchsia-300/35 bg-[#21152e] hover:bg-fuchsia-600/30")}
                     >
                       <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>
