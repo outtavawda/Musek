@@ -268,7 +268,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
         {selected && <section className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
           <div className="absolute inset-0">
             <LiveVideoRoom roomId={selected.id} displayName={displayName} onCameraControl={handleLiveCameraControl}/>
-            <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>
+            {selected.host_id === userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/90"/>
           </div>
 
