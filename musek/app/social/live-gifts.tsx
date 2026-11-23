@@ -466,6 +466,8 @@ export default function LiveGifts({
         @keyframes gift-fade { 0% { opacity: 0; } 10%,82% { opacity: 1; } 100% { opacity: 0; } }
         @media (max-width: 640px) { .musek-gift-content { max-width: calc(100vw - 32px); padding: 18px 20px; } .musek-gift-small .musek-gift-content { max-width: calc(100vw - 28px); } }
         @media (prefers-reduced-motion: reduce) { .musek-gift-overlay, .musek-gift-overlay * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+        .musek-gift-overlay.musek-gift-premium .musek-gift-content,.musek-gift-overlay.musek-gift-legendary .musek-gift-content { width:100vw; height:100dvh; max-width:none; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; animation:none; }
+        .musek-gift-overlay.musek-gift-premium .musek-gift-flight,.musek-gift-overlay.musek-gift-legendary .musek-gift-flight { animation:none; width:100vw; height:100dvh; }
       `}</style>
       <button ref={shopTriggerRef} type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-2xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105">
         🎁
