@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import GiftArtwork from "./gift-artwork";
 const RealGift3D = dynamic(() => import("./real-gift-3d"), { ssr: false, loading: () => <div className="h-[240px] w-full animate-pulse rounded-xl bg-gradient-to-br from-indigo-950 via-purple-950 to-black" aria-label="Loading 3D gift" /> });
@@ -299,7 +300,7 @@ export default function LiveGifts({
 
   return (
     <section className="relative w-full">
-      {activeGift && (() => {
+      {activeGift && typeof document !== "undefined" && createPortal((() => {
         const details = giftForCoins(Number(activeGift.coins));
         const tier = Number(activeGift.coins) >= 60000 ? "legendary" : Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 2500 ? "medium" : "small";
         return (
@@ -332,9 +333,9 @@ export default function LiveGifts({
             </div>
           </div>
         );
-      })()}
+      })(), document.body)}
       <style jsx>{`
-        .musek-gift-overlay { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; background: transparent; }
+        .musek-gift-overlay { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; background: transparent; }
         .musek-cosmic-reveal { position:relative; width:min(82vw,437px); height:clamp(240px,58vw,390px); overflow:hidden; display:flex; align-items:center; justify-content:center; isolation:isolate; background:radial-gradient(ellipse at 50% 55%,#172c89 0%,#111044 38%,#05051d 72%,#02020d 100%); border-radius:18px; box-shadow:0 0 55px rgba(99,102,241,.45); }
         .musek-cosmic-nebula { position:absolute; inset:-35%; background:radial-gradient(ellipse at 28% 42%,rgba(0,140,255,.7),transparent 28%),radial-gradient(ellipse at 70% 30%,rgba(168,85,247,.65),transparent 30%),radial-gradient(ellipse at 52% 70%,rgba(14,165,233,.48),transparent 32%); filter:blur(16px); animation:cosmic-nebula 16s linear infinite; }
         .musek-cosmic-stars { position:absolute; inset:0; }
