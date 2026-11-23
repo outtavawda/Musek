@@ -319,7 +319,7 @@ export default function LiveGifts({
         );
       })()}
       <style jsx>{`
-        .musek-gift-overlay { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; }
+        .musek-gift-overlay { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; background: transparent; }
         .musek-cosmic-reveal { position:relative; width:min(82vw,437px); height:clamp(240px,58vw,390px); overflow:hidden; display:flex; align-items:center; justify-content:center; isolation:isolate; background:radial-gradient(ellipse at 50% 55%,#172c89 0%,#111044 38%,#05051d 72%,#02020d 100%); border-radius:18px; box-shadow:0 0 55px rgba(99,102,241,.45); }
         .musek-cosmic-nebula { position:absolute; inset:-35%; background:radial-gradient(ellipse at 28% 42%,rgba(0,140,255,.7),transparent 28%),radial-gradient(ellipse at 70% 30%,rgba(168,85,247,.65),transparent 30%),radial-gradient(ellipse at 52% 70%,rgba(14,165,233,.48),transparent 32%); filter:blur(16px); animation:cosmic-nebula 16s linear infinite; }
         .musek-cosmic-stars { position:absolute; inset:0; }
@@ -344,7 +344,7 @@ export default function LiveGifts({
         .musek-cosmic-caption b { color:#fde047; } .musek-cosmic-sender { display:grid; width:27px; height:27px; flex:0 0 27px; place-items:center; border-radius:50%; background:linear-gradient(135deg,#c084fc,#2563eb); font-weight:900; }
         @keyframes cosmic-orbit { from { transform:translate(-50%,-50%) rotate(-9deg); } to { transform:translate(-50%,-50%) rotate(351deg); } }
         @keyframes cosmic-gift-float { 0%,100% { transform:translateY(0) rotateY(-7deg); } 50% { transform:translateY(-12px) rotateY(7deg); } }
-        .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 34px; border: 1px solid rgba(216,180,254,.55); border-radius: 28px; background: linear-gradient(145deg,rgba(36,20,60,.97),rgba(9,7,20,.96)); box-shadow: 0 0 45px rgba(168,85,247,.45), inset 0 1px rgba(255,255,255,.18); backdrop-filter: blur(16px); }
+        .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 22px; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
         .musek-gift-art { position: relative; display: grid; width: clamp(150px, 24vw, 250px); aspect-ratio: 1; place-items: center; perspective: 900px; transform-style: preserve-3d; }
         .musek-gift-art-aura { position: absolute; inset: 12%; border-radius: 50%; background: radial-gradient(circle,rgba(192,132,252,.42),rgba(124,58,237,.12) 48%,transparent 72%); transform: translateZ(-35px); }
         .musek-gift-art-svg { position: relative; z-index: 1; width: 100%; height: 100%; overflow: visible; transform-style: preserve-3d; filter: drop-shadow(0 18px 14px rgba(0,0,0,.4)); animation: gift-object-turn 5s ease-in-out infinite; }
@@ -445,8 +445,8 @@ export default function LiveGifts({
         @media (max-width: 640px) { .musek-gift-content { max-width: calc(100vw - 32px); padding: 18px 20px; } .musek-gift-small { right: 10px; bottom: 12px; } }
         @media (prefers-reduced-motion: reduce) { .musek-gift-overlay, .musek-gift-overlay * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
       `}</style>
-      <button type="button" onClick={() => setShopOpen((open) => !open)} aria-expanded={shopOpen} className="ml-auto flex items-center gap-2 rounded-full border border-fuchsia-300/35 bg-gradient-to-r from-fuchsia-600 to-violet-600 px-4 py-3 text-xs font-black text-white shadow-[0_0_24px_rgba(168,85,247,.35)]">
-        <span className="text-lg">🎁</span>{shopOpen ? "Close gifts" : "Gift Store"}<span className="rounded-full bg-black/20 px-2 py-1 text-[9px]">40 GIFTS</span>
+      <button type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-2xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105">
+        🎁
       </button>
       {shopOpen && <div className="absolute bottom-full right-0 z-[120] mb-3 max-h-[72dvh] w-[min(92vw,430px)] overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-4 shadow-[0_20px_80px_rgba(0,0,0,.75)] backdrop-blur-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
