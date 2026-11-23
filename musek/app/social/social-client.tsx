@@ -18,7 +18,7 @@ type Room = {
   created_at: string;
   avatar_url?: string | null;
 };
-type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string };
+type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string; avatar_url?: string | null };
 
 export default function SocialClient({ userId, displayName, accountType, avatarUrl }: { userId: string; displayName: string; accountType: string; avatarUrl: string | null }) {
   const supabase = createClient();
@@ -73,14 +73,26 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     supabase.from("social_live_messages")
       .select("id,room_id,user_id,display_name,message,created_at")
       .eq("room_id", selected.id).order("created_at", { ascending: true }).limit(100)
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (!active) return;
-        if (error) setNotice("Chat is not ready. Check that the MUSEK Social migration has been applied.");
-        else setMessages((data || []) as Message[]);
+        if (error) { setNotice("Chat is not ready. Check that the MUSEK Social migration has been applied."); return; }
+        const rows = (data || []) as Message[];
+        const senderIds = Array.from(new Set(rows.map((message) => message.user_id)));
+        const { data: profiles } = senderIds.length
+          ? await supabase.from("user_profiles").select("id,avatar_url").in("id", senderIds)
+          : { data: [] as { id: string; avatar_url: string | null }[] };
+        if (!active) return;
+        const avatarByUser = new Map((profiles || []).map((profile) => [profile.id, profile.avatar_url]));
+        setMessages(rows.map((message) => ({ ...message, avatar_url: avatarByUser.get(message.user_id) || null })));
       });
     const channel = supabase.channel("musek-social-chat-" + selected.id)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "social_live_messages", filter: "room_id=eq." + selected.id },
-        (payload) => setMessages((current) => current.some((m) => m.id === (payload.new as Message).id) ? current : [...current, payload.new as Message]))
+        async (payload) => {
+          const incoming = payload.new as Message;
+          const { data: profile } = await supabase.from("user_profiles").select("avatar_url").eq("id", incoming.user_id).maybeSingle();
+          const enriched = { ...incoming, avatar_url: profile?.avatar_url || null };
+          setMessages((current) => current.some((message) => message.id === enriched.id) ? current : [...current, enriched]);
+        })
       .subscribe((status) => {
         if (!active) return;
         if (status === "SUBSCRIBED") setChatConnection("connected");
@@ -147,7 +159,9 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     }
     setDraft((current) => current === message ? "" : current);
     if (data && selected?.id === roomId) {
-      setMessages((current) => current.some((item) => item.id === data.id) ? current : [...current, data as Message]);
+      const { data: profile } = await supabase.from("user_profiles").select("avatar_url").eq("id", userId).maybeSingle();
+      const enriched = { ...(data as Message), avatar_url: profile?.avatar_url || avatarUrl };
+      setMessages((current) => current.some((item) => item.id === data.id) ? current : [...current, enriched]);
     }
   };
 
@@ -247,7 +261,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
             <div className="min-w-0 flex-1">
               <div className="mb-3 max-h-[31dvh] space-y-2 overflow-y-auto pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_12%)]">
-                {messages.slice(-8).map((message) => <div key={message.id} className="w-fit max-w-full rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-xs shadow-lg backdrop-blur-md"><span className={message.user_id === selected.host_id ? "font-black text-fuchsia-200" : "font-bold text-white/80"}>{message.display_name} </span><span className="break-words text-white">{message.message}</span></div>)}
+                {messages.slice(-8).map((message) => <div key={message.id} className="flex w-fit max-w-full items-start gap-2 rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-xs shadow-lg backdrop-blur-md"><span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full border border-white/15 bg-fuchsia-500/20 text-[10px] font-black text-white">{message.avatar_url ? <img src={message.avatar_url} alt="" className="h-full w-full object-cover"/> : message.display_name.slice(0, 1).toUpperCase()}</span><span className="min-w-0 break-words"><span className={message.user_id === selected.host_id ? "font-black text-fuchsia-200" : "font-bold text-white/80"}>{message.display_name} </span><span className="text-white">{message.message}</span></span></div>)}
                 <div ref={bottomRef}/>
               </div>
               <div className="mb-3 rounded-2xl border border-white/10 bg-black/35 p-3 backdrop-blur-xl">
