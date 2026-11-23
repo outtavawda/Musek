@@ -448,12 +448,12 @@ export default function LiveGifts({
       <button type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-2xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105">
         🎁
       </button>
-      {shopOpen && <div className="absolute bottom-full right-0 z-[120] mb-3 max-h-[72dvh] w-[min(92vw,430px)] overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-4 shadow-[0_20px_80px_rgba(0,0,0,.75)] backdrop-blur-2xl">
+      {shopOpen && <div className="fixed left-1/2 top-1/2 z-[120] max-h-[56dvh] w-[min(420px,calc(100vw-20px))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black tracking-[.2em] text-purple-300">SUPPORT THE ARTIST</p>
           <h3 className="mt-1 text-lg font-black">MUSEK Gift Shop 🎁</h3>
-          <p className="mt-1 text-xs text-gray-400">40 gifts · 100 coins = CAD $1 · Artist receives 70%</p>
+          <p className="mt-1 text-[10px] text-gray-400">40 gifts · 100 coins = CAD $1 · Artist receives 70%</p>
         </div>
         {accountType === "fan" && creatorId !== "" && (
           <div className="rounded-lg border border-purple-300/20 bg-purple-500/10 px-3 py-2 text-right">
@@ -465,21 +465,21 @@ export default function LiveGifts({
       </div>
 
       <>
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1.5">
             {CATEGORIES.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setCategory(item)}
                 className={category === item
-                  ? "shrink-0 rounded-full bg-purple-600 px-3 py-2 text-xs font-bold text-white"
-                  : "shrink-0 rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-gray-300 hover:border-purple-400/50"}
+                  ? "shrink-0 rounded-full bg-purple-600 px-2.5 py-1.5 text-[10px] font-bold text-white"
+                  : "shrink-0 rounded-full border border-white/10 px-2.5 py-1.5 text-[10px] font-semibold text-gray-300 hover:border-purple-400/50"}
               >
                 {item}
               </button>
             ))}
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-1.5 grid grid-cols-3 gap-1.5 sm:grid-cols-4">
             {visibleGifts.map((gift) => (
               <button
                 key={gift.coins}
@@ -488,12 +488,12 @@ export default function LiveGifts({
                 onClick={() => setSelectedCoins(gift.coins)}
                 aria-pressed={selectedCoins === gift.coins}
                 className={selectedCoins === gift.coins
-                  ? "rounded-xl border border-purple-300 bg-purple-500/20 p-3 text-left ring-1 ring-purple-300/40"
-                  : "rounded-xl border border-white/10 bg-black/20 p-3 text-left hover:border-purple-400/50"}
+                  ? "min-w-0 rounded-lg border border-purple-300 bg-purple-500/20 p-1.5 text-left ring-1 ring-purple-300/40"
+                  : "min-w-0 rounded-lg border border-white/10 bg-black/20 p-1.5 text-left hover:border-purple-400/50"}
               >
                 <GiftArtwork category={gift.category} name={gift.name} emoji={gift.emoji} tier="catalog" />
-                <span className="mt-2 block text-xs font-bold">{gift.name}</span>
-                <span className="mt-1 block text-[11px] text-gray-400">{formatCoins(gift.coins)} coins</span>
+                <span className="mt-1 block truncate text-[10px] font-bold leading-tight">{gift.name}</span>
+                <span className="mt-0.5 block text-[9px] leading-tight text-gray-400">{formatCoins(gift.coins)} coins</span>
               </button>
             ))}
           </div>
@@ -502,14 +502,14 @@ export default function LiveGifts({
               type="button"
               onClick={sendGift}
               disabled={sending || !selectedGift}
-              className="mt-4 w-full rounded-xl bg-purple-600 px-4 py-3 text-sm font-bold hover:bg-purple-500 disabled:opacity-50"
+              className="mt-2.5 w-full rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold hover:bg-purple-500 disabled:opacity-50"
             >
               {sending ? "Sending gift…" : "Send " + (selectedGift?.name || "gift")}
             </button>
           )}
       </>
 
-      <div className="mt-4 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-3">
+      <div className="mt-2.5 rounded-xl border border-dashed border-purple-300/25 bg-purple-500/[0.06] p-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-[10px] font-black tracking-[.18em] text-purple-200">GIFT EFFECTS STUDIO · NO COINS SPENT</p><button type="button" onClick={toggleSound} className={soundEnabled ? "rounded-full border border-purple-300/40 bg-purple-500/20 px-3 py-1.5 text-[10px] font-bold text-purple-100" : "rounded-full border border-white/10 px-3 py-1.5 text-[10px] font-bold text-gray-400"}>{soundEnabled ? "♫ Sound on" : "♫ Sound off"}</button></div>
         <p className="mt-1 text-xs text-gray-400">Preview each gift effect without sending a real gift.</p>
         <div className="mt-3 flex flex-wrap gap-2">

@@ -136,7 +136,7 @@ export default function GiftArtwork({ category, name, emoji, tier }: GiftArtwork
         .musek-gift-art-svg { position:relative; z-index:1; width:100%; height:100%; overflow:visible; transform-style:preserve-3d; filter:drop-shadow(0 18px 14px rgba(0,0,0,.4)); animation:gift-object-turn 5s ease-in-out infinite; }
         .musek-gift-art-svg .gift-object { transform-origin:110px 110px; animation:gift-object-float 2.6s ease-in-out infinite; }
         .musek-gift-art-fallback { position:absolute; left:50%; top:50%; z-index:2; display:grid; width:46%; aspect-ratio:1; place-items:center; transform:translate(-50%,-50%); font-size:clamp(38px,8vw,76px); line-height:1; filter:drop-shadow(0 5px 10px rgba(0,0,0,.65)); animation:gift-emoji-float 2.2s ease-in-out infinite; }
-        .musek-gift-art-catalog { width:100%; max-width:104px; flex:0 0 auto; margin-inline:auto; }
+        .musek-gift-art-catalog { width:100%; max-width:76px; flex:0 0 auto; margin-inline:auto; }
         .musek-gift-art-catalog .musek-gift-art-svg { animation-duration:4s; }
         .musek-gift-art-catalog .musek-gift-art-fallback { width:42%; font-size:clamp(25px,4vw,42px); }
         .musek-gift-art-small { width:58px; flex:0 0 58px; }
