@@ -473,9 +473,9 @@ export default function LiveGifts({
       <button ref={shopTriggerRef} type="button" onClick={() => setShopOpen((open) => !open)} aria-label={shopOpen ? "Close gift store" : "Open gift store"} title={shopOpen ? "Close gifts" : "Gift Store"} aria-expanded={shopOpen} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-fuchsia-300/45 bg-gradient-to-br from-fuchsia-500 to-violet-700 text-2xl text-white shadow-[0_0_22px_rgba(168,85,247,.4)] transition hover:scale-105">
         🎁
       </button>
-      {shopOpen && <>
+      {shopOpen && typeof document !== "undefined" && createPortal(<>
       <button type="button" aria-label="Close gift gallery" onClick={() => setShopOpen(false)} className="fixed inset-0 z-[110] cursor-default bg-black/40 backdrop-blur-[2px]" />
-      <div ref={shopPanelRef} onClick={(event) => event.stopPropagation()} className="fixed left-1/2 bottom-[calc(126px+env(safe-area-inset-bottom))] z-[120] max-h-[42dvh] w-[min(520px,calc(100vw-32px))] -translate-x-1/2 overflow-y-auto overscroll-y-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl sm:bottom-[126px] sm:max-h-[48dvh]">
+      <div ref={shopPanelRef} onClick={(event) => event.stopPropagation()} className="fixed left-1/2 bottom-[calc(126px+env(safe-area-inset-bottom))] z-[2147482000] max-h-[42dvh] w-[min(520px,calc(100vw-32px))] -translate-x-1/2 overflow-x-hidden overflow-y-auto overscroll-y-contain rounded-2xl border border-fuchsia-300/25 bg-[#100c1c]/[.98] p-3 shadow-[0_20px_80px_rgba(0,0,0,.8)] backdrop-blur-2xl sm:bottom-[126px] sm:max-h-[48dvh]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black tracking-[.2em] text-purple-300">SUPPORT THE ARTIST</p>
@@ -587,7 +587,7 @@ export default function LiveGifts({
         )}
       </div>
       </div>
-      </>}
+      </>, document.body)}
     </section>
   );
 }
