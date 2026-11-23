@@ -68,10 +68,12 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
     {notice && <p role="status" className="mt-1 rounded-lg bg-black/80 px-2 py-1 text-[10px] text-fuchsia-100">{notice}</p>}
   </div>;
 
+  const accepted = myRequest?.status === "accepted";
+  const pending = myRequest?.status === "pending";
   return <div className="relative">
-    {myRequest?.status === "accepted" ? null : <button type="button" disabled={busy || myRequest?.status === "pending"} onClick={requestToJoin} aria-label="Request to join live as a guest" title="Request to join" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-fuchsia-300/40 bg-[#21152e] text-base text-fuchsia-100 shadow-[0_0_16px_rgba(168,85,247,.18)] transition hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:w-11 sm:text-lg">
-      {busy ? "…" : myRequest?.status === "pending" ? "⌛" : <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>}
-    </button>}
+    <button type="button" disabled={busy || pending || accepted} onClick={requestToJoin} aria-label={accepted ? "Guest request approved" : pending ? "Guest request pending" : "Request to join live as a guest"} title={accepted ? "Request approved" : pending ? "Request pending" : "Request to join"} className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-base shadow-[0_0_16px_rgba(168,85,247,.18)] transition sm:h-11 sm:w-11 sm:text-lg " + (accepted ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-200" : "border-fuchsia-300/40 bg-[#21152e] text-fuchsia-100 hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60")}>
+      {busy ? "…" : accepted ? <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg> : pending ? "⌛" : <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>}
+    </button>
     {notice && <span role="status" className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-fuchsia-300/20 bg-[#140d20] p-2 text-[10px] text-fuchsia-100 shadow-xl">{notice}</span>}
   </div>;
 }
