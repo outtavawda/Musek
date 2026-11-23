@@ -75,6 +75,11 @@ function formatCoins(coins: number) {
   return coins.toLocaleString("en-CA");
 }
 
+function giftImagePath(name: string) {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return `/gifts/${slug}.webp`;
+}
+
 export default function LiveGifts({
   roomId,
   creatorId,
@@ -498,7 +503,14 @@ export default function LiveGifts({
                   ? "min-w-0 rounded-lg border border-purple-300 bg-purple-500/20 p-1.5 text-left ring-1 ring-purple-300/40"
                   : "min-w-0 rounded-lg border border-white/10 bg-black/20 p-1.5 text-left hover:border-purple-400/50"}
               >
-                <GiftArtwork category={gift.category} name={gift.name} emoji={gift.emoji} tier="catalog" />
+                <img
+                  src={giftImagePath(gift.name)}
+                  alt={gift.name}
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                  className="mx-auto aspect-square w-full max-w-[112px] object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.45)]"
+                />
                 <span className="mt-1 block truncate text-[10px] font-bold leading-tight">{gift.name}</span>
                 <span className="mt-0.5 block text-[9px] leading-tight text-gray-400">{formatCoins(gift.coins)} coins</span>
               </button>
