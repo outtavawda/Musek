@@ -7,7 +7,7 @@ import * as THREE from "three";
 
 function GiftModel({ giftName }: { giftName: string }) {
   const group = useRef<THREE.Group>(null);
-  const orbit = useRef<THREE.Group>(null);
+  const orbit = useRef<THREE.Mesh>(null);
   useFrame((state, delta) => {
     if (group.current) {
       group.current.rotation.y += delta * 0.42;
