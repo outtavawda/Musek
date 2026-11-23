@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 type JoinRequest = { id: string; room_id: string; requester_id: string; status: "pending" | "accepted" | "declined"; created_at: string };
@@ -14,6 +14,7 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
   const [myRequest, setMyRequest] = useState<JoinRequest | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const approvedRequestId = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (isHost) {
@@ -26,10 +27,16 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
         setProfiles(Object.fromEntries((people || []).map((person) => [person.id, person as RequesterProfile])));
       } else setProfiles({});
     } else {
-      const { data } = await supabase.from("social_live_join_requests").select("id,room_id,requester_id,status,created_at").eq("room_id", roomId).eq("requester_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
-      setMyRequest(data as JoinRequest | null);
+      const { data, error } = await supabase.from("social_live_join_requests").select("id,room_id,requester_id,status,created_at").eq("room_id", roomId).eq("requester_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (error) { setNotice("Could not load your stage request. Please refresh and try again."); return; }
+      const request = data as JoinRequest | null;
+      setMyRequest(request);
+      if (request?.status === "accepted" && approvedRequestId.current !== request.id) {
+        approvedRequestId.current = request.id;
+        onApproved?.();
+      }
     }
-  }, [isHost, roomId, supabase, userId]);
+  }, [isHost, roomId, supabase, userId, onApproved]);
 
   useEffect(() => {
     load();
@@ -60,10 +67,10 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
 
   const respond = async (request: JoinRequest, accepted: boolean) => {
     setBusy(true); setNotice("");
-    const { error } = await supabase.from("social_live_join_requests").update({ status: accepted ? "accepted" : "declined", responded_at: new Date().toISOString() }).eq("id", request.id).eq("status", "pending");
+    const { data, error } = await supabase.from("social_live_join_requests").update({ status: accepted ? "accepted" : "declined", responded_at: new Date().toISOString() }).eq("id", request.id).eq("status", "pending").select("id,status").maybeSingle();
     setBusy(false);
-    if (error) setNotice("Could not update that request. Please try again.");
-    else { setRequests((current) => current.filter((item) => item.id !== request.id)); setNotice(accepted ? "Guest approved. Their video permission will be available when they reconnect to the room." : "Request declined."); }
+    if (error || !data) setNotice(error ? "Could not approve this guest: " + error.message : "This request is no longer pending. Refresh the request list.");
+    else { setRequests((current) => current.filter((item) => item.id !== request.id)); setNotice(accepted ? "Guest approved. They can now turn on their camera." : "Request declined."); }
   };
 
   if (isHost) return <div className="absolute right-3 top-[calc(68px+env(safe-area-inset-top))] z-[125] max-w-[min(290px,calc(100vw-24px))]">
