@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 type JoinRequest = { id: string; room_id: string; requester_id: string; status: "pending" | "accepted" | "declined"; created_at: string };
 type RequesterProfile = { id: string; display_name: string | null; artist_name: string | null; avatar_url: string | null };
 
-export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApproved }: { roomId: string; hostId: string; userId: string; onApproved?: () => void }) {
+export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApproved, isOnStage = false, onLeaveStage }: { roomId: string; hostId: string; userId: string; onApproved?: () => void; isOnStage?: boolean; onLeaveStage?: () => Promise<void> }) {
   const supabase = createClient();
   const isHost = hostId === userId;
   const [requests, setRequests] = useState<JoinRequest[]>([]);
@@ -70,9 +70,20 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
 
   const accepted = myRequest?.status === "accepted";
   const pending = myRequest?.status === "pending";
+  const leaveStage = async () => {
+    if (!onLeaveStage || busy) return;
+    setBusy(true); setNotice("");
+    try {
+      await onLeaveStage();
+    } catch {
+      setNotice("Could not leave the stage. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
   return <div className="relative">
-    <button type="button" disabled={busy || pending || accepted} onClick={requestToJoin} aria-label={accepted ? "Guest request approved" : pending ? "Guest request pending" : "Request to join live as a guest"} title={accepted ? "Request approved" : pending ? "Request pending" : "Request to join"} className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-base shadow-[0_0_16px_rgba(168,85,247,.18)] transition sm:h-11 sm:w-11 sm:text-lg " + (accepted ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-200" : "border-fuchsia-300/40 bg-[#21152e] text-fuchsia-100 hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60")}>
-      {busy ? "…" : accepted ? <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg> : pending ? "⌛" : <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>}
+    <button type="button" disabled={busy || (isOnStage ? !onLeaveStage : pending || accepted)} onClick={isOnStage ? leaveStage : requestToJoin} aria-label={isOnStage ? "Return to live chat" : accepted ? "Guest request approved" : pending ? "Guest request pending" : "Request to join live as a guest"} title={isOnStage ? "Return to live chat" : accepted ? "Request approved" : pending ? "Request pending" : "Request to join"} className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-base shadow-[0_0_16px_rgba(168,85,247,.18)] transition sm:h-11 sm:w-11 sm:text-lg " + (isOnStage ? "border-rose-300/40 bg-rose-500/20 text-rose-100 hover:bg-rose-500/35" : accepted ? "border-emerald-300/40 bg-emerald-500/15 text-emerald-200" : "border-fuchsia-300/40 bg-[#21152e] text-fuchsia-100 hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60")}>
+      {busy ? "…" : isOnStage ? <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg> : accepted ? <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg> : pending ? "⌛" : <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6m3-3h-6"/></svg>}
     </button>
     {notice && <span role="status" className="absolute bottom-full left-0 mb-2 w-48 rounded-lg border border-fuchsia-300/20 bg-[#140d20] p-2 text-[10px] text-fuchsia-100 shadow-xl">{notice}</span>}
   </div>;
