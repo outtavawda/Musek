@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { LiveKitRoom, VideoConference, useLocalParticipant } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, VideoTrack, useLocalParticipant, useTracks } from "@livekit/components-react";
+import { Track } from "livekit-client";
 import "@livekit/components-styles";
 
 export type LiveCameraControl = {
@@ -28,9 +29,59 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   return null;
 }
 
-export default function LiveVideoRoom({ roomId, displayName, onCameraControl }: {
+function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string }) {
+  // Render only published camera tracks. Audience members remain in chat and
+  // never receive a stage tile merely because they joined the room.
+  const cameraTracks = useTracks([Track.Source.Camera]);
+  const hostTrack = cameraTracks.find((track) => track.participant.identity === hostId);
+  const guestTracks = cameraTracks
+    .filter((track) => track.participant.identity !== hostId)
+    .sort((a, b) => a.participant.name.localeCompare(b.participant.name));
+
+  return (
+    <div className="absolute inset-0 overflow-y-auto bg-[#05040a] px-3 pb-40 pt-24 sm:px-5 sm:pb-32">
+      <div className={guestTracks.length ? "mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-stretch" : "mx-auto max-w-5xl"}>
+        <section className={guestTracks.length ? "w-full sm:w-[62%] sm:shrink-0" : "w-full"}>
+          <div className="relative aspect-video overflow-hidden rounded-2xl border border-fuchsia-300/25 bg-[#171321] shadow-2xl shadow-black/40">
+            {hostTrack ? (
+              <VideoTrack trackRef={hostTrack} className="h-full w-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#352044] to-[#11101a]">
+                <div className="text-center">
+                  <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/20 bg-white/10 text-3xl font-black">{hostName.slice(0, 1).toUpperCase()}</div>
+                  <p className="mt-3 text-sm font-bold">{hostName}</p>
+                  <p className="mt-1 text-xs text-white/55">Host · camera off</p>
+                </div>
+              </div>
+            )}
+            <div className="pointer-events-none absolute bottom-3 left-3 rounded-full border border-white/15 bg-black/55 px-3 py-1.5 text-xs font-bold backdrop-blur">{hostName} · HOST</div>
+          </div>
+        </section>
+
+        {guestTracks.length > 0 && (
+          <section aria-label="Approved guests on stage" className="grid min-w-0 flex-1 grid-cols-2 content-start gap-2 sm:grid-cols-1 lg:grid-cols-2">
+            {guestTracks.map((track) => (
+              <div key={track.participant.identity} className="relative aspect-video min-w-0 overflow-hidden rounded-xl border border-white/15 bg-[#171321]">
+                <VideoTrack trackRef={track} className="h-full w-full object-cover" />
+                <div className="pointer-events-none absolute bottom-2 left-2 max-w-[85%] truncate rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-[10px] font-bold backdrop-blur">{track.participant.name || "Guest"}</div>
+              </div>
+            ))}
+          </section>
+        )}
+      </div>
+
+      <div className="mx-auto mt-3 max-w-6xl text-center text-[10px] text-white/45">
+        {guestTracks.length === 0 ? "The host is live. Approved guests will appear here when they turn on their cameras." : guestTracks.length + " guest" + (guestTracks.length === 1 ? "" : "s") + " on stage"}
+      </div>
+    </div>
+  );
+}
+
+export default function LiveVideoRoom({ roomId, hostId, displayName, hostName, onCameraControl }: {
   roomId: string;
+  hostId: string;
   displayName: string;
+  hostName: string;
   onCameraControl?: (control: LiveCameraControl | null) => void;
 }) {
   const [token, setToken] = useState("");
@@ -76,16 +127,11 @@ export default function LiveVideoRoom({ roomId, displayName, onCameraControl }: 
 
   return (
     <div className="h-full min-h-[100dvh] w-full overflow-hidden bg-black">
-      <div className="absolute left-0 top-0 z-10 hidden items-center justify-between border-b border-white/10 px-4 py-3">
-        <div><p className="text-sm font-bold">Live video</p><p className="text-xs text-gray-400">You are joining as {displayName}</p></div>
-        <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Connected room</span>
-      </div>
-      <div data-lk-theme="default" className="h-full min-h-[100dvh] w-full">
-        <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={false} onError={handleError}>
-          <CameraControlBridge canPublish={canPublish} onCameraControl={onCameraControl}/>
-          <VideoConference />
-        </LiveKitRoom>
-      </div>
+      <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={false} onError={handleError}>
+        <CameraControlBridge canPublish={canPublish} onCameraControl={onCameraControl} />
+        <RoomAudioRenderer />
+        <HostFirstStage hostId={hostId} hostName={hostName} />
+      </LiveKitRoom>
     </div>
   );
 }
