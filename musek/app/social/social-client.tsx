@@ -293,6 +293,8 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <p className="mt-1 line-clamp-2 text-[11px] text-white/75">{selected.description || "Join the conversation and show this creator some love."}</p>
               </div>
               <form onSubmit={sendMessage} className="fixed bottom-[calc(68px+env(safe-area-inset-bottom))] left-2 right-2 z-[115] mx-auto flex w-auto max-w-2xl flex-row flex-nowrap items-center gap-1 rounded-2xl border border-white/10 bg-black/45 p-1.5 shadow-[0_8px_30px_rgba(0,0,0,.5)] backdrop-blur-xl">
+                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={1} placeholder="Say something…" aria-label="Say something" className="h-11 min-h-0 min-w-0 flex-1 rounded-xl border border-white/20 bg-black/55 px-2 py-2 text-xs leading-4 text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
+                <button type="submit" disabled={!draft.trim() || chatSending} className="h-11 shrink-0 rounded-xl bg-fuchsia-600 px-2.5 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
                 <div className="relative z-[130] flex shrink-0 items-center gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
                   {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
@@ -313,8 +315,6 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                     </button>
                   )}
                 </div>
-                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={1} placeholder="Say something…" aria-label="Say something" className="h-11 min-h-0 min-w-0 flex-1 resize-none rounded-xl border border-white/20 bg-black/55 px-2 py-2 text-xs leading-4 text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
-                <button type="submit" disabled={!draft.trim() || chatSending} className="h-11 shrink-0 rounded-xl bg-fuchsia-600 px-2.5 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
               </form>
             </div>
             <div className="flex shrink-0 flex-col items-center gap-4 pb-14 text-center">
