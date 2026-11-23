@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       canPublishData: true,
     });
 
-    return NextResponse.json({ token: await token.toJwt(), serverUrl: livekitUrl });
+    return NextResponse.json({ token: await token.toJwt(), serverUrl: livekitUrl, canPublish });
   } catch (error) {
     console.error("MUSEK live video token error:", error);
     return NextResponse.json({ error: "Could not prepare your live video connection." }, { status: 500 });
