@@ -19,7 +19,7 @@ type Room = {
   avatar_url?: string | null;
 };
 type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string; avatar_url?: string | null };
-type ChatProfile = { id: string; display_name: string | null; artist_name: string | null; account_type: string | null; avatar_url: string | null; bio: string | null; location: string | null; is_public: boolean | null };
+type ChatProfile = { id: string; display_name: string | null; artist_name: string | null; account_type: string | null; avatar_url: string | null; bio: string | null; location: string | null; genres: string[] | null; website_url: string | null; is_public: boolean | null };
 
 export default function SocialClient({ userId, displayName, accountType, avatarUrl }: { userId: string; displayName: string; accountType: string; avatarUrl: string | null }) {
   const supabase = createClient();
@@ -185,7 +185,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     setViewingProfile(null);
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("id,display_name,artist_name,account_type,avatar_url,bio,location,is_public")
+      .select("id,display_name,artist_name,account_type,avatar_url,bio,location,genres,website_url,is_public")
       .eq("id", profileId)
       .maybeSingle();
     setProfileLoading(false);
@@ -309,8 +309,10 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             {profileLoading ? <p className="py-8 text-center text-sm text-gray-300">Loading profile…</p> : viewingProfile && <>
               <div className="flex items-start justify-between"><div className="flex items-center gap-3">{viewingProfile.avatar_url ? <img src={viewingProfile.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover"/> : <span className="grid h-14 w-14 place-items-center rounded-full bg-fuchsia-500/20 text-xl font-black">{(viewingProfile.artist_name || viewingProfile.display_name || "M").slice(0,1).toUpperCase()}</span>}<div><p className="text-base font-black">{viewingProfile.artist_name || viewingProfile.display_name || "MUSEK Member"}</p><p className="mt-1 text-[10px] uppercase tracking-widest text-fuchsia-200">{viewingProfile.account_type || "member"}</p></div></div><button type="button" onClick={() => setViewingProfile(null)} aria-label="Close profile" className="grid h-8 w-8 place-items-center rounded-full border border-white/10 text-gray-300">✕</button></div>
               {viewingProfile.location && <p className="mt-4 text-xs text-gray-400">{viewingProfile.location}</p>}
-              {viewingProfile.bio && <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-200">{viewingProfile.bio}</p>}
-              <Link href={"/profile/" + viewingProfile.id} onClick={() => setViewingProfile(null)} className="mt-5 block rounded-xl bg-fuchsia-600 px-4 py-3 text-center text-sm font-black text-white hover:bg-fuchsia-500">View full profile</Link>
+              {viewingProfile.genres && viewingProfile.genres.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{viewingProfile.genres.map((genre) => <span key={genre} className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-[10px] font-semibold text-fuchsia-100">{genre}</span>)}</div>}
+              {viewingProfile.bio && <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-gray-200">{viewingProfile.bio}</p>}
+              {viewingProfile.website_url && <a href={viewingProfile.website_url} target="_blank" rel="noreferrer" className="mt-4 block break-all text-xs text-fuchsia-200 underline">Visit website</a>}
+              <button type="button" onClick={() => setViewingProfile(null)} className="mt-5 w-full rounded-xl bg-fuchsia-600 px-4 py-3 text-center text-sm font-black text-white hover:bg-fuchsia-500">Back to live chat</button>
             </>}
           </section>
         </div>}
