@@ -40,8 +40,8 @@ function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string
 
   return (
     <div className="absolute inset-0 overflow-y-auto bg-[#05040a] px-3 pb-40 pt-24 sm:px-5 sm:pb-32">
-      <div className={guestTracks.length ? "mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-stretch" : "mx-auto max-w-5xl"}>
-        <section className={guestTracks.length ? "w-full sm:w-[62%] sm:shrink-0" : "w-full"}>
+      <div className={guestTracks.length ? "mx-auto grid w-full max-w-6xl grid-cols-2 items-start gap-2 sm:gap-3" : "mx-auto max-w-5xl"}>
+        <section className={guestTracks.length ? "min-w-0 w-full" : "w-full"}>
           <div className="relative aspect-video overflow-hidden rounded-2xl border border-fuchsia-300/25 bg-[#171321] shadow-2xl shadow-black/40">
             {hostTrack ? (
               <VideoTrack trackRef={hostTrack} className="h-full w-full object-cover" />
@@ -59,7 +59,7 @@ function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string
         </section>
 
         {guestTracks.length > 0 && (
-          <section aria-label="Approved guests on stage" className="grid min-w-0 flex-1 grid-cols-2 content-start gap-2 sm:grid-cols-1 lg:grid-cols-2">
+          <section aria-label="Approved guests on stage" className="grid min-w-0 grid-cols-1 content-start gap-2">
             {guestTracks.map((track) => (
               <div key={track.participant.identity} className="relative aspect-video min-w-0 overflow-hidden rounded-xl border border-white/15 bg-[#171321]">
                 <VideoTrack trackRef={track} className="h-full w-full object-cover" />
