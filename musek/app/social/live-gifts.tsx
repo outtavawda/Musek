@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import GiftArtwork from "./gift-artwork";
+const RealGift3D = dynamic(() => import("./real-gift-3d"), { ssr: false, loading: () => <div className="h-[240px] w-full animate-pulse rounded-xl bg-gradient-to-br from-indigo-950 via-purple-950 to-black" aria-label="Loading 3D gift" /> });
 import { createClient } from "@/lib/supabase/client";
 
 type Gift = {
@@ -293,20 +295,8 @@ export default function LiveGifts({
             )}
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-content">
-              {["Galaxy", "Universe", "MUSEK Legend"].includes(details?.name || "") ? (
-                <div className="musek-cosmic-reveal" aria-label={details?.name + " animated gift reveal"}>
-                  <div className="musek-cosmic-nebula" />
-                  <div className="musek-cosmic-stars">{Array.from({ length: 28 }, (_, index) => <i key={index} style={{ "--star": index } as React.CSSProperties} />)}</div>
-                  <span className="musek-cosmic-planet musek-cosmic-planet-one" />
-                  <span className="musek-cosmic-planet musek-cosmic-planet-two" />
-                  <div className="musek-cosmic-orbit musek-cosmic-orbit-one" />
-                  <div className="musek-cosmic-orbit musek-cosmic-orbit-two" />
-                  <div className="musek-cosmic-gift">
-                    <div className="musek-cosmic-bow"><i /><b /><span /></div>
-                    <div className="musek-cosmic-box"><i /><b /><span /></div>
-                  </div>
-                  <div className="musek-cosmic-caption"><span className="musek-cosmic-sender">{(activeGift.sender_name || "A fan").slice(0, 1).toUpperCase()}</span><strong>{activeGift.sender_name || "A fan"}</strong><span>sent</span><b>{details?.name}</b><strong>×1</strong></div>
-                </div>
+              {["Galaxy", "Universe", "MUSEK Legend", "Dragon", "Phoenix"].includes(details?.name || "") ? (
+                <RealGift3D giftName={details?.name || "Galaxy"} senderName={activeGift.sender_name || "A fan"} />
               ) : (
                 <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
               )}
