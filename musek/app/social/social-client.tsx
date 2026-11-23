@@ -254,9 +254,12 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <p className="text-xs font-black">{selected.title}</p>
                 <p className="mt-1 line-clamp-2 text-[11px] text-white/75">{selected.description || "Join the conversation and show this creator some love."}</p>
               </div>
-              <form onSubmit={sendMessage} className="flex gap-2">
+              <form onSubmit={sendMessage} className="flex items-center gap-2">
                 <input value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} placeholder="Say something…" className="min-w-0 flex-1 rounded-full border border-white/20 bg-black/45 px-4 py-3 text-xs text-white outline-none backdrop-blur-xl placeholder:text-white/60 focus:border-fuchsia-300"/>
-                <button type="submit" disabled={!draft.trim() || chatSending} className="rounded-full bg-fuchsia-600 px-4 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
+                <button type="submit" disabled={!draft.trim() || chatSending} className="shrink-0 rounded-full bg-fuchsia-600 px-4 py-3 text-xs font-black disabled:opacity-40">{chatSending ? "…" : "Send"}</button>
+                <div className="relative z-[130] shrink-0">
+                  <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
+                </div>
               </form>
             </div>
             <div className="flex shrink-0 flex-col items-center gap-4 pb-14 text-center">
@@ -268,8 +271,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           </div>
 
           <div className="relative z-10 border-t border-white/10 bg-black/35 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
-            <div className="mb-2 flex items-center justify-between"><span className="text-[9px] font-black tracking-[.18em] text-fuchsia-200">SEND A GIFT</span><span className="text-[9px] text-white/55">{chatConnection === "connected" ? "CHAT CONNECTED" : chatConnection === "disconnected" ? "RECONNECTING…" : "CONNECTING…"}</span></div>
-            <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
+            <div className="mb-2 flex items-center justify-between"><span className="text-[9px] font-black tracking-[.18em] text-fuchsia-200">LIVE CHAT</span><span className="text-[9px] text-white/55">{chatConnection === "connected" ? "CHAT CONNECTED" : chatConnection === "disconnected" ? "RECONNECTING…" : "CONNECTING…"}</span></div>
           </div>
         </section>}
       </main>
