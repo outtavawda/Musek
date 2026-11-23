@@ -244,7 +244,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             <button onClick={() => { setSelected(null); stopMedia(); }} aria-label="Close live" className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
           </div>
 
-          <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-3">
+          <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
             <div className="min-w-0 flex-1">
               <div className="mb-3 max-h-[31dvh] space-y-2 overflow-y-auto pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_12%)]">
                 {messages.slice(-8).map((message) => <div key={message.id} className="w-fit max-w-full rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-xs shadow-lg backdrop-blur-md"><span className={message.user_id === selected.host_id ? "font-black text-fuchsia-200" : "font-bold text-white/80"}>{message.display_name} </span><span className="break-words text-white">{message.message}</span></div>)}
@@ -270,9 +270,6 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             </div>
           </div>
 
-          <div className="relative z-10 border-t border-white/10 bg-black/35 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
-            <div className="mb-2 flex items-center justify-between"><span className="text-[9px] font-black tracking-[.18em] text-fuchsia-200">LIVE CHAT</span><span className="text-[9px] text-white/55">{chatConnection === "connected" ? "CHAT CONNECTED" : chatConnection === "disconnected" ? "RECONNECTING…" : "CONNECTING…"}</span></div>
-          </div>
         </section>}
       </main>
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-white/10 bg-[#0b0a12]/95 px-2 py-3 backdrop-blur-xl sm:hidden">
