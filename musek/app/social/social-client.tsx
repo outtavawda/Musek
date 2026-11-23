@@ -298,20 +298,22 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <div className="relative z-[130] flex shrink-0 items-center gap-2">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
                   {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
-                  <button
-                    type="button"
-                    disabled={!liveCameraControl?.canPublish}
-                    onClick={() => liveCameraControl?.toggle().catch(() => setNotice("Could not change your live camera. Check camera permission and try again."))}
-                    aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
-                    aria-pressed={Boolean(liveCameraControl?.enabled)}
-                    title={!liveCameraControl?.canPublish ? "The host must approve you to publish video" : liveCameraControl.enabled ? "Turn camera off" : "Turn camera on"}
-                    className={"grid h-11 w-11 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 " + (liveCameraControl?.enabled ? "border-fuchsia-200 bg-fuchsia-600 shadow-fuchsia-950/40" : "border-fuchsia-300/35 bg-[#21152e] hover:bg-fuchsia-600/30")}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>
-                      {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
-                    </svg>
-                  </button>
+                  {(selected.host_id === userId || liveCameraControl?.canPublish) && (
+                    <button
+                      type="button"
+                      disabled={!liveCameraControl?.canPublish}
+                      onClick={() => liveCameraControl?.toggle().catch(() => setNotice("Could not change your live camera. Check camera permission and try again."))}
+                      aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
+                      aria-pressed={Boolean(liveCameraControl?.enabled)}
+                      title={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
+                      className={"grid h-11 w-11 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 " + (liveCameraControl?.enabled ? "border-fuchsia-200 bg-fuchsia-600 shadow-fuchsia-950/40" : "border-fuchsia-300/35 bg-[#21152e] hover:bg-fuchsia-600/30")}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>
+                        {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </form>
             </div>
