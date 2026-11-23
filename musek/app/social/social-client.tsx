@@ -41,6 +41,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const [viewingProfile, setViewingProfile] = useState<ChatProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [liveCameraControl, setLiveCameraControl] = useState<LiveCameraControl | null>(null);
+  const [videoSessionKey, setVideoSessionKey] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -267,8 +268,8 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
         {selected && <section className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
           <div className="absolute inset-0">
-            <LiveVideoRoom roomId={selected.id} hostId={selected.host_id} displayName={displayName} hostName={selected.host_name} onCameraControl={handleLiveCameraControl}/>
-            {selected.host_id === userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId}/>}
+            <LiveVideoRoom key={videoSessionKey} roomId={selected.id} hostId={selected.host_id} displayName={displayName} hostName={selected.host_name} onCameraControl={handleLiveCameraControl}/>
+            {selected.host_id === userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/90"/>
           </div>
 
