@@ -91,6 +91,16 @@ export async function POST(request: Request) {
         .eq("status", "accepted")
         .maybeSingle();
       canPublish = Boolean(invitation);
+      if (!canPublish) {
+        const { data: joinRequest } = await supabase
+          .from("social_live_join_requests")
+          .select("id")
+          .eq("room_id", room.id)
+          .eq("requester_id", user.id)
+          .eq("status", "accepted")
+          .maybeSingle();
+        canPublish = Boolean(joinRequest);
+      }
     }
 
     const { data: profile } = await supabase
