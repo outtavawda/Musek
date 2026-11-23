@@ -317,15 +317,17 @@ export default function LiveGifts({
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-flight">
               <div className="musek-gift-content">
-                {["Galaxy", "Universe", "MUSEK Legend", "Dragon", "Phoenix"].includes(details?.name || "") ? (
+                {tier === "premium" || tier === "legendary" ? (
                   <RealGift3D giftName={details?.name || "Galaxy"} senderName={activeGift.sender_name || "A fan"} />
                 ) : (
                   <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
                 )}
-                <p className="musek-gift-eyebrow">{tier === "legendary" ? "✦ MUSEK ICONIC MOMENT ✦" : tier === "premium" ? "MUSEK PREMIUM GIFT" : tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
-                <p className="musek-gift-name">{details?.name || "Live gift"}</p>
-                <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
-                <p className="musek-gift-sender">sent by {activeGift.sender_name || "a MUSEK fan"}</p>
+{tier !== "premium" && tier !== "legendary" && <>
+                  <p className="musek-gift-eyebrow">{tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
+                  <p className="musek-gift-name">{details?.name || "Live gift"}</p>
+                  <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
+                  <p className="musek-gift-sender">sent by {activeGift.sender_name || "a MUSEK fan"}</p>
+                </>}
               </div>
             </div>
           </div>
@@ -390,6 +392,8 @@ export default function LiveGifts({
         .musek-gift-medium .musek-gift-art-svg { animation: gift-object-turn 2.5s ease-in-out infinite; }
         .musek-gift-premium { background: radial-gradient(circle, rgba(147,51,234,.48), rgba(4,3,14,.84) 72%); animation: gift-fade 6.5s ease both; }
         .musek-gift-premium .musek-gift-content { border-color: rgba(250,204,21,.75); background: linear-gradient(145deg,rgba(73,42,101,.98),rgba(12,8,28,.98)); box-shadow: 0 0 70px rgba(250,204,21,.34), 0 0 150px rgba(168,85,247,.48), inset 0 1px rgba(255,255,255,.35); animation: gift-legend 1.2s cubic-bezier(.16,1,.3,1) both; }
+        .musek-gift-premium .musek-gift-flight,.musek-gift-legendary .musek-gift-flight { width:100vw; height:100dvh; }
+        .musek-gift-premium .musek-gift-content,.musek-gift-legendary .musek-gift-content { width:100vw; height:100dvh; max-width:none; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; animation:none; }
         .musek-gift-premium .musek-gift-eyebrow { color: #fde68a; }
         .musek-gift-premium .musek-gift-art-svg { animation-duration: 3.2s; }
         .musek-gift-legendary { background: radial-gradient(circle at 50% 48%,rgba(234,179,8,.34),rgba(88,28,135,.48) 38%,rgba(2,2,12,.94) 78%); animation: gift-fade 8s ease both; }
