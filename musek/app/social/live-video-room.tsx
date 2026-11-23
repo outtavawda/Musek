@@ -7,6 +7,7 @@ import "@livekit/components-styles";
 export default function LiveVideoRoom({ roomId, displayName }: { roomId: string; displayName: string }) {
   const [token, setToken] = useState("");
   const [serverUrl, setServerUrl] = useState("");
+  const [canPublish, setCanPublish] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -15,6 +16,7 @@ export default function LiveVideoRoom({ roomId, displayName }: { roomId: string;
     setLoading(true);
     setError("");
     setToken("");
+    setCanPublish(false);
     fetch("/api/social/livekit-token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -23,12 +25,13 @@ export default function LiveVideoRoom({ roomId, displayName }: { roomId: string;
       .then(async (response) => {
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Unable to join video.");
-        return result as { token: string; serverUrl: string };
+        return result as { token: string; serverUrl: string; canPublish: boolean };
       })
       .then((result) => {
         if (!active) return;
         setToken(result.token);
         setServerUrl(result.serverUrl);
+        setCanPublish(result.canPublish);
       })
       .catch((reason: unknown) => {
         if (active) setError(reason instanceof Error ? reason.message : "Unable to join video.");
@@ -49,7 +52,7 @@ export default function LiveVideoRoom({ roomId, displayName }: { roomId: string;
         <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-300">Connected room</span>
       </div>
       <div data-lk-theme="default" className="h-full min-h-[100dvh] w-full">
-        <LiveKitRoom token={token} serverUrl={serverUrl} connect audio video onError={handleError}>
+        <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={canPublish} onError={handleError}>
           <VideoConference />
         </LiveKitRoom>
       </div>
