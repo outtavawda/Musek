@@ -52,9 +52,14 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     setVideoSessionKey((key) => key + 1);
   }, []);
   const handleGuestStageClosed = useCallback(async () => {
-    setGuestLiveKitEnabled(false);
-    setLiveCameraControl(null);
-  }, []);
+    // Leaving the stage must not leave the LIVE room. Keep the guest's
+    // LiveKit connection mounted so they can continue watching the host
+    // and using chat; only stop their camera publication and clear stage
+    // membership (the request row is declined by the X handler).
+    if (liveCameraControl?.enabled) {
+      try { await liveCameraControl.toggle(); } catch { /* Stage membership is still cleared server-side. */ }
+    }
+  }, [liveCameraControl]);
   useEffect(() => {
     if (selected) setGuestLiveKitEnabled(true);
   }, [selected?.id]);
