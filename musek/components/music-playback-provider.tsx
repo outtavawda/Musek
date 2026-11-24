@@ -144,23 +144,26 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
 
   const heartbeat = useCallback(async () => {
     const audio = audioRef.current;
+    const native = Capacitor.getPlatform() === "android";
     const song = currentSong;
     const session = sessionRef.current;
-    if (!audio || !song || audio.paused || audio.seeking || session.songId !== song.id || !session.sessionId || session.completed || session.busy || Date.now() - session.heartbeatAt < 4500) return;
+    if ((!audio && !native) || !song || (native ? !isPlaying : !audio || audio.paused || audio.seeking) || session.songId !== song.id || !session.sessionId || session.completed || session.busy || Date.now() - session.heartbeatAt < 4500) return;
     session.heartbeatAt = Date.now();
     session.busy = true;
     try {
+      const nativeState = native ? await MusekNativePlayback.getState() : null;
+      const playbackPosition = native ? (nativeState?.currentTime || 0) : audio!.currentTime;
       const response = await fetch("/api/music/record-play", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackId: song.id, action: "heartbeat", sessionId: session.sessionId, playbackPositionSeconds: audio.currentTime })
+        body: JSON.stringify({ trackId: song.id, action: "heartbeat", sessionId: session.sessionId, playbackPositionSeconds: playbackPosition })
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Heartbeat failed");
       session.credited = Number(result.creditedSeconds) || 0;
-      if (session.credited >= 30 && audio.currentTime >= 30 && !session.completed) {
+      if (session.credited >= 30 && playbackPosition >= 30 && !session.completed) {
         const completion = await fetch("/api/music/record-play", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ trackId: song.id, action: "complete", sessionId: session.sessionId, playbackPositionSeconds: audio.currentTime })
+          body: JSON.stringify({ trackId: song.id, action: "complete", sessionId: session.sessionId, playbackPositionSeconds: playbackPosition })
         });
         if (completion.ok) session.completed = true;
       }
@@ -170,7 +173,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     } finally {
       session.busy = false;
     }
-  }, [currentSong]);
+  }, [currentSong, isPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
