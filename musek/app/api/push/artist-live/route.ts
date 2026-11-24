@@ -21,9 +21,10 @@ export async function POST(request: Request) {
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     const privateKey = process.env.VAPID_PRIVATE_KEY;
     const subject = process.env.VAPID_SUBJECT;
+    const webPushConfigured = Boolean(publicKey && privateKey && subject);
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!publicKey || !privateKey || !subject || !url || !serviceKey) {
+    if (!url || !serviceKey) {
       return NextResponse.json({ delivered: 0, configured: false });
     }
 
@@ -41,8 +42,10 @@ export async function POST(request: Request) {
     const followerIds = Array.from(new Set((follows || []).map(row => row.fan_id)));
     if (!followerIds.length) return NextResponse.json({ delivered: 0, targeted: 0, configured: true });
 
-    const { data: subscriptions, error: subscriptionError } = await admin.from("push_subscriptions")
-      .select("id,user_id,endpoint,p256dh,auth").in("user_id", followerIds);
+    const { data: subscriptions, error: subscriptionError } = webPushConfigured
+      ? await admin.from("push_subscriptions")
+          .select("id,user_id,endpoint,p256dh,auth").in("user_id", followerIds)
+      : { data: [], error: null };
     if (subscriptionError) throw subscriptionError;
     const { data: nativeTokens, error: nativeTokenError } = await admin.from("native_push_tokens")
       .select("id,user_id,token,platform").in("user_id", followerIds);
