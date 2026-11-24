@@ -36,6 +36,8 @@ jobs:
         run: npx cap sync
       - name: Configure MUSEK URL scheme and iOS background audio mode
         run: node scripts/configure-native-deep-links.mjs
+      - name: Configure Android native background playback
+        run: node scripts/configure-native-playback.mjs
       - name: Commit generated native projects to sandbox
         working-directory: .
         run: |
