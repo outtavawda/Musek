@@ -221,7 +221,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
       audio.removeEventListener("play", play);
       audio.removeEventListener("pause", pause);
     };
-  }, [heartbeat]);
+  }, [heartbeat, queue]);
 
   useEffect(() => {
     if (!currentSong || !isPlaying) return;
