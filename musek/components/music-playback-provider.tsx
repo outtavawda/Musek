@@ -176,6 +176,32 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
   }, [currentSong, isPlaying]);
 
   useEffect(() => {
+    if (Capacitor.getPlatform() === "android") {
+      let mounted = true;
+      let listener: { remove: () => Promise<void> } | null = null;
+      const applyState = (state: { isPlaying: boolean; currentTime: number; duration: number }) => {
+        if (!mounted) return;
+        setIsPlaying(state.isPlaying);
+        setCurrentTime(state.currentTime || 0);
+        setDuration(state.duration || 0);
+      };
+      void MusekNativePlayback.addListener("playbackState", applyState).then(handle => {
+        listener = handle;
+      });
+      const sync = () => {
+        void MusekNativePlayback.getState().then(applyState).catch(error => {
+          console.error("MUSEK native playback state sync failed", error);
+        });
+        void heartbeat();
+      };
+      sync();
+      const interval = window.setInterval(sync, 1000);
+      return () => {
+        mounted = false;
+        window.clearInterval(interval);
+        if (listener) void listener.remove();
+      };
+    }
     const audio = audioRef.current;
     if (!audio) return;
     const time = () => { setCurrentTime(audio.currentTime || 0); void heartbeat(); };
@@ -200,7 +226,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
   }, [currentSong?.id, isPlaying, startSession]);
 
   useEffect(() => {
-    if (!("mediaSession" in navigator) || !currentSong) return;
+    if (Capacitor.getPlatform() === "android" || !("mediaSession" in navigator) || !currentSong) return;
     const artwork = currentSong.artworkUrl ? [{ src: currentSong.artworkUrl, sizes: "512x512", type: "image/png" }] : [];
     navigator.mediaSession.metadata = new MediaMetadata({
       title: currentSong.title, artist: currentSong.artistName, album: "MUSEK",
