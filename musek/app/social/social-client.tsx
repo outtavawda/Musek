@@ -424,6 +424,20 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                         {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
                       </svg>
                     </button>
+                    <button
+                      type="button"
+                      disabled={!liveCameraControl?.canPublish}
+                      onClick={() => liveCameraControl?.toggleMicrophone().catch(() => setNotice("Could not change your microphone. Check microphone permission and try again."))}
+                      aria-label={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Unmute microphone"}
+                      aria-pressed={Boolean(liveCameraControl?.microphoneEnabled)}
+                      title={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Turn microphone on"}
+                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.microphoneEnabled ? "border-emerald-200 bg-emerald-600 shadow-emerald-950/40" : "border-rose-300/35 bg-[#21152e] hover:bg-rose-600/30")}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>
+                        {!liveCameraControl?.microphoneEnabled && <path d="m4 4 16 16"/>}
+                      </svg>
+                    </button>
                 </div>
               </form>
             </div>
