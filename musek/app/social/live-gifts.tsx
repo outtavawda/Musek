@@ -349,6 +349,19 @@ export default function LiveGifts({
                 <div className="musek-event-embers">{Array.from({ length: 34 }, (_, index) => <i key={index} style={{ "--ember": index } as React.CSSProperties} />)}</div>
               </div>
             )}
+            {Number(activeGift.coins) >= 500 && (
+              <div className="musek-cosmic-reveal" aria-hidden="true">
+                <div className="musek-cosmic-nebula" />
+                <div className="musek-cosmic-galaxy" />
+                <div className="musek-cosmic-stars">{Array.from({ length: 48 }, (_, index) => <i key={index} style={{ "--star": index } as React.CSSProperties} />)}</div>
+                <div className="musek-cosmic-planet musek-cosmic-planet-one" />
+                <div className="musek-cosmic-planet musek-cosmic-planet-two" />
+                <div className="musek-cosmic-orbit" />
+                <div className="musek-cosmic-orbit musek-cosmic-orbit-two" />
+                <div className="musek-cosmic-orbit musek-cosmic-orbit-three" />
+                <div className="musek-cosmic-light" />
+              </div>
+            )}
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-flight">
               <div className="musek-gift-content">
@@ -377,6 +390,10 @@ export default function LiveGifts({
         .musek-gallery-gift-3d { perspective:900px; transform-style:preserve-3d; }
         .musek-gallery-gift-3d::before { inset:12%; background:radial-gradient(circle,rgba(251,191,36,.34),rgba(168,85,247,.3) 42%,rgba(59,130,246,.16) 64%,transparent 78%); filter:blur(18px); animation:musek-gift-3d-pulse 2.4s ease-in-out infinite; }
         .musek-gallery-gift-3d img { transform-style:preserve-3d; filter:drop-shadow(0 18px 12px rgba(0,0,0,.62)) drop-shadow(0 0 18px rgba(192,132,252,.45)); animation:musek-gift-3d-float 3.2s ease-in-out infinite; }
+        .musek-gift-medium .musek-gallery-gift-preview { width:min(66vw,390px); }
+        .musek-gift-premium .musek-gallery-gift-preview { width:min(72vw,450px); }
+        .musek-gift-legendary .musek-gallery-gift-preview { width:min(78vw,510px); }
+
         .musek-gallery-gift-orbit { position:absolute; z-index:2; left:50%; top:57%; width:112%; height:27%; border:2px solid rgba(251,191,36,.9); border-radius:50%; box-shadow:0 0 12px rgba(251,191,36,.9),inset 0 0 12px rgba(192,132,252,.65); pointer-events:none; }
         .musek-gallery-gift-orbit-one { transform:translate(-50%,-50%) rotateX(64deg) rotateZ(-12deg); animation:musek-gift-3d-orbit 3.2s linear infinite; }
         .musek-gallery-gift-orbit-two { width:124%; height:34%; border-color:rgba(192,132,252,.82); box-shadow:0 0 15px rgba(168,85,247,.9),inset 0 0 12px rgba(56,189,248,.55); transform:translate(-50%,-50%) rotateX(64deg) rotateZ(18deg); animation:musek-gift-3d-orbit 4.4s linear infinite reverse; }
@@ -396,14 +413,26 @@ export default function LiveGifts({
         @media (prefers-reduced-motion:reduce) { .musek-gallery-gift-preview img { animation:none !important; } }
         .musek-gift-overlay { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; background: transparent; }
         .musek-cosmic-reveal { position:relative; width:min(82vw,437px); height:clamp(240px,58vw,390px); overflow:hidden; display:flex; align-items:center; justify-content:center; isolation:isolate; background:radial-gradient(ellipse at 50% 55%,#172c89 0%,#111044 38%,#05051d 72%,#02020d 100%); border-radius:18px; box-shadow:0 0 55px rgba(99,102,241,.45); }
+        .musek-cosmic-reveal { position:absolute; z-index:0; inset:0; width:100%; height:100%; overflow:hidden; display:block; isolation:isolate; border-radius:0; background:radial-gradient(ellipse at 50% 55%,#172c89 0%,#111044 38%,#05051d 72%,#02020d 100%); }
         .musek-cosmic-nebula { position:absolute; inset:-35%; background:radial-gradient(ellipse at 28% 42%,rgba(0,140,255,.7),transparent 28%),radial-gradient(ellipse at 70% 30%,rgba(168,85,247,.65),transparent 30%),radial-gradient(ellipse at 52% 70%,rgba(14,165,233,.48),transparent 32%); filter:blur(16px); animation:cosmic-nebula 16s linear infinite; }
+        .musek-cosmic-galaxy { position:absolute; left:50%; top:24%; width:min(76vw,570px); height:min(31vw,230px); border-radius:50%; transform:translate(-50%,-50%) rotate(-18deg); background:repeating-radial-gradient(ellipse at center,rgba(255,255,255,.95) 0 1px,rgba(168,85,247,.82) 2px 4px,rgba(37,99,235,.3) 6px 12px,transparent 16px 26px); filter:blur(2px) drop-shadow(0 0 22px #8b5cf6); opacity:.68; animation:cosmic-nebula 18s linear infinite; }
+        .musek-cosmic-light { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 75%,rgba(250,204,21,.2),transparent 40%),linear-gradient(180deg,rgba(1,1,18,.15),transparent 48%,rgba(2,2,18,.4)); }
+
         .musek-cosmic-stars { position:absolute; inset:0; }
         .musek-cosmic-stars i { position:absolute; left:calc((var(--star) * 37.1%) - 350%); top:calc((var(--star) * 23.7%) - 190%); width:3px; height:3px; border-radius:50%; background:#fff; box-shadow:0 0 9px #a5f3fc,0 0 18px #c084fc; animation:cosmic-star calc(2.2s + (var(--star) * .09s)) ease-in-out infinite; }
+        .musek-cosmic-stars i { left:calc((var(--star) * 19.7%) - 420%); top:calc((var(--star) * 31.7%) - 210%); animation-delay:calc(var(--star) * -.13s); }
+
         .musek-cosmic-planet { position:absolute; border-radius:50%; background:radial-gradient(circle at 32% 28%,#a5f3fc,#2563eb 45%,#101044 78%); box-shadow:0 0 20px rgba(96,165,250,.6); }
         .musek-cosmic-planet-one { width:34px; height:34px; left:9%; top:48%; }
         .musek-cosmic-planet-two { width:17px; height:17px; right:12%; top:35%; background:radial-gradient(circle at 30% 30%,#fde68a,#b45309 60%,#451a03); }
         .musek-cosmic-orbit { position:absolute; left:50%; top:59%; width:86%; height:27%; border:2px solid rgba(251,191,36,.88); border-radius:50%; transform:translate(-50%,-50%) rotate(-9deg); box-shadow:0 0 14px #f59e0b,inset 0 0 14px rgba(168,85,247,.75); animation:cosmic-orbit 3.8s linear infinite; }
         .musek-cosmic-orbit-two { width:96%; height:34%; border-color:rgba(192,132,252,.75); transform:translate(-50%,-50%) rotate(12deg); animation-direction:reverse; }
+        .musek-cosmic-orbit { top:68%; width:min(90vw,650px); height:28%; border-width:3px; animation:cosmic-orbit 3.8s linear infinite; }
+        .musek-cosmic-orbit-two { width:min(104vw,740px); height:36%; border-width:2px; animation-direction:reverse; }
+        .musek-cosmic-orbit-three { position:absolute; left:50%; top:68%; width:min(116vw,820px); height:44%; border:1px solid rgba(56,189,248,.72); border-radius:50%; transform:translate(-50%,-50%) rotate(-18deg); box-shadow:0 0 18px rgba(56,189,248,.75),inset 0 0 16px rgba(168,85,247,.65); animation:cosmic-orbit 5.4s linear infinite reverse; }
+        .musek-cosmic-planet-one { width:clamp(28px,8vw,76px); height:clamp(28px,8vw,76px); left:8%; top:48%; }
+        .musek-cosmic-planet-two { width:clamp(18px,5vw,48px); height:clamp(18px,5vw,48px); right:10%; top:31%; }
+
         .musek-cosmic-gift { position:relative; z-index:2; width:42%; aspect-ratio:1; margin-top:5%; filter:drop-shadow(0 18px 18px rgba(0,0,0,.6)); animation:cosmic-gift-float 2.4s ease-in-out infinite; transform-style:preserve-3d; }
         .musek-cosmic-box { position:absolute; left:12%; top:37%; width:76%; height:55%; background:linear-gradient(110deg,#17104e 0%,#4c1d95 42%,#1e1b4b 100%); border:3px solid #fbbf24; transform:skewY(-3deg) rotateX(4deg); box-shadow:inset 0 0 22px rgba(56,189,248,.38),0 0 24px rgba(250,204,21,.38); }
         .musek-cosmic-box:before { content:""; position:absolute; left:43%; top:0; width:15%; height:100%; background:linear-gradient(90deg,#b45309,#fde68a,#f59e0b); }
@@ -423,6 +452,9 @@ export default function LiveGifts({
         .musek-gift-medium .musek-gift-flight { animation-duration: 4.5s; }
         .musek-gift-premium .musek-gift-flight { animation-duration: 8s; }
         .musek-gift-legendary .musek-gift-flight { animation-duration: 9s; }
+        .musek-gift-medium .musek-gift-flight { animation:none; width:100vw; height:100dvh; }
+        .musek-gift-medium .musek-gift-content { width:100vw; height:100dvh; max-width:none; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+
         @keyframes musek-gift-flight { 0% { opacity:0; transform:translate3d(-115vw,18vh,0) scale(.62) rotate(-9deg); } 16% { opacity:1; transform:translate3d(-55vw,7vh,0) scale(.78) rotate(-5deg); } 42% { opacity:1; transform:translate3d(0,0,0) scale(1.04) rotate(0); } 62% { opacity:1; transform:translate3d(0,0,0) scale(1) rotate(0); } 84% { opacity:1; transform:translate3d(58vw,-5vh,0) scale(.82) rotate(5deg); } 100% { opacity:0; transform:translate3d(115vw,-18vh,0) scale(.62) rotate(9deg); } }
         .musek-gift-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 22px; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
         .musek-gift-art { position: relative; display: grid; width: clamp(150px, 24vw, 250px); aspect-ratio: 1; place-items: center; perspective: 900px; transform-style: preserve-3d; }
