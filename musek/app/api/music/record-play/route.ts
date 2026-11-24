@@ -26,12 +26,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => null);
-    const trackId =
-      typeof body?.trackId === "string" ? body.trackId : "";
+    const trackId = typeof body?.trackId === "string" ? body.trackId : "";
+    const action = body?.action;
 
-    if (!UUID_PATTERN.test(trackId)) {
+    if (!UUID_PATTERN.test(trackId) || !["start", "complete"].includes(action)) {
       return NextResponse.json(
-        { error: "A valid track is required." },
+        { error: "A valid track and playback action are required." },
         { status: 400 }
       );
     }
@@ -46,30 +46,56 @@ export async function POST(request: Request) {
     }
 
     const visitorHash = hashIdentity(serviceKey, `visitor:${visitorId}`);
-
     const admin = createClient(supabaseUrl, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { data, error } = await admin.rpc("record_track_play", {
-      p_track_id: trackId,
-      p_visitor_hash: visitorHash,
-    });
+    let data: unknown;
+    let error: { message: string } | null = null;
+
+    if (action === "start") {
+      const result = await admin.rpc("start_track_play_session", {
+        p_track_id: trackId,
+        p_visitor_hash: visitorHash,
+      });
+      data = result.data;
+      error = result.error;
+    } else {
+      const sessionId =
+        typeof body?.sessionId === "string" ? body.sessionId : "";
+      const playbackPositionSeconds = Number(body?.playbackPositionSeconds);
+
+      if (
+        !UUID_PATTERN.test(sessionId) ||
+        !Number.isFinite(playbackPositionSeconds) ||
+        playbackPositionSeconds < 30
+      ) {
+        return NextResponse.json(
+          { error: "A valid completed playback session is required." },
+          { status: 400 }
+        );
+      }
+
+      const result = await admin.rpc("complete_track_play_session", {
+        p_session_id: sessionId,
+        p_visitor_hash: visitorHash,
+        p_playback_position_seconds: Math.floor(playbackPositionSeconds),
+      });
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) {
-      console.error("MUSEK secure play count failed:", error.message);
+      console.error("MUSEK playback session failed:", error.message);
       return NextResponse.json(
-        { error: "Could not record this play." },
+        { error: "Could not process this playback session." },
         { status: 500 }
       );
     }
 
-    const response = NextResponse.json({
-      counted: data === true,
-    });
+    const response = NextResponse.json(
+      action === "start" ? { sessionId: data } : { counted: data === true }
+    );
 
     if (shouldSetCookie) {
       response.cookies.set(VISITOR_COOKIE, visitorId, {
@@ -83,9 +109,9 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("MUSEK play-count route error:", error);
+    console.error("MUSEK playback route error:", error);
     return NextResponse.json(
-      { error: "Could not record this play." },
+      { error: "Could not process this playback session." },
       { status: 500 }
     );
   }
