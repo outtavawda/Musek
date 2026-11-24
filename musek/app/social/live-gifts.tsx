@@ -107,6 +107,8 @@ export default function LiveGifts({
   const shopPanelRef = useRef<HTMLDivElement | null>(null);
   const shopTriggerRef = useRef<HTMLButtonElement | null>(null);
   const giftTapRef = useRef<{ coins: number; at: number } | null>(null);
+  const giftChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const processedGiftIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!shopOpen) return;
@@ -243,31 +245,38 @@ export default function LiveGifts({
 
   useEffect(() => {
     loadGifts();
+
+    // Use a room-scoped Realtime Broadcast for the live animation. This does
+    // not depend on postgres_changes being enabled for social_live_gifts in
+    // the Supabase Realtime publication, which can otherwise leave hosts
+    // without gift animations even though the sender sees them.
     const channel = supabase
-      .channel("musek-live-gifts-" + roomId)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "social_live_gifts",
-          filter: "room_id=eq." + roomId,
-        },
-        async (payload) => {
-          const gift = payload.new as LiveGift;
-          const { data: sender } = await supabase.from("user_profiles").select("display_name,artist_name").eq("id", gift.sender_id).maybeSingle();
-          const enrichedGift = { ...gift, sender_name: sender?.artist_name || sender?.display_name || "MUSEK Member" };
-          enqueueGift(enrichedGift);
-          playGiftSound(Number(gift.coins));
-          setGifts((current) =>
-            current.some((item) => item.gift_id === gift.gift_id)
-              ? current
-              : [enrichedGift, ...current].slice(0, 12)
-          );
+      .channel("musek-live-gifts-" + roomId, { config: { broadcast: { self: true } } })
+      .on("broadcast", { event: "gift" }, async ({ payload }) => {
+        const gift = payload as LiveGift;
+        if (!gift?.gift_id || gift.room_id !== roomId || processedGiftIdsRef.current.has(gift.gift_id)) return;
+        processedGiftIdsRef.current.add(gift.gift_id);
+
+        let senderName = gift.sender_name;
+        if (!senderName && gift.sender_id) {
+          const { data: sender } = await supabase.from("user_profiles")
+            .select("display_name,artist_name").eq("id", gift.sender_id).maybeSingle();
+          senderName = sender?.artist_name || sender?.display_name || "MUSEK Member";
         }
-      )
+        const enrichedGift = { ...gift, sender_name: senderName || "MUSEK Member" };
+        enqueueGift(enrichedGift);
+        playGiftSound(Number(gift.coins));
+        setGifts((current) =>
+          current.some((item) => item.gift_id === gift.gift_id)
+            ? current
+            : [enrichedGift, ...current].slice(0, 12)
+        );
+      })
       .subscribe();
+
+    giftChannelRef.current = channel;
     return () => {
+      giftChannelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [enqueueGift, loadGifts, playGiftSound, roomId, supabase]);
@@ -289,8 +298,36 @@ export default function LiveGifts({
         setNotice(error.message || "The gift could not be confirmed. Retry the same gift to safely check its status.");
         return;
       }
+
+      // The RPC is the source of truth for the coin transaction. Only after
+      // it succeeds do we broadcast the confirmed gift to every client in
+      // this live room so the host and viewers play the same animation.
+      const { data: sender } = await supabase.from("user_profiles")
+        .select("display_name,artist_name").eq("id", userId).maybeSingle();
+      const giftEvent: LiveGift = {
+        gift_id: requestKey,
+        room_id: roomId,
+        sender_id: userId,
+        sender_name: sender?.artist_name || sender?.display_name || "MUSEK Member",
+        coins: gift.coins,
+        created_at: new Date().toISOString(),
+      };
+      const channel = giftChannelRef.current;
+      if (channel) {
+        const broadcastStatus = await channel.send({
+          type: "broadcast",
+          event: "gift",
+          payload: giftEvent,
+        });
+        if (broadcastStatus !== "ok") {
+          setNotice(gift.emoji + " " + gift.name + " sent, but the live animation could not be broadcast. Please check the live connection.");
+        } else {
+          setNotice(gift.emoji + " " + gift.name + " sent!");
+        }
+      } else {
+        setNotice(gift.emoji + " " + gift.name + " sent, but the live animation channel is reconnecting.");
+      }
       setGiftRequestKey("");
-      setNotice(gift.emoji + " " + gift.name + " sent!");
     } catch {
       setNotice("We could not confirm the gift. Retry the same gift; MUSEK will reuse the same transaction key to prevent a duplicate charge.");
     } finally {
