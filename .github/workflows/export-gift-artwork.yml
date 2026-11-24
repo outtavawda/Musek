@@ -1,0 +1,27 @@
+name: Export MUSEK gift gallery artwork
+
+on:
+  push:
+    branches:
+      - square-sandbox
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  export-gifts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package 500+ coin gift artwork
+        run: |
+          mkdir -p /tmp/musek-gifts
+          cp musek/public/gifts/{party-popper,fireworks,disco-ball,spotlight,sunglasses,gold-watch,diamond,sports-car,yacht,crown,royal-throne,castle,royal-carriage,golden-palace,steel-pan,carnival,island-escape,reggae-vibes,world-tour,money-rain,money-vault,rocket,private-jet,mansion,dragon,phoenix,galaxy,universe,musek-legend}.webp /tmp/musek-gifts/
+          cd /tmp
+          zip -9 -r MUSEK_500plus_source_artwork.zip musek-gifts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: musek-500plus-source-artwork
+          path: /tmp/MUSEK_500plus_source_artwork.zip
+          retention-days: 3
