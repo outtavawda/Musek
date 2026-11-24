@@ -150,7 +150,7 @@ async function sendFcm(deviceToken: string, message: NativePushMessage): Promise
     error?: { status?: string; details?: Array<{ errorCode?: string }> }
   } | null;
   const codes = error?.error?.details?.map(detail => detail.errorCode) || [];
-  const expired = error?.error?.status === "NOT_FOUND" || codes.includes("UNREGISTERED");
+  const expired = codes.includes("UNREGISTERED");
   return { delivered: false, expired };
 }
 
