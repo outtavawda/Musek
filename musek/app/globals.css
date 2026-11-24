@@ -600,3 +600,37 @@ footer {
 .musek-player-close { position:absolute; right:12px; bottom:100%; padding:5px 9px; border:1px solid #4c3263; border-radius:9px 9px 0 0; background:#171326; color:#e9d5ff; font-size:10px; }
 @media (min-width:761px) { .musek-global-player { left:auto; right:24px; bottom:24px; width:min(520px,calc(100vw - 48px)); border:1px solid rgba(192,132,252,.24); border-radius:16px; } }
 @media (max-width:760px) { body { padding-bottom:calc(146px + env(safe-area-inset-bottom)) !important; } .musek-global-player { bottom:calc(64px + env(safe-area-inset-bottom)); } }
+
+
+/* Global mobile layout guardrails */
+html, body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+img, video, canvas, iframe, svg {
+  max-width: 100%;
+}
+button, input, select, textarea {
+  font: inherit;
+}
+a, button, input, textarea, select {
+  -webkit-tap-highlight-color: transparent;
+}
+:where(main, section, article, aside, header, footer) {
+  min-width: 0;
+}
+:where(h1, h2, h3, p, a, button, label, span) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .nav { padding-left: 16px; padding-right: 16px; }
+  .navLinks { min-width: 0; }
+  .hero, .intro, .features { padding-left: 18px; padding-right: 18px; }
+  .creatorBanner { max-width: calc(100% - 32px); }
+  input, select, textarea, button { max-width: 100%; }
+  table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
