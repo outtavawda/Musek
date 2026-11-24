@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import webpush from "web-push";
+import { deliverNativePush } from "@/lib/native-push";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -38,19 +39,22 @@ export async function POST(request: Request) {
       .select("fan_id").eq("artist_id", user.id).neq("fan_id", user.id);
     if (followsError) throw followsError;
     const followerIds = Array.from(new Set((follows || []).map(row => row.fan_id)));
-    if (!followerIds.length) return NextResponse.json({ delivered: 0, configured: true });
+    if (!followerIds.length) return NextResponse.json({ delivered: 0, targeted: 0, configured: true });
 
     const { data: subscriptions, error: subscriptionError } = await admin.from("push_subscriptions")
       .select("id,user_id,endpoint,p256dh,auth").in("user_id", followerIds);
     if (subscriptionError) throw subscriptionError;
+    const { data: nativeTokens, error: nativeTokenError } = await admin.from("native_push_tokens")
+      .select("id,user_id,token,platform").in("user_id", followerIds);
+    if (nativeTokenError) throw nativeTokenError;
 
-    webpush.setVapidDetails(subject, publicKey, privateKey);
-    const payload = JSON.stringify({
+    const message = {
       title: "An artist you follow is LIVE",
       body: `${room.host_name} just started a live room: ${room.title}`,
       url: `/social?room=${room.id}`
-    });
-    const results = await Promise.all((subscriptions || []).map(async subscription => {
+    };
+    const payload = JSON.stringify(message);
+    const webResultsPromise = (subscriptions || []).map(async subscription => {
       try {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
@@ -65,10 +69,29 @@ export async function POST(request: Request) {
         }
         return false;
       }
-    }));
+    });
+    const nativeResultsPromise = (nativeTokens || []).map(async token => {
+      try {
+        const result = await deliverNativePush(token.platform, token.token, message);
+        if (result.expired) {
+          await admin.from("native_push_tokens").delete().eq("id", token.id);
+        }
+        return result.delivered;
+      } catch (deliveryError) {
+        console.error("MUSEK native push delivery failed:", deliveryError);
+        return false;
+      }
+    });
+    const [webResults, nativeResults] = await Promise.all([
+      Promise.all(webResultsPromise),
+      Promise.all(nativeResultsPromise)
+    ]);
+    const results = [...webResults, ...nativeResults];
     return NextResponse.json({
       targeted: results.length,
       delivered: results.filter(Boolean).length,
+      webTargeted: webResults.length,
+      nativeTargeted: nativeResults.length,
       configured: true
     });
   } catch (error) {
