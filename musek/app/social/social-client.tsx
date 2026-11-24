@@ -164,6 +164,12 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     setRooms((current) => [newRoom, ...current]);
     setSelected(newRoom); setTitle(""); setDescription("");
     setNotice("Your MUSEK Social room is open. Chat is live; video broadcasting will activate after the video provider is connected.");
+    void fetch("/api/push/artist-live", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId: newRoom.id })
+    }).then(async response => {
+      if (!response.ok) console.warn("MUSEK live push delivery was not completed:", await response.text());
+    }).catch(error => console.warn("MUSEK live push delivery failed:", error));
   };
 
   const sendMessage = async (event: React.FormEvent) => {
