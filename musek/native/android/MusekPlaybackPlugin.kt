@@ -76,6 +76,7 @@ class MusekPlaybackPlugin : Plugin() {
             }
             if (items.isEmpty()) throw IllegalArgumentException("No playable audio tracks were supplied.")
             active.setMediaItems(items, selectedIndex, 0L)
+            active.repeatMode = Player.REPEAT_MODE_ALL
             active.prepare()
             active.play()
         }
