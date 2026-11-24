@@ -51,12 +51,12 @@ export async function POST(request: Request) {
       .select("id,user_id,token,platform").in("user_id", followerIds);
     if (nativeTokenError) throw nativeTokenError;
 
+    if (webPushConfigured) webpush.setVapidDetails(subject!, publicKey!, privateKey!);
     const message = {
       title: "An artist you follow is LIVE",
       body: `${room.host_name} just started a live room: ${room.title}`,
       url: `/social?room=${room.id}`
     };
-    const payload = JSON.stringify(message);
     const webResultsPromise = (subscriptions || []).map(async subscription => {
       try {
         await webpush.sendNotification({
