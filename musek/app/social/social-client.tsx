@@ -46,10 +46,6 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const streamRef = useRef<MediaStream | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const handleLiveCameraControl = useCallback((control: LiveCameraControl | null) => setLiveCameraControl(control), []);
-  const handleReturnToChat = useCallback(async () => {
-    if (liveCameraControl?.enabled) await liveCameraControl.toggle();
-  }, [liveCameraControl]);
-
   const loadRooms = useCallback(async () => {
     const { data, error } = await supabase.from("social_live_rooms")
       .select("id,title,description,host_id,host_name,status,created_at")
@@ -300,7 +296,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <button type="submit" disabled={!draft.trim() || chatSending} className="h-9 shrink-0 rounded-lg bg-fuchsia-600 px-2 text-[11px] font-black disabled:opacity-40 sm:h-11 sm:rounded-xl sm:px-2.5 sm:text-xs">{chatSending ? "…" : "Send"}</button>
                 <div className="relative z-[130] flex shrink-0 items-center gap-0.5 sm:gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
-                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} isOnStage={liveCameraControl?.enabled === true} onLeaveStage={handleReturnToChat} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
+                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
                   <button
                       type="button"
                       disabled={!liveCameraControl?.canPublish}
