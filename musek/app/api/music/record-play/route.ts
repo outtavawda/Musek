@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const trackId = typeof body?.trackId === "string" ? body.trackId : "";
     const action = body?.action;
 
-    if (!UUID_PATTERN.test(trackId) || !["start", "complete"].includes(action)) {
+    if (!UUID_PATTERN.test(trackId) || !["start", "heartbeat", "complete"].includes(action)) {
       return NextResponse.json(
         { error: "A valid track and playback action are required." },
         { status: 400 }
@@ -57,6 +57,27 @@ export async function POST(request: Request) {
       const result = await admin.rpc("start_track_play_session", {
         p_track_id: trackId,
         p_visitor_hash: visitorHash,
+      });
+      data = result.data;
+      error = result.error;
+    } else if (action === "heartbeat") {
+      const sessionId =
+        typeof body?.sessionId === "string" ? body.sessionId : "";
+      const playbackPositionSeconds = Number(body?.playbackPositionSeconds);
+      if (
+        !UUID_PATTERN.test(sessionId) ||
+        !Number.isFinite(playbackPositionSeconds) ||
+        playbackPositionSeconds < 0
+      ) {
+        return NextResponse.json(
+          { error: "A valid playback heartbeat is required." },
+          { status: 400 }
+        );
+      }
+      const result = await admin.rpc("heartbeat_track_play_session", {
+        p_session_id: sessionId,
+        p_visitor_hash: visitorHash,
+        p_playback_position_seconds: Math.floor(playbackPositionSeconds),
       });
       data = result.data;
       error = result.error;
@@ -94,7 +115,7 @@ export async function POST(request: Request) {
     }
 
     const response = NextResponse.json(
-      action === "start" ? { sessionId: data } : { counted: data === true }
+      action === "start" ? { sessionId: data } : action === "heartbeat" ? { creditedSeconds: data } : { counted: data === true }
     );
 
     if (shouldSetCookie) {
