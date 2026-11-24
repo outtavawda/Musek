@@ -22,6 +22,7 @@ export default function PushNotificationSettings() {
   useEffect(() => {
     const isNative = Capacitor.isNativePlatform();
     setNative(isNative);
+    if (isNative) setNativeToken(window.localStorage.getItem("musek-native-push-token") || "");
     const available = isNative || ("serviceWorker" in navigator && "PushManager" in window && "Notification" in window);
     setSupported(available);
     if (isNative) {
@@ -45,6 +46,7 @@ export default function PushNotificationSettings() {
           });
           if (!response.ok) throw new Error((await response.json()).error || "Could not turn off notifications.");
           setEnabled(false); setNativeToken("");
+          window.localStorage.removeItem("musek-native-push-token");
           setMessage("MUSEK notifications are disabled for this device.");
           return;
         }
@@ -53,6 +55,7 @@ export default function PushNotificationSettings() {
         if (result.receive !== "granted") throw new Error("Allow notifications in device settings to continue.");
         const registration = await PushNotifications.addListener("registration", async (token: Token) => {
           setNativeToken(token.value);
+          window.localStorage.setItem("musek-native-push-token", token.value);
           const platform = Capacitor.getPlatform();
           const response = await fetch("/api/push/native-token", {
             method: "POST", headers: { "Content-Type": "application/json" },
