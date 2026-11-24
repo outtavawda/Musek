@@ -77,7 +77,7 @@ async function sendApns(deviceToken: string, message: NativePushMessage): Promis
       finish(undefined, { delivered: false, expired });
     });
     request.on("error", error => finish(error));
-    client.setTimeout(10_000, () => request.close());
+    client.setTimeout(10_000, () => finish(new Error("APNs request timed out.")));
     request.end(JSON.stringify({
       aps: { alert: { title: message.title, body: message.body }, sound: "default" },
       url: message.url
