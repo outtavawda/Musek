@@ -39,6 +39,7 @@ npm install
 CAPACITOR_SERVER_URL=https://YOUR-DEPLOYED-MUSEK-HOST npx cap add ios
 CAPACITOR_SERVER_URL=https://YOUR-DEPLOYED-MUSEK-HOST npx cap add android
 node scripts/configure-native-deep-links.mjs
+node scripts/configure-native-playback.mjs
 CAPACITOR_SERVER_URL=https://YOUR-DEPLOYED-MUSEK-HOST npx cap sync
 npx cap open ios
 npx cap open android
