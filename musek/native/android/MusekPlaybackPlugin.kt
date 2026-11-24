@@ -25,10 +25,6 @@ class MusekPlaybackPlugin : Plugin() {
 
     override fun load() {
         super.load()
-        ContextCompat.startForegroundService(
-            context,
-            android.content.Intent(context, MusekPlaybackService::class.java)
-        )
         val token = SessionToken(context, ComponentName(context, MusekPlaybackService::class.java))
         val future = MediaController.Builder(context, token).buildAsync()
         controllerFuture = future
