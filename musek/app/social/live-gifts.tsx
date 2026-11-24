@@ -336,7 +336,7 @@ export default function LiveGifts({
     <section className="relative w-auto shrink-0">
       {activeGift && typeof document !== "undefined" && createPortal((() => {
         const details = giftForCoins(Number(activeGift.coins));
-        const tier = Number(activeGift.coins) >= 60000 ? "legendary" : Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 2500 ? "medium" : "small";
+        const tier = Number(activeGift.coins) >= 60000 ? "legendary" : Number(activeGift.coins) >= 20000 ? "premium" : Number(activeGift.coins) >= 500 ? "medium" : "small";
         return (
           <div key={activeGift.gift_id} className={`musek-gift-overlay musek-gift-${tier} musek-gift-event-${(details?.name || "gift").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} role="status" aria-live="polite">
             {tier === "legendary" && (
@@ -352,7 +352,9 @@ export default function LiveGifts({
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-flight">
               <div className="musek-gift-content">
-                <div className={`musek-gallery-gift-preview musek-gallery-gift-${tier}`}>
+                <div className={`musek-gallery-gift-preview musek-gallery-gift-${tier} ${Number(activeGift.coins) >= 500 ? "musek-gallery-gift-3d" : ""}`}>
+                  {Number(activeGift.coins) >= 500 && <span className="musek-gallery-gift-orbit musek-gallery-gift-orbit-one" aria-hidden="true" />}
+                  {Number(activeGift.coins) >= 500 && <span className="musek-gallery-gift-orbit musek-gallery-gift-orbit-two" aria-hidden="true" />}
                   <img
                     src={giftImagePath(details?.name || "gift")}
                     alt={details?.name || "MUSEK gift"}
@@ -372,6 +374,19 @@ export default function LiveGifts({
         .musek-gallery-gift-preview { position:relative; display:grid; place-items:center; width:min(52vw,270px); aspect-ratio:1; margin:0 auto 8px; }
         .musek-gallery-gift-preview::before { content:""; position:absolute; inset:8%; z-index:0; border-radius:50%; background:radial-gradient(circle,rgba(192,132,252,.42),rgba(99,102,241,.14) 50%,transparent 73%); filter:blur(12px); }
         .musek-gallery-gift-preview img { position:relative; z-index:1; display:block; width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 18px 20px rgba(0,0,0,.6)); animation:musek-gallery-gift-float 2.8s ease-in-out infinite; }
+        .musek-gallery-gift-3d { perspective:900px; transform-style:preserve-3d; }
+        .musek-gallery-gift-3d::before { inset:12%; background:radial-gradient(circle,rgba(251,191,36,.34),rgba(168,85,247,.3) 42%,rgba(59,130,246,.16) 64%,transparent 78%); filter:blur(18px); animation:musek-gift-3d-pulse 2.4s ease-in-out infinite; }
+        .musek-gallery-gift-3d img { transform-style:preserve-3d; filter:drop-shadow(0 18px 12px rgba(0,0,0,.62)) drop-shadow(0 0 18px rgba(192,132,252,.45)); animation:musek-gift-3d-float 3.2s ease-in-out infinite; }
+        .musek-gallery-gift-orbit { position:absolute; z-index:2; left:50%; top:57%; width:112%; height:27%; border:2px solid rgba(251,191,36,.9); border-radius:50%; box-shadow:0 0 12px rgba(251,191,36,.9),inset 0 0 12px rgba(192,132,252,.65); pointer-events:none; }
+        .musek-gallery-gift-orbit-one { transform:translate(-50%,-50%) rotateX(64deg) rotateZ(-12deg); animation:musek-gift-3d-orbit 3.2s linear infinite; }
+        .musek-gallery-gift-orbit-two { width:124%; height:34%; border-color:rgba(192,132,252,.82); box-shadow:0 0 15px rgba(168,85,247,.9),inset 0 0 12px rgba(56,189,248,.55); transform:translate(-50%,-50%) rotateX(64deg) rotateZ(18deg); animation:musek-gift-3d-orbit 4.4s linear infinite reverse; }
+        .musek-gallery-gift-medium::before { background:radial-gradient(circle,rgba(251,191,36,.45),rgba(168,85,247,.24) 48%,transparent 78%); }
+        .musek-gallery-gift-premium { width:min(70vw,360px); }
+        .musek-gallery-gift-legendary { width:min(78vw,420px); }
+        @keyframes musek-gift-3d-float { 0%,100% { transform:translateY(0) rotateY(-12deg) rotateX(5deg) scale(1); } 50% { transform:translateY(-13px) rotateY(12deg) rotateX(-5deg) scale(1.06); } }
+        @keyframes musek-gift-3d-orbit { from { transform:translate(-50%,-50%) rotateX(64deg) rotateZ(0deg); } to { transform:translate(-50%,-50%) rotateX(64deg) rotateZ(360deg); } }
+        @keyframes musek-gift-3d-pulse { 0%,100% { opacity:.65; transform:scale(.92); } 50% { opacity:1; transform:scale(1.12); } }
+
         .musek-gallery-gift-premium { width:min(66vw,340px); }
         .musek-gallery-gift-premium::before { background:radial-gradient(circle,rgba(251,191,36,.5),rgba(217,119,6,.2) 44%,rgba(124,58,237,.18) 66%,transparent 78%); }
         .musek-gallery-gift-legendary { width:min(76vw,410px); }
