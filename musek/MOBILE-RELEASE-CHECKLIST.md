@@ -65,9 +65,9 @@ The app's iOS bundle identifier must match the APNs topic, and the Firebase proj
 
 ## Lock-screen/background playback
 
-The shared player uses one app-wide HTML audio element and the browser Media Session API for metadata, play/pause, previous/next and seek actions. This can expose lock-screen controls in browsers that support Media Session.
+The shared player remains app-wide. On Android, the native playback bridge now routes music through an AndroidX Media3 ExoPlayer hosted by a MediaSessionService, with a native media notification, lock-screen controls, queue metadata, and play/pause/seek synchronization to the MUSEK player. The native generation workflow copies and registers the service and adds its Media3 dependencies.
 
-The native generation script enables iOS background audio mode and Android foreground-service permissions. Android still needs a native media playback service/notification integration before native background audio can be considered production-ready. iOS and Android behavior must be tested with the screen locked, app backgrounded, Bluetooth connected, an incoming call, and a network interruption.
+On iOS, the native generation script enables the audio background mode and configures AVAudioSession for the playback category. The web player continues to publish Media Session metadata and transport actions. This configuration is implemented but is not yet certified on a physical iPhone. Both platforms must be tested with the screen locked, app backgrounded, Bluetooth connected, an incoming call, and a network interruption.
 
 ## Responsive route audit
 
