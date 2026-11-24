@@ -1,5 +1,8 @@
 "use client";
 
+import { Capacitor } from "@capacitor/core";
+import { MusekNativePlayback } from "@/lib/native-playback";
+
 import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
   type ReactNode
