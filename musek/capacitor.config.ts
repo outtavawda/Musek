@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.musek.app",
   appName: "MUSEK",
-  webDir: "public",
+  webDir: "capacitor-web",
   server: {
     url: process.env.CAPACITOR_SERVER_URL,
     cleartext: false,
@@ -24,7 +24,8 @@ const config: CapacitorConfig = {
     }
   },
   ios: {
-    contentInset: "automatic"
+    contentInset: "automatic",
+    scheme: "musek"
   }
 };
 
