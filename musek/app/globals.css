@@ -552,3 +552,26 @@ footer {
   border-radius: 12px; outline: none; background: #11101d; color: #fff; font: inherit; font-size: 14px;
 }
 .authForm select:focus { border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,.15); }
+
+
+/* Force LiveKit stage video to fill its landscape tile on desktop and mobile. */
+.musek-stage-video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.musek-stage-video .lk-video-track,
+.musek-stage-video video {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+}
