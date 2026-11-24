@@ -19,13 +19,13 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   const [message, setMessage] = useState("");
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  const playbackSession = useRef<{ songId: string; sessionId: string | null; starting: boolean; completed: boolean }>({ songId: "", sessionId: null, starting: false, completed: false });
+  const playbackSession = useRef<{ songId: string; sessionId: string | null; starting: boolean; completed: boolean; heartbeatAt: number; heartbeatBusy: boolean; creditedSeconds: number }>({ songId: "", sessionId: null, starting: false, completed: false, heartbeatAt: 0, heartbeatBusy: false, creditedSeconds: 0 });
 
   const availableSongs = songs.filter((song) => song.audioUrl);
   const selectedSong = availableSongs[selectedIndex];
 
   useEffect(() => {
-    playbackSession.current = { songId: selectedSong?.id || "", sessionId: null, starting: false, completed: false };
+    playbackSession.current = { songId: selectedSong?.id || "", sessionId: null, starting: false, completed: false, heartbeatAt: 0, heartbeatBusy: false, creditedSeconds: 0 };
   }, [selectedSong?.id]);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   async function startPlaybackSession(songId: string) {
     const current = playbackSession.current;
     if (current.songId !== songId) {
-      playbackSession.current = { songId, sessionId: null, starting: false, completed: false };
+      playbackSession.current = { songId, sessionId: null, starting: false, completed: false, heartbeatAt: 0, heartbeatBusy: false, creditedSeconds: 0 };
     }
 
     const session = playbackSession.current;
@@ -104,13 +104,52 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
     }
   }
 
+  async function heartbeatPlaybackSession(songId: string, playbackPositionSeconds: number) {
+    const session = playbackSession.current;
+    const now = Date.now();
+    if (
+      session.songId !== songId ||
+      !session.sessionId ||
+      session.completed ||
+      session.heartbeatBusy ||
+      now - session.heartbeatAt < 4500
+    ) return;
+
+    session.heartbeatAt = now;
+    session.heartbeatBusy = true;
+    try {
+      const response = await fetch("/api/music/record-play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackId: songId,
+          action: "heartbeat",
+          sessionId: session.sessionId,
+          playbackPositionSeconds,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Playback heartbeat failed.");
+      session.creditedSeconds = Number(result.creditedSeconds) || 0;
+      if (session.creditedSeconds >= 30) {
+        await completePlaybackSession(songId, playbackPositionSeconds);
+      }
+    } catch (error) {
+      console.error("MUSEK playback heartbeat failed:", error);
+      session.heartbeatAt = 0;
+    } finally {
+      session.heartbeatBusy = false;
+    }
+  }
+
   async function completePlaybackSession(songId: string, playbackPositionSeconds: number) {
     const session = playbackSession.current;
     if (
       session.songId !== songId ||
       !session.sessionId ||
       session.completed ||
-      playbackPositionSeconds < 30
+      playbackPositionSeconds < 30 ||
+      session.creditedSeconds < 30
     ) return;
 
     session.completed = true;
