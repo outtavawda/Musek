@@ -255,7 +255,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
   }, [currentSong, nextSong, previousSong, duration]);
 
   useEffect(() => {
-    if ("mediaSession" in navigator && duration > 0) {
+    if (Capacitor.getPlatform() !== "android" && "mediaSession" in navigator && duration > 0) {
       navigator.mediaSession.setPositionState?.({ duration, playbackRate: 1, position: Math.min(currentTime, duration) });
     }
   }, [currentTime, duration]);
