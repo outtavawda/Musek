@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { LiveKitRoom, RoomAudioRenderer, VideoTrack, useLocalParticipant, useTracks } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, VideoTrack, useLocalParticipant, useParticipants, useTracks } from "@livekit/components-react";
 import { Track, VideoPresets } from "livekit-client";
+import { createClient } from "@/lib/supabase/client";
 import "@livekit/components-styles";
 
 export type LiveCameraControl = {
@@ -29,19 +30,44 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   return null;
 }
 
-function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string }) {
-  // Render only published camera tracks. Audience members remain in chat and
-  // never receive a stage tile merely because they joined the room.
+function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: string; hostName: string }) {
+  const supabase = createClient();
   const cameraTracks = useTracks([Track.Source.Camera]);
+  const participants = useParticipants();
+  const [approvedGuests, setApprovedGuests] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    let active = true;
+    const loadApprovedGuests = async () => {
+      const { data } = await supabase.from("social_live_join_requests")
+        .select("requester_id").eq("room_id", roomId).eq("status", "accepted");
+      const ids = Array.from(new Set((data || []).map((row) => row.requester_id).filter((id) => id !== hostId)));
+      if (!ids.length) { if (active) setApprovedGuests([]); return; }
+      const { data: profiles } = await supabase.from("user_profiles")
+        .select("id,display_name,artist_name").in("id", ids);
+      if (active) setApprovedGuests(ids.map((id) => {
+        const profile = profiles?.find((person) => person.id === id);
+        return { id, name: profile?.artist_name || profile?.display_name || "Guest" };
+      }));
+    };
+    loadApprovedGuests();
+    const channel = supabase.channel("musek-approved-stage-" + roomId)
+      .on("postgres_changes", { event: "*", schema: "public", table: "social_live_join_requests", filter: "room_id=eq." + roomId }, loadApprovedGuests)
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(channel); };
+  }, [roomId, hostId, supabase]);
+
   const hostTrack = cameraTracks.find((track) => track.participant.identity === hostId);
-  const guestTracks = cameraTracks
-    .filter((track) => track.participant.identity !== hostId)
-    .sort((a, b) => (a.participant.name ?? "").localeCompare(b.participant.name ?? ""));
+  const guestTiles = approvedGuests.map((guest) => ({
+    ...guest,
+    track: cameraTracks.find((track) => track.participant.identity === guest.id),
+    connected: participants.some((participant) => participant.identity === guest.id),
+  }));
 
   return (
     <div className="absolute inset-0 overflow-y-auto bg-[#05040a] px-3 pb-40 pt-24 sm:px-5 sm:pb-32">
-      <div className={guestTracks.length ? "mx-auto grid w-full max-w-6xl grid-cols-2 items-start gap-2 sm:gap-3" : "mx-auto max-w-5xl"}>
-        <section className={guestTracks.length ? "min-w-0 w-full" : "w-full"}>
+      <div className={guestTiles.length ? "mx-auto grid w-full max-w-6xl grid-cols-2 items-start gap-2 sm:gap-3" : "mx-auto max-w-5xl"}>
+        <section className={guestTiles.length ? "min-w-0 w-full" : "w-full"}>
           <div className="relative aspect-video overflow-hidden rounded-2xl border border-fuchsia-300/25 bg-[#171321] shadow-2xl shadow-black/40">
             {hostTrack ? (
               <VideoTrack trackRef={hostTrack} className="h-full w-full object-cover" />
@@ -58,12 +84,20 @@ function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string
           </div>
         </section>
 
-        {guestTracks.length > 0 && (
+        {guestTiles.length > 0 && (
           <section aria-label="Approved guests on stage" className="grid min-w-0 grid-cols-1 content-start gap-2">
-            {guestTracks.map((track) => (
-              <div key={track.participant.identity} className="relative aspect-video min-w-0 overflow-hidden rounded-xl border border-white/15 bg-[#171321]">
-                <VideoTrack trackRef={track} className="h-full w-full object-cover" />
-                <div className="pointer-events-none absolute bottom-2 left-2 max-w-[85%] truncate rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-[10px] font-bold backdrop-blur">{track.participant.name || "Guest"}</div>
+            {guestTiles.map((guest) => (
+              <div key={guest.id} className="relative aspect-video min-w-0 overflow-hidden rounded-xl border border-fuchsia-300/25 bg-[#171321]">
+                {guest.track ? <VideoTrack trackRef={guest.track} className="h-full w-full object-cover" /> : (
+                  <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#352044] to-[#11101a]">
+                    <div className="text-center">
+                      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-white/10 text-2xl font-black">{guest.name.slice(0, 1).toUpperCase()}</div>
+                      <p className="mt-2 text-xs font-bold">{guest.name}</p>
+                      <p className="mt-1 text-[10px] text-white/55">{guest.connected ? "Approved · camera off" : "Approved · joining stage"}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="pointer-events-none absolute bottom-2 left-2 max-w-[85%] truncate rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-[10px] font-bold backdrop-blur">{guest.name}</div>
               </div>
             ))}
           </section>
@@ -71,7 +105,7 @@ function HostFirstStage({ hostId, hostName }: { hostId: string; hostName: string
       </div>
 
       <div className="mx-auto mt-3 max-w-6xl text-center text-[10px] text-white/45">
-        {guestTracks.length === 0 ? "The host is live. Approved guests will appear here when they turn on their cameras." : guestTracks.length + " guest" + (guestTracks.length === 1 ? "" : "s") + " on stage"}
+        {guestTiles.length === 0 ? "The host is live. Approved guests will appear here when accepted." : guestTiles.length + " guest" + (guestTiles.length === 1 ? "" : "s") + " on stage"}
       </div>
     </div>
   );
@@ -130,7 +164,7 @@ export default function LiveVideoRoom({ roomId, hostId, displayName, hostName, o
       <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={false} onError={handleError}>
         <CameraControlBridge canPublish={canPublish} onCameraControl={onCameraControl} />
         <RoomAudioRenderer />
-        <HostFirstStage hostId={hostId} hostName={hostName} />
+        <HostFirstStage roomId={roomId} hostId={hostId} hostName={hostName} />
       </LiveKitRoom>
     </div>
   );
