@@ -52,12 +52,7 @@ class MusekPlaybackPlugin : Plugin() {
 
     @PluginMethod
     fun play(call: PluginCall) {
-        val active = controller
-        if (active == null) {
-            call.reject("Native player is still starting. Try again.")
-            return
-        }
-        try {
+        withController(call) { active ->
             val queue = call.getArray("queue") ?: JSArray()
             val items = ArrayList<MediaItem>()
             var selectedIndex = 0
@@ -79,36 +74,27 @@ class MusekPlaybackPlugin : Plugin() {
                 if (song.optString("id") == call.getString("songId")) selectedIndex = items.size
                 items.add(item)
             }
-            if (items.isEmpty()) {
-                call.reject("No playable audio tracks were supplied.")
-                return
-            }
+            if (items.isEmpty()) throw IllegalArgumentException("No playable audio tracks were supplied.")
             active.setMediaItems(items, selectedIndex, 0L)
             active.prepare()
             active.play()
-            call.resolve()
-        } catch (error: Exception) {
-            call.reject("Could not start native playback.", error)
         }
     }
 
     @PluginMethod
     fun pause(call: PluginCall) {
-        controller?.pause()
-        call.resolve()
+        withController(call) { it.pause() }
     }
 
     @PluginMethod
     fun resume(call: PluginCall) {
-        controller?.play()
-        call.resolve()
+        withController(call) { it.play() }
     }
 
     @PluginMethod
     fun seek(call: PluginCall) {
         val seconds = call.getDouble("seconds") ?: 0.0
-        controller?.seekTo((seconds * 1000).toLong())
-        call.resolve()
+        withController(call) { it.seekTo((seconds * 1000).toLong()) }
     }
 
     @PluginMethod
@@ -121,6 +107,22 @@ class MusekPlaybackPlugin : Plugin() {
             .put("duration", ((player?.duration ?: 0L).takeIf { it > 0L } ?: 0L) / 1000.0)
             .put("songId", item?.mediaId ?: "")
         call.resolve(state)
+    }
+
+    private fun withController(call: PluginCall, action: (MediaController) -> Unit) {
+        val future = controllerFuture
+        if (future == null) {
+            call.reject("Native playback service is not available.")
+            return
+        }
+        future.addListener({
+            try {
+                action(future.get())
+                call.resolve()
+            } catch (error: Exception) {
+                call.reject("Native playback command failed.", error)
+            }
+        }, ContextCompat.getMainExecutor(context))
     }
 
     private fun emitState() {
