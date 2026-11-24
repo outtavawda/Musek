@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { PushNotifications, type Token, type ActionPerformed } from "@capacitor/push-notifications";
 
 function decodeBase64Url(value: string) {
   const padding = "=".repeat((4 - value.length % 4) % 4);
@@ -11,13 +13,21 @@ function decodeBase64Url(value: string) {
 
 export default function PushNotificationSettings() {
   const [supported, setSupported] = useState(false);
+  const [native, setNative] = useState(false);
   const [enabled, setEnabled] = useState(false);
+  const [nativeToken, setNativeToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const available = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+    const isNative = Capacitor.isNativePlatform();
+    setNative(isNative);
+    const available = isNative || ("serviceWorker" in navigator && "PushManager" in window && "Notification" in window);
     setSupported(available);
+    if (isNative) {
+      void PushNotifications.checkPermissions().then(permission => setEnabled(permission.receive === "granted"));
+      return;
+    }
     if (!available) return;
     void navigator.serviceWorker.ready.then(registration => registration.pushManager.getSubscription()).then(subscription => {
       setEnabled(!!subscription);
@@ -27,10 +37,49 @@ export default function PushNotificationSettings() {
   async function toggle() {
     setBusy(true); setMessage("");
     try {
+      if (native) {
+        if (enabled && nativeToken) {
+          const response = await fetch("/api/push/native-token", {
+            method: "DELETE", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: nativeToken })
+          });
+          if (!response.ok) throw new Error((await response.json()).error || "Could not turn off notifications.");
+          setEnabled(false); setNativeToken("");
+          setMessage("MUSEK notifications are disabled for this device.");
+          return;
+        }
+        const permission = await PushNotifications.checkPermissions();
+        const result = permission.receive === "granted" ? permission : await PushNotifications.requestPermissions();
+        if (result.receive !== "granted") throw new Error("Allow notifications in device settings to continue.");
+        const registration = await PushNotifications.addListener("registration", async (token: Token) => {
+          setNativeToken(token.value);
+          const platform = Capacitor.getPlatform();
+          const response = await fetch("/api/push/native-token", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: token.value, platform })
+          });
+          if (!response.ok) setMessage("Device permission was granted, but MUSEK could not save this device.");
+          else { setEnabled(true); setMessage("This device is registered for MUSEK notifications."); }
+        });
+        const registrationError = await PushNotifications.addListener("registrationError", error => {
+          console.error("MUSEK native push registration failed:", error);
+          setMessage("Could not register this device for notifications.");
+        });
+        const action = await PushNotifications.addListener("pushNotificationActionPerformed", (event: ActionPerformed) => {
+          const target = event.notification.data?.url;
+          if (typeof target === "string" && target.startsWith("/") && !target.startsWith("//")) window.location.assign(target);
+        });
+        await PushNotifications.register();
+        window.setTimeout(() => {
+          void registration.remove(); void registrationError.remove(); void action.remove();
+        }, 30000);
+        setMessage("Waiting for device registration…");
+        return;
+      }
+
       const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!key) throw new Error("Push notifications are not configured yet.");
-      const permission = Notification.permission === "granted"
-        ? "granted" : await Notification.requestPermission();
+      const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
       if (permission !== "granted") throw new Error("Allow notifications in your browser settings to continue.");
       const registration = await navigator.serviceWorker.ready;
       const existing = await registration.pushManager.getSubscription();
@@ -41,8 +90,7 @@ export default function PushNotificationSettings() {
         });
         if (!response.ok) throw new Error((await response.json()).error || "Could not turn off notifications.");
         await existing.unsubscribe();
-        setEnabled(false);
-        setMessage("MUSEK notifications turned off.");
+        setEnabled(false); setMessage("MUSEK notifications turned off.");
       } else {
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -56,8 +104,7 @@ export default function PushNotificationSettings() {
           await subscription.unsubscribe();
           throw new Error((await response.json()).error || "Could not save notification settings.");
         }
-        setEnabled(true);
-        setMessage("MUSEK notifications are enabled on this device.");
+        setEnabled(true); setMessage("MUSEK notifications are enabled on this device.");
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not update notification settings.");
