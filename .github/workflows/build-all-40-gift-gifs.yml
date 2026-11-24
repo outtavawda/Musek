@@ -1,0 +1,156 @@
+name: Build all 40 MUSEK TikTok-style gift GIFs
+on:
+  push:
+    branches: [square-sandbox]
+    paths:
+      - ".github/workflows/build-all-40-gift-gifs.yml"
+permissions:
+  contents: read
+  actions: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - name: Render 40 individual themed animations
+        run: |
+          cat > /tmp/render.py <<'PY'
+          from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
+          import math, os, random, zipfile, hashlib
+          SRC = "musek/public/gifts"
+          OUT = "MUSEK_40_Animated_Gifts"
+          os.makedirs(OUT, exist_ok=True)
+          gifts = [
+            ("carnival","Carnival",7500),("castle","Castle",3500),("confetti","Confetti",400),
+            ("crown","Crown",2500),("diamond","Diamond",1500),("disco-ball","Disco Ball",750),
+            ("dragon","Dragon",60000),("drum","Drum",200),("fireworks","Fireworks",600),
+            ("galaxy","Galaxy",100000),("gold-watch","Gold Watch",1250),("golden-mic","Golden Mic",350),
+            ("golden-palace","Golden Palace",5000),("guitar","Guitar",250),("heart","Heart",10),
+            ("island-escape","Island Escape",10000),("kiss","Kiss",25),("love-letter","Love Letter",75),
+            ("mansion","Mansion",50000),("money-rain","Money Rain",20000),("money-vault","Money Vault",25000),
+            ("musek-legend","MUSEK Legend",150000),("music-note","Music Note",150),("party-popper","Party Popper",500),
+            ("phoenix","Phoenix",75000),("private-jet","Private Jet",40000),("reggae-vibes","Reggae Vibes",12500),
+            ("rocket","Rocket",30000),("rose","Rose",100),("royal-carriage","Royal Carriage",4000),
+            ("royal-throne","Royal Throne",3000),("speaker","Speaker",300),("sports-car","Sports Car",1750),
+            ("spotlight","Spotlight",900),("steel-pan","Steel Pan",6000),("sunglasses","Sunglasses",1000),
+            ("teddy","Teddy",50),("universe","Universe",120000),("world-tour","World Tour",15000),
+            ("yacht","Yacht",2000)
+          ]
+          W=H=384; FRAMES=28
+          def glow(draw, cx, cy, radius, color, width=3):
+              for k in range(5,0,-1):
+                  a=int(color[3]*k/8)
+                  draw.ellipse((cx-radius-k*3,cy-radius*.34-k*2,cx+radius+k*3,cy+radius*.34+k*2),outline=(*color[:3],a),width=max(1,width+k))
+          for slug,name,coins in gifts:
+              src=os.path.join(SRC,slug+".webp")
+              if not os.path.exists(src):
+                  raise FileNotFoundError("Missing gallery artwork: "+src)
+              seed=int(hashlib.sha256(slug.encode()).hexdigest()[:8],16)
+              rng=random.Random(seed)
+              hue=seed%360
+              gold=(255,190,65)
+              accent=((70+(seed&127)),(70+((seed>>8)&127)),(150+((seed>>16)&100)))
+              art=Image.open(src).convert("RGBA")
+              art.thumbnail((218,218),Image.Resampling.LANCZOS)
+              # Preserve alpha when the gallery source provides it; artwork is never replaced.
+              stars=[(rng.randrange(W),rng.randrange(H),rng.uniform(.6,2.0),rng.random()*math.tau) for _ in range(90)]
+              frames=[]
+              for f in range(FRAMES):
+                  t=2*math.pi*f/FRAMES
+                  bg=Image.new("RGBA",(W,H),(3,4,20,255))
+                  px=bg.load()
+                  for y in range(H):
+                      for x in range(W):
+                          dx=x-W/2; dy=y-H/2
+                          r=math.sqrt(dx*dx+dy*dy)
+                          g=max(0,1-r/310)
+                          wave=.5+.5*math.sin(math.atan2(dy,dx)*3+t*.35)
+                          px[x,y]=(int(4+g*(8+accent[0]*.18)),int(3+g*(5+accent[1]*.16)),int(20+g*(24+accent[2]*.35)),255)
+                  d=ImageDraw.Draw(bg,"RGBA")
+                  # Moving nebula wisps and deep-space stars
+                  for k in range(7):
+                      cx=W/2+math.cos(t*.6+k*math.tau/7)*145
+                      cy=H/2+math.sin(t*.8+k*math.tau/7)*112
+                      rr=30+10*math.sin(t*2+k)
+                      d.ellipse((cx-rr,cy-rr,cx+rr,cy+rr),fill=(*accent,18))
+                  for sx,sy,sr,phase in stars:
+                      tw=(math.sin(t*2.3+phase)+1)/2
+                      d.ellipse((sx-sr*tw,sy-sr*tw,sx+sr*tw,sy+sr*tw),fill=(210,225,255,int(45+190*tw)))
+                  # Multiple elliptical golden energy rings, rotating in opposite directions
+                  for radius,tilt,phase,width in [(142,.30,t,4),(158,.23,-t*1.2,2),(176,.17,t*.75,2)]:
+                      pts=[]
+                      for j in range(121):
+                          a=j*math.tau/120+phase
+                          pts.append((W/2+math.cos(a)*radius,H/2+math.sin(a)*radius*tilt))
+                      d.line(pts,fill=(255,174,45,95),width=width+7)
+                      d.line(pts,fill=(255,218,125,225),width=width)
+                  # Gift-specific environmental accents
+                  if slug in ("yacht","island-escape","world-tour"):
+                      for k in range(5):
+                          yy=300+k*13+math.sin(t*2+k)*4
+                          d.arc((18,yy,366,yy+24),180,355,fill=(40,180,255,110),width=3)
+                  elif slug in ("dragon","phoenix","rocket","fireworks","party-popper"):
+                      for k in range(22):
+                          a=t*1.1+k*math.tau/22
+                          rr=105+18*math.sin(k+t*3)
+                          x=W/2+math.cos(a)*rr; y=H/2+math.sin(a)*rr*.7
+                          d.ellipse((x-2,y-2,x+3,y+3),fill=(255,105+rng.randrange(100),35,210))
+                  elif slug in ("money-rain","money-vault"):
+                      for k in range(12):
+                          x=(k*37+int(t*42))%W
+                          y=(k*61+int(t*80))%H
+                          d.rounded_rectangle((x,y,x+12,y+7),radius=2,fill=(65,205,115,190),outline=(220,255,170,230))
+                  elif slug in ("crown","royal-throne","royal-carriage","golden-palace","castle","musek-legend"):
+                      d.polygon([(192,8),(176,58),(192,48),(208,58)],fill=(255,215,100,55))
+                      for k in range(8):
+                          x=192+math.cos(k*math.tau/8)*120
+                          y=192+math.sin(k*math.tau/8)*90
+                          d.ellipse((x-2,y-2,x+2,y+2),fill=(255,230,150,230))
+                  # Golden pedestal glow and moving flare
+                  d.ellipse((91,300,293,348),fill=(255,174,45,30),outline=(255,204,100,210),width=3)
+                  d.ellipse((119,309,265,337),fill=(255,218,125,38),outline=(255,240,185,150),width=2)
+                  # Gift rises, breathes and gently turns for a dimensional reveal
+                  scale=1+.045*math.sin(t*2)
+                  aw,ah=art.size
+                  a2=art.resize((max(1,int(aw*scale)),max(1,int(ah*scale))),Image.Resampling.LANCZOS)
+                  a2=a2.rotate(3.5*math.sin(t),resample=Image.Resampling.BICUBIC,expand=True)
+                  alpha=a2.getchannel("A")
+                  shadow=Image.new("RGBA",a2.size,(255,170,45,0))
+                  shadow.putalpha(alpha.filter(ImageFilter.GaussianBlur(18)).point(lambda p:int(p*.68)))
+                  x=(W-a2.width)//2
+                  y=(H-a2.height)//2-15-int(7*math.sin(t*2))
+                  bg.alpha_composite(shadow,(x,y))
+                  bg.alpha_composite(a2,(x,y))
+                  d=ImageDraw.Draw(bg,"RGBA")
+                  # Orbiting bright particles and lens flare
+                  for k in range(16):
+                      a=t*1.35+k*math.tau/16
+                      rr=160+6*math.sin(t*3+k)
+                      xx=W/2+math.cos(a)*rr
+                      yy=H/2+math.sin(a)*rr*.30
+                      d.ellipse((xx-2.5,yy-2.5,xx+2.5,yy+2.5),fill=(255,230,165,245))
+                  flare= int(75+65*(.5+.5*math.sin(t*2)))
+                  d.line((50,192,334,192),fill=(255,225,170,flare),width=2)
+                  # Brief reveal flash on the opening frames
+                  if f<5:
+                      a=int(150*(1-f/5))
+                      d.ellipse((66,66,318,318),outline=(255,245,210,a),width=8)
+                  frames.append(bg.convert("RGB"))
+              outpath=os.path.join(OUT,slug+".gif")
+              frames[0].save(outpath,save_all=True,append_images=frames[1:],duration=75,loop=0,optimize=True)
+              print("RENDERED",slug,coins,os.path.getsize(outpath))
+          with zipfile.ZipFile("MUSEK_40_TikTok_Style_Animated_Gifts.zip","w",zipfile.ZIP_DEFLATED) as z:
+              for fn in sorted(os.listdir(OUT)):
+                  z.write(os.path.join(OUT,fn),fn)
+          print("TOTAL_GIF_COUNT",len(os.listdir(OUT)))
+          PY
+          python /tmp/render.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MUSEK-40-TikTok-Style-Animated-Gifts
+          path: MUSEK_40_TikTok_Style_Animated_Gifts.zip
+          if-no-files-found: error
