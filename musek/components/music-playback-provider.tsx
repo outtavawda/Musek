@@ -179,11 +179,14 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     if (Capacitor.getPlatform() === "android") {
       let mounted = true;
       let listener: { remove: () => Promise<void> } | null = null;
-      const applyState = (state: { isPlaying: boolean; currentTime: number; duration: number }) => {
+      const applyState = (state: { isPlaying: boolean; currentTime: number; duration: number; songId?: string }) => {
         if (!mounted) return;
         setIsPlaying(state.isPlaying);
         setCurrentTime(state.currentTime || 0);
         setDuration(state.duration || 0);
+        if (state.songId) {
+          setCurrentSong(current => current?.id === state.songId ? current : queue.find(song => song.id === state.songId) || current);
+        }
       };
       void MusekNativePlayback.addListener("playbackState", applyState).then(handle => {
         listener = handle;
