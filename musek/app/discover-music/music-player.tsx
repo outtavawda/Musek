@@ -19,13 +19,13 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
   const [message, setMessage] = useState("");
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  const countedPlayForSong = useRef<string | null>(null);
+  const playbackSession = useRef<{ songId: string; sessionId: string | null; starting: boolean; completed: boolean }>({ songId: "", sessionId: null, starting: false, completed: false });
 
   const availableSongs = songs.filter((song) => song.audioUrl);
   const selectedSong = availableSongs[selectedIndex];
 
   useEffect(() => {
-    countedPlayForSong.current = null;
+    playbackSession.current = { songId: selectedSong?.id || "", sessionId: null, starting: false, completed: false };
   }, [selectedSong?.id]);
 
   useEffect(() => {
@@ -72,27 +72,66 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
     loadFavorites();
   }, []);
 
-  async function recordPlay(songId: string) {
-    if (countedPlayForSong.current === songId) return;
+  async function startPlaybackSession(songId: string) {
+    const current = playbackSession.current;
+    if (current.songId !== songId) {
+      playbackSession.current = { songId, sessionId: null, starting: false, completed: false };
+    }
 
-    countedPlayForSong.current = songId;
+    const session = playbackSession.current;
+    if (session.sessionId || session.starting || session.completed) return;
 
+    session.starting = true;
     try {
       const response = await fetch("/api/music/record-play", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ trackId: songId }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackId: songId, action: "start" }),
       });
-
-      if (!response.ok) {
-        countedPlayForSong.current = null;
-        console.error("MUSEK play count request failed:", response.status);
+      const result = await response.json();
+      if (!response.ok || typeof result.sessionId !== "string") {
+        throw new Error(result.error || "Could not start playback session.");
+      }
+      if (playbackSession.current.songId === songId) {
+        playbackSession.current.sessionId = result.sessionId;
       }
     } catch (error) {
-      countedPlayForSong.current = null;
-      console.error("MUSEK play count error:", error);
+      console.error("MUSEK playback session start failed:", error);
+    } finally {
+      if (playbackSession.current.songId === songId) {
+        playbackSession.current.starting = false;
+      }
+    }
+  }
+
+  async function completePlaybackSession(songId: string, playbackPositionSeconds: number) {
+    const session = playbackSession.current;
+    if (
+      session.songId !== songId ||
+      !session.sessionId ||
+      session.completed ||
+      playbackPositionSeconds < 30
+    ) return;
+
+    session.completed = true;
+    try {
+      const response = await fetch("/api/music/record-play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackId: songId,
+          action: "complete",
+          sessionId: session.sessionId,
+          playbackPositionSeconds,
+        }),
+      });
+      if (!response.ok) {
+        session.completed = false;
+        console.error("MUSEK play count completion failed:", response.status);
+      }
+    } catch (error) {
+      session.completed = false;
+      console.error("MUSEK play count completion error:", error);
     }
   }
 
@@ -314,15 +353,13 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
               controls
               preload="none"
               src={selectedSong.audioUrl || undefined}
+              onPlay={() => {
+                void startPlaybackSession(selectedSong.id);
+              }}
               onTimeUpdate={(event) => {
                 const audio = event.currentTarget;
-                const playThreshold =
-                  Number.isFinite(audio.duration) && audio.duration > 0 && audio.duration < 30
-                    ? audio.duration * 0.5
-                    : 30;
-
-                if (audio.currentTime >= playThreshold) {
-                  void recordPlay(selectedSong.id);
+                if (audio.currentTime >= 30) {
+                  void completePlaybackSession(selectedSong.id, audio.currentTime);
                 }
               }}
               onEnded={nextSong}
