@@ -1,0 +1,113 @@
+name: Build MUSEK 500+ Gift Animations
+on:
+  push:
+    branches: [square-sandbox]
+    paths:
+      - ".github/workflows/build-gift-gifs.yml"
+permissions:
+  contents: read
+  actions: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - name: Render animated gift effects from gallery artwork
+        run: |
+          cat > /tmp/render.py <<'PY'
+          from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
+          import math, os, random, zipfile, hashlib
+          src='musek/public/gifts'
+          out='musek-gift-animations'
+          os.makedirs(out,exist_ok=True)
+          gifts=[
+          ('party-popper',500),('fireworks',600),('disco-ball',750),('spotlight',900),
+          ('sunglasses',1000),('gold-watch',1250),('diamond',1500),('sports-car',1750),('yacht',2000),
+          ('crown',2500),('royal-throne',3000),('castle',3500),('royal-carriage',4000),('golden-palace',5000),
+          ('steel-pan',6000),('carnival',7500),('island-escape',10000),('reggae-vibes',12500),('world-tour',15000),
+          ('money-rain',20000),('money-vault',25000),('rocket',30000),('private-jet',40000),('mansion',50000),
+          ('dragon',60000),('phoenix',75000),('galaxy',100000),('universe',120000),('musek-legend',150000)]
+          W=H=512; N=24
+          for name,price in gifts:
+              path=os.path.join(src,name+'.webp')
+              if not os.path.exists(path):
+                  print('MISSING',path); continue
+              art=Image.open(path).convert('RGBA')
+              art.thumbnail((250,250),Image.Resampling.LANCZOS)
+              seed=int(hashlib.sha256(name.encode()).hexdigest()[:8],16)
+              rng=random.Random(seed)
+              hue=(seed%360)
+              frames=[]
+              stars=[(rng.randrange(W),rng.randrange(H),rng.uniform(.5,2.2),rng.random()*math.tau) for _ in range(100)]
+              for f in range(N):
+                  t=f/N*math.tau
+                  bg=Image.new('RGBA',(W,H),(7,5,24,255))
+                  pix=bg.load()
+                  c1=(seed>>8)&255; c2=(seed>>16)&255
+                  for y in range(H):
+                      for x in range(W):
+                          dx=x-W/2; dy=y-H/2
+                          glow=max(0,1-math.sqrt(dx*dx+dy*dy)/390)
+                          pix[x,y]=(int(7+glow*(25+c1%45)),int(5+glow*(8+c2%35)),int(24+glow*75),255)
+                  d=ImageDraw.Draw(bg,'RGBA')
+                  # radiant beams
+                  for k in range(16):
+                      a=k*math.tau/16+t*.12
+                      ex=W/2+math.cos(a)*520; ey=H/2+math.sin(a)*520
+                      d.line((W/2,H/2,ex,ey),fill=(255,190,75,22),width=5)
+                  # stars and sparks
+                  for sx,sy,r,phase in stars:
+                      tw=(math.sin(t*2+phase)+1)/2
+                      d.ellipse((sx-r*tw,sy-r*tw,sx+r*tw,sy+r*tw),fill=(255,225,155,int(65+175*tw)))
+                  # twin rotating energy rings
+                  for rad,tilt,alpha in [(174,.38,190),(205,-.28,120)]:
+                      pts=[]
+                      for j in range(121):
+                          a=j/120*math.tau+t*(1 if tilt>0 else -1)
+                          xx=W/2+math.cos(a)*rad
+                          yy=H/2+math.sin(a)*rad*tilt
+                          pts.append((xx,yy))
+                      d.line(pts,fill=(255,190,70,alpha),width=7)
+                      d.line(pts,fill=(255,245,190,100),width=2)
+                  # gold pedestal and spotlight
+                  d.ellipse((126,395,386,455),fill=(255,184,45,45),outline=(255,213,120,210),width=4)
+                  d.ellipse((154,408,358,444),fill=(255,218,120,65),outline=(255,238,180,150),width=2)
+                  # gift artwork, gently floating and rotating
+                  scale=1+0.035*math.sin(t*2)
+                  aw,ah=art.size
+                  a2=art.resize((int(aw*scale),int(ah*scale)),Image.Resampling.LANCZOS)
+                  a2=a2.rotate(math.sin(t)*4,resample=Image.Resampling.BICUBIC,expand=True)
+                  shadow=Image.new('RGBA',a2.size,(255,180,45,0))
+                  shadow.putalpha(a2.getchannel('A').filter(ImageFilter.GaussianBlur(24)))
+                  x=(W-a2.width)//2; y=(H-a2.height)//2-14-int(7*math.sin(t*2))
+                  bg.alpha_composite(Image.new('RGBA',a2.size,(255,185,65,95)),(x,y)) if False else None
+                  bg.alpha_composite(shadow,(x,y))
+                  bg.alpha_composite(a2,(x,y))
+                  # orbiting sparks
+                  d=ImageDraw.Draw(bg,'RGBA')
+                  for k in range(12):
+                      a=t*1.4+k*math.tau/12
+                      rr=178+8*math.sin(t*2+k)
+                      sx=W/2+math.cos(a)*rr; sy=H/2+math.sin(a)*rr*.55
+                      d.ellipse((sx-4,sy-4,sx+4,sy+4),fill=(255,218,120,235))
+                  # premium reveal flare
+                  if f in range(0,5):
+                      alpha=int(90*(1-f/5))
+                      d.ellipse((110,110,402,402),outline=(255,245,200,alpha),width=14)
+                  frames.append(bg.convert('RGB'))
+              frames[0].save(os.path.join(out,name+'.gif'),save_all=True,append_images=frames[1:],duration=70,loop=0,optimize=True)
+          with zipfile.ZipFile('MUSEK_500plus_Animated_Gifts.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for f in sorted(os.listdir(out)):
+                  z.write(os.path.join(out,f),f)
+          print('GIF_COUNT',len(os.listdir(out)))
+          PY
+          python /tmp/render.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MUSEK-500plus-Animated-Gifts
+          path: MUSEK_500plus_Animated_Gifts.zip
+          if-no-files-found: error
