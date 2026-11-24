@@ -17,6 +17,7 @@ type Room = {
   host_name: string;
   status: "live" | "ended";
   created_at: string;
+  host_left_at?: string | null;
   avatar_url?: string | null;
 };
 type Message = { id: string; room_id: string; user_id: string; display_name: string; message: string; created_at: string; avatar_url?: string | null };
@@ -35,6 +36,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [hostSecondsLeft, setHostSecondsLeft] = useState<number | null>(null);
   const [notice, setNotice] = useState("");
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
@@ -64,7 +66,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   }, [selected?.id]);
   const loadRooms = useCallback(async () => {
     const { data, error } = await supabase.from("social_live_rooms")
-      .select("id,title,description,host_id,host_name,status,created_at")
+      .select("id,title,description,host_id,host_name,status,created_at,host_left_at")
       .eq("status", "live").order("created_at", { ascending: false }).limit(50);
     if (error) setNotice("Social rooms are not available yet. Apply the MUSEK Social database migration to enable them.");
     else {
@@ -206,10 +208,54 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       .then(({ data }) => { if (data?.status !== "live") leaveEndedRoom(); });
     const channel = supabase.channel("musek-live-room-lifecycle-" + roomId)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "social_live_rooms", filter: "id=eq." + roomId },
-        (payload) => { if ((payload.new as { status?: string }).status === "ended") leaveEndedRoom(); })
+        (payload) => {
+          const next = payload.new as { status?: string; host_left_at?: string | null };
+          if (next.status === "ended") leaveEndedRoom();
+          else if (typeof next.host_left_at !== "undefined") {
+            setSelected((current) => current?.id === roomId ? { ...current, host_left_at: next.host_left_at } : current);
+          }
+        })
       .subscribe();
     return () => { active = false; supabase.removeChannel(channel); };
   }, [selected?.id, supabase]);
+
+  useEffect(() => {
+    if (!selected?.host_left_at || selected.status !== "live") { setHostSecondsLeft(null); return; }
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((new Date(selected.host_left_at as string).getTime() + 3 * 60 * 1000 - Date.now()) / 1000));
+      setHostSecondsLeft(remaining);
+    };
+    updateCountdown();
+    const interval = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(interval);
+  }, [selected?.host_left_at, selected?.status]);
+
+  const enterRoom = async (room: Room) => {
+    if (room.host_id === userId && room.host_left_at) {
+      const { error } = await supabase.from("social_live_rooms")
+        .update({ host_left_at: null }).eq("id", room.id).eq("host_id", userId).eq("status", "live");
+      if (error) { setNotice("Could not resume your LIVE. Please try again."); return; }
+      room = { ...room, host_left_at: null };
+    }
+    setSelected(room);
+  };
+
+  const leaveHostLive = async () => {
+    if (!selected || selected.host_id !== userId || ending) return;
+    setEnding(true);
+    const roomId = selected.id;
+    const { error } = await supabase.from("social_live_rooms")
+      .update({ host_left_at: new Date().toISOString() })
+      .eq("id", roomId).eq("host_id", userId).eq("status", "live");
+    setEnding(false);
+    if (error) { setNotice("Could not start the three-minute LIVE shutdown timer. Please try again."); return; }
+    stopMedia();
+    setGuestLiveKitEnabled(false);
+    setLiveCameraControl(null);
+    setSelected(null);
+    await loadRooms();
+    setNotice("You left your LIVE. It will automatically end in 3 minutes unless you return.");
+  };
 
   const endRoom = async () => {
     if (!selected || selected.host_id !== userId || ending) return;
@@ -276,7 +322,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             <button onClick={() => document.getElementById("start-room")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="flex w-[76px] shrink-0 flex-col items-center gap-2">
               <span className="grid h-[62px] w-[62px] place-items-center rounded-full border-2 border-dashed border-fuchsia-400/60 bg-fuchsia-500/10 text-2xl text-fuchsia-200">＋</span><span className="text-[10px] font-bold text-gray-300">Your LIVE</span>
             </button>
-            {rooms.map((room) => <button key={room.id} onClick={() => setSelected(room)} className="flex w-[76px] shrink-0 flex-col items-center gap-2">
+            {rooms.map((room) => <button key={room.id} onClick={() => { void enterRoom(room); }} className="flex w-[76px] shrink-0 flex-col items-center gap-2">
               <span className="rounded-full bg-gradient-to-tr from-fuchsia-500 via-rose-400 to-amber-300 p-[2px]"><span className="grid h-[58px] w-[58px] place-items-center overflow-hidden rounded-full border-2 border-[#080811] bg-[#21142e]">{room.avatar_url ? <img src={room.avatar_url} alt="" className="h-full w-full object-cover"/> : <span className="text-xl font-black">{room.host_name.slice(0,1).toUpperCase()}</span>}</span></span>
               <span className="w-full truncate text-center text-[10px] font-semibold text-gray-300">{room.host_name}</span>
             </button>)}
@@ -320,6 +366,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             {(selected.host_id === userId || guestLiveKitEnabled) && <LiveVideoRoom key={videoSessionKey} roomId={selected.id} hostId={selected.host_id} displayName={displayName} hostName={selected.host_name} onCameraControl={handleLiveCameraControl}/>} 
             {selected.host_id === userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/90"/>
+            {selected.host_id !== userId && hostSecondsLeft !== null && <div role="status" className="absolute left-1/2 top-20 z-20 -translate-x-1/2 rounded-full border border-amber-300/30 bg-black/75 px-4 py-2 text-center text-xs font-bold text-amber-100 shadow-xl backdrop-blur">Host is away · LIVE ends in {Math.floor(hostSecondsLeft / 60)}:{String(hostSecondsLeft % 60).padStart(2, "0")} unless they return</div>}
           </div>
 
           <div className="relative z-10 flex items-start justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))]">
@@ -329,7 +376,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] font-black tracking-widest">● LIVE</span>
             </div>
             <button onClick={async () => {
-              if (selected.host_id === userId) { await endRoom(); return; }
+              if (selected.host_id === userId) { await leaveHostLive(); return; }
               const roomId = selected.id;
               await supabase.from("social_live_join_requests")
                 .update({ status: "declined", responded_at: new Date().toISOString() })
@@ -338,7 +385,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               setLiveCameraControl(null);
               setSelected(null);
               stopMedia();
-            }} aria-label={selected.host_id === userId ? "End live room" : "Leave live room"} title={selected.host_id === userId ? "End live for everyone" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
+            }} aria-label={selected.host_id === userId ? "Leave live room (3-minute shutdown)" : "Leave live room"} title={selected.host_id === userId ? "Leave LIVE; it ends after 3 minutes if you do not return" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
           </div>
 
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
@@ -378,7 +425,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               <button onClick={() => react("❤️")} className="text-2xl drop-shadow-lg">❤️<span className="mt-1 block text-[9px] font-bold">Love</span></button>
               <button onClick={() => react("🔥")} className="text-2xl drop-shadow-lg">🔥<span className="mt-1 block text-[9px] font-bold">Fire</span></button>
               <button onClick={() => react("👏")} className="text-2xl drop-shadow-lg">👏<span className="mt-1 block text-[9px] font-bold">Clap</span></button>
-              {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="rounded-full bg-rose-600 px-3 py-2 text-[9px] font-black disabled:opacity-50">{ending ? "ENDING" : "END LIVE"}</button>}
+              {selected.host_id === userId && <button disabled={ending} onClick={endRoom} className="rounded-full bg-rose-600 px-3 py-2 text-[9px] font-black disabled:opacity-50">{ending ? "ENDING" : "END LIVE NOW"}</button>}
             </div>
           </div>
 
