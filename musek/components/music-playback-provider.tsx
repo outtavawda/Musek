@@ -52,6 +52,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
 
   const playSong = useCallback((song: MusekSong, songs?: MusekSong[]) => {
     if (songs) setQueueState(songs.filter(item => !!item.audioUrl));
+    else setQueueState(current => current.some(item => item.id === song.id) ? current : [song]);
     setCurrentSong(song);
     setExpanded(true);
     setIsPlaying(true);
@@ -72,14 +73,26 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
   }, [queue, currentSong]);
 
   const togglePlayback = useCallback(() => {
+    if (Capacitor.getPlatform() === "android") {
+      if (isPlaying) void MusekNativePlayback.pause();
+      else void MusekNativePlayback.resume();
+      setIsPlaying(value => !value);
+      return;
+    }
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) void audio.play().catch(() => setIsPlaying(false));
     else audio.pause();
-  }, []);
+  }, [isPlaying]);
 
   const seek = useCallback((seconds: number) => {
-    if (audioRef.current) audioRef.current.currentTime = Math.max(0, Math.min(seconds, duration || seconds));
+    const target = Math.max(0, Math.min(seconds, duration || seconds));
+    if (Capacitor.getPlatform() === "android") {
+      void MusekNativePlayback.seek({ seconds: target });
+      setCurrentTime(target);
+      return;
+    }
+    if (audioRef.current) audioRef.current.currentTime = target;
   }, [duration]);
 
   useEffect(() => {
