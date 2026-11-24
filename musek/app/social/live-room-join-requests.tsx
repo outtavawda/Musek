@@ -34,6 +34,8 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
       if (request?.status === "accepted" && approvedRequestId.current !== request.id) {
         approvedRequestId.current = request.id;
         onApproved?.();
+      } else if (request?.status !== "accepted") {
+        approvedRequestId.current = null;
       }
     }
   }, [isHost, roomId, supabase, userId, onApproved]);
@@ -49,10 +51,10 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
   const requestToJoin = async () => {
     if (pending || isOnStage) return;
     setBusy(true); setNotice("");
-    if (myRequest?.status === "accepted") {
+    if (myRequest && myRequest.status !== "pending") {
       const { data, error } = await supabase.from("social_live_join_requests")
         .update({ status: "pending", responded_at: null })
-        .eq("id", myRequest.id).eq("requester_id", userId).eq("status", "accepted")
+        .eq("id", myRequest.id).eq("requester_id", userId).eq("status", myRequest.status)
         .select("id,room_id,requester_id,status,created_at").single();
       setBusy(false);
       if (error) setNotice("Could not resend your request. Please try again.");
@@ -93,6 +95,14 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
     setBusy(true); setNotice("");
     try {
       await onLeaveStage();
+      if (myRequest?.status === "accepted") {
+        const { data, error } = await supabase.from("social_live_join_requests")
+          .update({ status: "declined", responded_at: new Date().toISOString() })
+          .eq("id", myRequest.id).eq("requester_id", userId).eq("status", "accepted")
+          .select("id,room_id,requester_id,status,created_at").maybeSingle();
+        if (error || !data) throw new Error("Could not remove guest from stage.");
+        setMyRequest(data as JoinRequest);
+      }
     } catch {
       setNotice("Could not leave the stage. Please try again.");
     } finally {
