@@ -102,7 +102,10 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     }
     if (Capacitor.getPlatform() === "android") {
       const nativeQueue = (queue.length ? queue : [currentSong]).filter(song => !!song.audioUrl);
-      void MusekNativePlayback.play({ songId: currentSong.id, queue: nativeQueue }).catch(error => {
+      void MusekNativePlayback.getState().then(state => {
+        if (state.songId === currentSong.id) return;
+        return MusekNativePlayback.play({ songId: currentSong.id, queue: nativeQueue });
+      }).catch(error => {
         console.error("MUSEK native playback failed", error);
         setIsPlaying(false);
       });
@@ -113,7 +116,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     audio.src = currentSong.audioUrl || "";
     audio.load();
     if (isPlaying) void audio.play().catch(() => setIsPlaying(false));
-  }, [currentSong?.id]);
+  }, [currentSong?.id, queue]);
 
   useEffect(() => {
     if (Capacitor.getPlatform() === "android") return;
