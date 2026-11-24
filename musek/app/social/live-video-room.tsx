@@ -8,8 +8,10 @@ import "@livekit/components-styles";
 
 export type LiveCameraControl = {
   toggle: () => Promise<void>;
+  toggleMicrophone: () => Promise<void>;
   disableMedia: () => Promise<void>;
   enabled: boolean;
+  microphoneEnabled: boolean;
   canPublish: boolean;
 };
 
@@ -17,7 +19,7 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   canPublish: boolean;
   onCameraControl?: (control: LiveCameraControl | null) => void;
 }) {
-  const { localParticipant, isCameraEnabled } = useLocalParticipant();
+  const { localParticipant, isCameraEnabled, isMicrophoneEnabled } = useLocalParticipant();
 
   // Guests cannot publish camera video until the server confirms stage
   // approval. Keep the camera off even if a device/browser restores a
@@ -32,6 +34,10 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
     if (!canPublish) return;
     await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution });
   }, [canPublish, isCameraEnabled, localParticipant]);
+  const toggleMicrophone = useCallback(async () => {
+    if (!canPublish) return;
+    await localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled);
+  }, [canPublish, isMicrophoneEnabled, localParticipant]);
   const disableMedia = useCallback(async () => {
     if (!canPublish) return;
     await Promise.all([
@@ -41,9 +47,9 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   }, [canPublish, localParticipant]);
 
   useEffect(() => {
-    onCameraControl?.({ toggle, disableMedia, enabled: isCameraEnabled, canPublish });
+    onCameraControl?.({ toggle, toggleMicrophone, disableMedia, enabled: isCameraEnabled, microphoneEnabled: isMicrophoneEnabled, canPublish });
     return () => onCameraControl?.(null);
-  }, [toggle, disableMedia, isCameraEnabled, canPublish, onCameraControl]);
+  }, [toggle, toggleMicrophone, disableMedia, isCameraEnabled, isMicrophoneEnabled, canPublish, onCameraControl]);
 
   return null;
 }
