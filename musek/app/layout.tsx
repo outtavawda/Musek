@@ -6,6 +6,7 @@ import MusekPlaybackProvider from "@/components/music-playback-provider";
 import PwaRegistration from "@/components/pwa-registration";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
 import NativeDeepLinkHandler from "@/components/native-deep-link-handler";
+import NativePushRegistration from "@/components/native-push-registration";
 
 export const metadata: Metadata = {
   title: "MUSEK — Music, creators & community",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <PwaRegistration />
           <PwaInstallPrompt />
           <NativeDeepLinkHandler />
+          <NativePushRegistration />
         </MusekPlaybackProvider>
         <GlobalNotifications />
       </body>
