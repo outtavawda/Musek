@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
           keys: { p256dh: subscription.p256dh, auth: subscription.auth }
-        }, payload, { TTL: 3600, urgency: "high" });
+        }, JSON.stringify(message), { TTL: 3600, urgency: "high" });
         return true;
       } catch (deliveryError: unknown) {
         const statusCode = typeof deliveryError === "object" && deliveryError && "statusCode" in deliveryError
