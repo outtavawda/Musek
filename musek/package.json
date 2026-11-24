@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cap:sync": "cap sync",
+    "cap:add:ios": "cap add ios",
+    "cap:add:android": "cap add android",
+    "cap:open:ios": "cap open ios",
+    "cap:open:android": "cap open android"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
@@ -21,7 +26,14 @@
     "@react-three/fiber": "^8.17.10",
     "@react-three/drei": "^9.122.0",
     "three": "^0.170.0",
-    "web-push": "3.6.7"
+    "web-push": "3.6.7",
+    "@capacitor/core": "6.2.0",
+    "@capacitor/app": "6.0.2",
+    "@capacitor/push-notifications": "6.0.2",
+    "@capacitor/status-bar": "6.0.2",
+    "@capacitor/splash-screen": "6.0.2",
+    "@capacitor/ios": "6.2.0",
+    "@capacitor/android": "6.2.0"
   },
   "devDependencies": {
     "@types/node": "20.17.6",
@@ -31,6 +43,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "5.6.3",
-    "@types/web-push": "3.6.4"
+    "@types/web-push": "3.6.4",
+    "@capacitor/cli": "6.2.0"
   }
 }
