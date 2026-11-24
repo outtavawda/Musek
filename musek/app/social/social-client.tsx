@@ -42,10 +42,19 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   const [profileLoading, setProfileLoading] = useState(false);
   const [liveCameraControl, setLiveCameraControl] = useState<LiveCameraControl | null>(null);
   const [videoSessionKey, setVideoSessionKey] = useState(0);
+  const [guestLiveKitEnabled, setGuestLiveKitEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const handleLiveCameraControl = useCallback((control: LiveCameraControl | null) => setLiveCameraControl(control), []);
+  const handleGuestStageApproved = useCallback(() => {
+    setGuestLiveKitEnabled(true);
+    setVideoSessionKey((key) => key + 1);
+  }, []);
+  const handleGuestStageClosed = useCallback(async () => {
+    setGuestLiveKitEnabled(false);
+    setLiveCameraControl(null);
+  }, []);
   const loadRooms = useCallback(async () => {
     const { data, error } = await supabase.from("social_live_rooms")
       .select("id,title,description,host_id,host_name,status,created_at")
@@ -267,7 +276,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
         {selected && <section className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
           <div className="absolute inset-0">
-            <LiveVideoRoom key={videoSessionKey} roomId={selected.id} hostId={selected.host_id} displayName={displayName} hostName={selected.host_name} onCameraControl={handleLiveCameraControl}/>
+            {(selected.host_id === userId || guestLiveKitEnabled) && <LiveVideoRoom key={videoSessionKey} roomId={selected.id} hostId={selected.host_id} displayName={displayName} hostName={selected.host_name} onCameraControl={handleLiveCameraControl}/>} 
             {selected.host_id === userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-transparent to-black/90"/>
           </div>
@@ -278,7 +287,17 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               <div className="min-w-0"><p className="max-w-[170px] truncate text-xs font-black">{selected.host_name}</p><p className="text-[10px] text-white/70">MUSEK LIVE · {messages.length} messages</p></div>
               <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] font-black tracking-widest">● LIVE</span>
             </div>
-            <button onClick={() => { if (selected.host_id === userId) { endRoom(); } else { setLiveCameraControl(null); setSelected(null); stopMedia(); } }} aria-label={selected.host_id === userId ? "End live room" : "Leave live room"} title={selected.host_id === userId ? "End live for everyone" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
+            <button onClick={async () => {
+              if (selected.host_id === userId) { await endRoom(); return; }
+              const roomId = selected.id;
+              await supabase.from("social_live_join_requests")
+                .update({ status: "declined", responded_at: new Date().toISOString() })
+                .eq("room_id", roomId).eq("requester_id", userId).in("status", ["pending", "accepted"]);
+              setGuestLiveKitEnabled(false);
+              setLiveCameraControl(null);
+              setSelected(null);
+              stopMedia();
+            }} aria-label={selected.host_id === userId ? "End live room" : "Leave live room"} title={selected.host_id === userId ? "End live for everyone" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
           </div>
 
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
@@ -296,7 +315,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <button type="submit" disabled={!draft.trim() || chatSending} className="h-9 shrink-0 rounded-lg bg-fuchsia-600 px-2 text-[11px] font-black disabled:opacity-40 sm:h-11 sm:rounded-xl sm:px-2.5 sm:text-xs">{chatSending ? "…" : "Send"}</button>
                 <div className="relative z-[130] flex shrink-0 items-center gap-0.5 sm:gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
-                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
+                  {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={handleGuestStageApproved} onStageClosed={handleGuestStageClosed}/>} 
                   <button
                       type="button"
                       disabled={!liveCameraControl?.canPublish}
