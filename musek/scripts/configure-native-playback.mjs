@@ -55,7 +55,7 @@ if (!fs.existsSync(activityPath)) throw new Error("Expected MainActivity.kt at "
 let activity = fs.readFileSync(activityPath, "utf8");
 if (!activity.includes("MusekPlaybackPlugin")) {
   activity = activity.replace(/(package [^\n]+\n)/, '$1\nimport com.musek.app.playback.MusekPlaybackPlugin\n');
-  activity = activity.replace(/class MainActivity\s*:\s*BridgeActivity\s*\{\s*\}/, `class MainActivity : BridgeActivity() {
+  activity = activity.replace(/class MainActivity\s*:\s*BridgeActivity(?:\(\))?\s*(?:\{\s*\})?/, `class MainActivity : BridgeActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         registerPlugin(MusekPlaybackPlugin::class.java)
         super.onCreate(savedInstanceState)
