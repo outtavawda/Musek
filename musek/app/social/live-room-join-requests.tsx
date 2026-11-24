@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 type JoinRequest = { id: string; room_id: string; requester_id: string; status: "pending" | "accepted" | "declined"; created_at: string };
 type RequesterProfile = { id: string; display_name: string | null; artist_name: string | null; avatar_url: string | null };
 
-export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApproved }: { roomId: string; hostId: string; userId: string; onApproved?: () => void }) {
+export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApproved, onStageClosed }: { roomId: string; hostId: string; userId: string; onApproved?: () => void; onStageClosed?: () => Promise<void> }) {
   const supabase = createClient();
   const isHost = hostId === userId;
   const [requests, setRequests] = useState<JoinRequest[]>([]);
@@ -93,6 +93,12 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
   const closeGuestTile = async () => {
     if (!accepted || busy || !myRequest) return;
     setBusy(true); setNotice("");
+    try {
+      await onStageClosed?.();
+    } catch {
+      // Closing the stage must still update the request; unmounting LiveKit below
+      // will disconnect the guest even if an explicit camera-off call fails.
+    }
     const { data, error } = await supabase.from("social_live_join_requests")
       .update({ status: "declined", responded_at: new Date().toISOString() })
       .eq("id", myRequest.id).eq("requester_id", userId).eq("status", "accepted")
