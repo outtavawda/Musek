@@ -50,11 +50,18 @@ The native projects load the deployed MUSEK web application. The placeholder web
 
 The app requests native notification permission only when the user enables notifications in Profile. It registers the iOS APNs or Android FCM device token with MUSEK and stores it under the signed-in user.
 
-Native delivery is not yet wired to APNs/FCM. Configure:
-- Apple Developer account, APNs authentication key, Team ID, Key ID, and the app's push notification capability.
-- Firebase project, Android package registration, and FCM service-account credentials.
+Native APNs and FCM HTTP v1 delivery adapters are implemented in `musek/lib/native-push.ts` and are called by the artist-live notification endpoint alongside browser Web Push. Native token registration and invalid-token cleanup are already wired.
 
-The stored iOS APNs token and Android FCM token require platform-specific delivery adapters. Do not use the web-push endpoint to deliver native tokens.
+Configure these deployment environment variables (never commit credentials):
+- `APNS_AUTH_KEY` — full contents of the Apple .p8 authentication key (server only).
+- `APNS_KEY_ID` — Apple APNs key ID.
+- `APNS_TEAM_ID` — Apple Developer Team ID.
+- `APNS_BUNDLE_ID` — optional; defaults to `com.musek.app`.
+- `APNS_HOST` — optional; defaults to `https://api.push.apple.com`. Use Apple's sandbox host only for development device tokens.
+- `FCM_SERVICE_ACCOUNT_JSON` — full Firebase service-account JSON (server only; keep private).
+- Existing `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` remain required for token lookup and cleanup.
+
+The app's iOS bundle identifier must match the APNs topic, and the Firebase project must match the Android app registration. Enable Push Notifications for the iOS App ID and configure the generated Xcode project signing/capabilities. Verify both providers with real device tokens; a successful server build does not prove provider credentials or device delivery work. Do not use the web-push endpoint to deliver native tokens.
 
 ## Lock-screen/background playback
 
