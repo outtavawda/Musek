@@ -51,16 +51,16 @@ export default function GlobalNotifications() {
   if (!userId) return null;
 
   return (
-    <div className="fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
+    <div className="fixed right-3 top-3 z-[120] sm:right-6 sm:top-5">
       <button type="button" onClick={() => setOpen((value) => !value)}
         aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
         aria-expanded={open}
-        className="group relative grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-[#171326]/90 text-white shadow-[0_10px_35px_rgba(0,0,0,.38)] backdrop-blur-2xl transition hover:-translate-y-0.5 hover:border-fuchsia-300/50 hover:bg-[#21172f] focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300">
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[21px] w-[21px] transition group-hover:text-fuchsia-200" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        className="group relative grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-[linear-gradient(145deg,rgba(44,31,66,.96),rgba(15,13,25,.96))] text-white shadow-[0_8px_30px_rgba(0,0,0,.42),inset_0_1px_0_rgba(255,255,255,.12)] backdrop-blur-2xl transition duration-200 hover:-translate-y-0.5 hover:border-fuchsia-300/60 hover:shadow-[0_10px_34px_rgba(217,70,239,.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300">
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[21px] w-[21px] transition duration-200 group-hover:scale-110 group-hover:text-fuchsia-200" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
           <path d="M10 21h4"/>
         </svg>
-        {unread > 0 && <span className="absolute -right-1.5 -top-1.5 grid h-[21px] min-w-[21px] place-items-center rounded-full border-2 border-[#100d19] bg-gradient-to-br from-rose-500 to-fuchsia-600 px-1 text-[9px] font-black text-white shadow-lg">{unread > 99 ? "99+" : unread}</span>}
+        {unread > 0 && <span className="absolute -right-1 -top-1 grid h-[21px] min-w-[21px] place-items-center rounded-full border-2 border-[#100d19] bg-gradient-to-br from-rose-500 via-fuchsia-600 to-violet-600 px-1 text-[9px] font-black text-white shadow-[0_2px_12px_rgba(217,70,239,.5)]">{unread > 99 ? "99+" : unread}</span>}
       </button>
 
       {open && <>
@@ -74,7 +74,7 @@ export default function GlobalNotifications() {
             <button type="button" onClick={() => setOpen(false)} aria-label="Close notifications" className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/[.04] text-sm text-white/60 transition hover:bg-white/10 hover:text-white">✕</button>
           </div>
           <div className="max-h-[min(65vh,520px)] overflow-y-auto p-2">
-            {items.length === 0 ? <div className="px-6 py-10 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-fuchsia-300/15 bg-fuchsia-400/[.08] text-xl text-fuchsia-200">♢</span><p className="mt-3 text-sm font-bold">Nothing new yet</p><p className="mt-1 text-xs leading-5 text-white/45">Updates from artists and your MUSEK community will show up here.</p></div> :
+            {items.length === 0 ? <div className="px-6 py-10 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-fuchsia-300/20 bg-gradient-to-br from-fuchsia-500/15 to-violet-500/10 text-fuchsia-100 shadow-inner"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></span><p className="mt-3 text-sm font-bold">Nothing new yet</p><p className="mt-1 text-xs leading-5 text-white/45">Updates from artists and your MUSEK community will show up here.</p></div> :
               items.map((item) => <Link key={item.id} href={item.link || "/social"} onClick={() => { void markRead(item); setOpen(false); }}
                 className={`group mb-1 flex gap-3 rounded-2xl border px-3 py-3 transition hover:border-fuchsia-300/25 hover:bg-white/[.045] ${item.read_at ? "border-transparent bg-white/[.015]" : "border-fuchsia-300/15 bg-fuchsia-400/[.07]"}`}>
                 <span className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl ${item.read_at ? "bg-white/[.06] text-white/50" : "bg-gradient-to-br from-fuchsia-500/25 to-violet-500/20 text-fuchsia-100"}`}>
