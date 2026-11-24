@@ -358,7 +358,7 @@ export default function MusicPlayer({ songs }: { songs: Song[] }) {
               }}
               onTimeUpdate={(event) => {
                 const audio = event.currentTarget;
-                if (audio.currentTime >= 30) {
+                if (!audio.paused && !audio.seeking && audio.currentTime >= 30) {
                   void completePlaybackSession(selectedSong.id, audio.currentTime);
                 }
               }}
