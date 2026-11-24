@@ -94,7 +94,7 @@ function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: 
         <section className={guestTiles.length ? "min-w-0 w-full" : "w-full"}>
           <div className="relative aspect-video overflow-hidden rounded-2xl border border-fuchsia-300/25 bg-[#171321] shadow-2xl shadow-black/40">
             {hostTrack ? (
-              <VideoTrack trackRef={hostTrack} className="!absolute !inset-0 !h-full !w-full !max-w-none !object-cover" />
+              <div className="musek-stage-video"><VideoTrack trackRef={hostTrack} /></div>
             ) : (
               <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#352044] to-[#11101a]">
                 <div className="text-center">
@@ -112,7 +112,7 @@ function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: 
           <section aria-label="Approved guests on stage" className="grid min-w-0 grid-cols-1 content-start gap-2">
             {guestTiles.map((guest) => (
               <div key={guest.id} className="relative aspect-video min-w-0 overflow-hidden rounded-xl border border-fuchsia-300/25 bg-[#171321]">
-                {guest.track ? <VideoTrack trackRef={guest.track} className="!absolute !inset-0 !block !h-full !w-full !max-w-none !object-cover" /> : (
+                {guest.track ? <div className="musek-stage-video"><VideoTrack trackRef={guest.track} /></div> : (
                   <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#352044] to-[#11101a]">
                     <div className="text-center">
                       <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-white/10 text-2xl font-black">{guest.name.slice(0, 1).toUpperCase()}</div>
