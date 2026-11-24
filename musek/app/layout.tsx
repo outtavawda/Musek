@@ -5,6 +5,7 @@ import MobileAppNav from "@/components/mobile-app-nav";
 import MusekPlaybackProvider from "@/components/music-playback-provider";
 import PwaRegistration from "@/components/pwa-registration";
 import PwaInstallPrompt from "@/components/pwa-install-prompt";
+import NativeDeepLinkHandler from "@/components/native-deep-link-handler";
 
 export const metadata: Metadata = {
   title: "MUSEK — Music, creators & community",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <MobileAppNav />
           <PwaRegistration />
           <PwaInstallPrompt />
+          <NativeDeepLinkHandler />
         </MusekPlaybackProvider>
         <GlobalNotifications />
       </body>
