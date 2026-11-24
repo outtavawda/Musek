@@ -301,8 +301,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <div className="relative z-[130] flex shrink-0 items-center gap-0.5 sm:gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
                   {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} isOnStage={liveCameraControl?.enabled === true} onLeaveStage={handleReturnToChat} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
-                  {(selected.host_id === userId || liveCameraControl?.canPublish) && (
-                    <button
+                  <button
                       type="button"
                       disabled={!liveCameraControl?.canPublish}
                       onClick={() => liveCameraControl?.toggle().catch(() => setNotice("Could not change your live camera. Check camera permission and try again."))}
@@ -316,7 +315,6 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                         {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
                       </svg>
                     </button>
-                  )}
                 </div>
               </form>
             </div>
