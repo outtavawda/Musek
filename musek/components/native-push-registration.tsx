@@ -17,8 +17,6 @@ export default function NativePushRegistration() {
           ? permission
           : await PushNotifications.requestPermissions();
         if (result.receive !== "granted" || !active) return;
-        await PushNotifications.register();
-
         handles.push(await PushNotifications.addListener("registration", async (token: Token) => {
           if (!active) return;
           const platform = Capacitor.getPlatform();
@@ -38,6 +36,8 @@ export default function NativePushRegistration() {
             window.location.assign(target);
           }
         }));
+
+        await PushNotifications.register();
       } catch (error) {
         console.error("MUSEK native push setup failed:", error);
       }
