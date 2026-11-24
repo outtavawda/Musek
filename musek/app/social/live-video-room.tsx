@@ -18,6 +18,16 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   onCameraControl?: (control: LiveCameraControl | null) => void;
 }) {
   const { localParticipant, isCameraEnabled } = useLocalParticipant();
+
+  // Guests cannot publish camera video until the server confirms stage
+  // approval. Keep the camera off even if a device/browser restores a
+  // previous camera state when the room reconnects.
+  useEffect(() => {
+    if (!canPublish && isCameraEnabled) {
+      void localParticipant.setCameraEnabled(false).catch(() => undefined);
+    }
+  }, [canPublish, isCameraEnabled, localParticipant]);
+
   const toggle = useCallback(async () => {
     if (!canPublish) return;
     await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution });
