@@ -3,6 +3,7 @@ import "./globals.css";
 import GlobalNotifications from "@/app/notifications/global-notifications";
 import MobileAppNav from "@/components/mobile-app-nav";
 import MusekPlaybackProvider from "@/components/music-playback-provider";
+import PwaRegistration from "@/components/pwa-registration";
 
 export const metadata: Metadata = {
   title: "MUSEK — Music, creators & community",
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <MusekPlaybackProvider>
           {children}
           <MobileAppNav />
+          <PwaRegistration />
         </MusekPlaybackProvider>
         <GlobalNotifications />
       </body>
