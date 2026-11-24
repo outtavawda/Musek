@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import webpush from "web-push";
+import { deliverNativePush } from "@/lib/native-push";
 
 export const runtime = "nodejs";
 
@@ -15,8 +16,9 @@ export async function POST(request: Request) {
   const subject = process.env.VAPID_SUBJECT;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!publicKey || !privateKey || !subject || !url || !serviceKey) {
-    return NextResponse.json({ error: "Push delivery is not configured." }, { status: 503 });
+  const webPushConfigured = Boolean(publicKey && privateKey && subject);
+  if (!url || !serviceKey) {
+    return NextResponse.json({ error: "Push storage is not configured." }, { status: 503 });
   }
 
   const body = await request.json().catch(() => null);
@@ -29,32 +31,55 @@ export async function POST(request: Request) {
   }
 
   try {
-    webpush.setVapidDetails(subject, publicKey, privateKey);
     const admin = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
-    const { data: subscriptions, error } = await admin.from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth").eq("user_id", userId);
-    if (error) throw error;
+    const [{ data: subscriptions, error: subscriptionError }, { data: nativeTokens, error: nativeTokenError }] = await Promise.all([
+      webPushConfigured
+        ? admin.from("push_subscriptions").select("id, endpoint, p256dh, auth").eq("user_id", userId)
+        : Promise.resolve({ data: [], error: null }),
+      admin.from("native_push_tokens").select("id, token, platform").eq("user_id", userId)
+    ]);
+    if (subscriptionError) throw subscriptionError;
+    if (nativeTokenError) throw nativeTokenError;
+
+    if (webPushConfigured) webpush.setVapidDetails(subject!, publicKey!, privateKey!);
     const payload = JSON.stringify({ title, body: message, url: link });
-    const results = await Promise.all((subscriptions || []).map(async subscription => {
+    const webResultsPromise = (subscriptions || []).map(async subscription => {
       try {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
           keys: { p256dh: subscription.p256dh, auth: subscription.auth }
         }, payload, { TTL: 60 * 60, urgency: "normal" });
-        return { delivered: true };
+        return { delivered: true, expired: false };
       } catch (deliveryError: unknown) {
         const statusCode = typeof deliveryError === "object" && deliveryError && "statusCode" in deliveryError
           ? Number((deliveryError as { statusCode?: unknown }).statusCode) : 0;
         if (statusCode === 404 || statusCode === 410) {
           await admin.from("push_subscriptions").delete().eq("id", subscription.id);
         }
-        return { delivered: false, statusCode };
+        return { delivered: false, expired: statusCode === 404 || statusCode === 410 };
       }
-    }));
+    });
+    const nativeResultsPromise = (nativeTokens || []).map(async token => {
+      try {
+        const result = await deliverNativePush(token.platform, token.token, { title, body: message, url: link });
+        if (result.expired) await admin.from("native_push_tokens").delete().eq("id", token.id);
+        return result;
+      } catch (deliveryError) {
+        console.error("MUSEK native push delivery failed:", deliveryError);
+        return { delivered: false, expired: false };
+      }
+    });
+    const [webResults, nativeResults] = await Promise.all([
+      Promise.all(webResultsPromise),
+      Promise.all(nativeResultsPromise)
+    ]);
+    const allResults = [...webResults, ...nativeResults];
     return NextResponse.json({
-      targeted: results.length,
-      delivered: results.filter(result => result.delivered).length,
-      expiredRemoved: results.filter(result => !result.delivered && (result.statusCode === 404 || result.statusCode === 410)).length
+      targeted: allResults.length,
+      delivered: allResults.filter(result => result.delivered).length,
+      expiredRemoved: allResults.filter(result => result.expired).length,
+      webTargeted: webResults.length,
+      nativeTargeted: nativeResults.length
     });
   } catch (error) {
     console.error("MUSEK push delivery failed:", error);
