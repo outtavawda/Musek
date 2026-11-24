@@ -60,14 +60,14 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
   const nextSong = useCallback(() => {
     if (!queue.length) return;
     const index = queue.findIndex(song => song.id === currentSong?.id);
-    setCurrentSong(queue[(index + 1 + queue.length) % queue.length]);
+    setCurrentSong(queue[index < 0 ? 0 : (index + 1) % queue.length]);
     setIsPlaying(true);
   }, [queue, currentSong]);
 
   const previousSong = useCallback(() => {
     if (!queue.length) return;
     const index = queue.findIndex(song => song.id === currentSong?.id);
-    setCurrentSong(queue[(index - 1 + queue.length) % queue.length]);
+    setCurrentSong(queue[index < 0 ? queue.length - 1 : (index - 1 + queue.length) % queue.length]);
     setIsPlaying(true);
   }, [queue, currentSong]);
 
