@@ -183,6 +183,30 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     }
   };
 
+  useEffect(() => {
+    if (!selected) return;
+    const roomId = selected.id;
+    let active = true;
+    const leaveEndedRoom = () => {
+      if (!active) return;
+      setGuestLiveKitEnabled(false);
+      setLiveCameraControl(null);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      setCameraOn(false);
+      setMicOn(false);
+      setSelected((current) => current?.id === roomId ? null : current);
+      setNotice("This LIVE has ended. You have returned to the live room list.");
+    };
+    supabase.from("social_live_rooms").select("status").eq("id", roomId).maybeSingle()
+      .then(({ data }) => { if (data?.status !== "live") leaveEndedRoom(); });
+    const channel = supabase.channel("musek-live-room-lifecycle-" + roomId)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "social_live_rooms", filter: "id=eq." + roomId },
+        (payload) => { if ((payload.new as { status?: string }).status === "ended") leaveEndedRoom(); })
+      .subscribe();
+    return () => { active = false; supabase.removeChannel(channel); };
+  }, [selected?.id, supabase]);
+
   const endRoom = async () => {
     if (!selected || selected.host_id !== userId || ending) return;
     if (!window.confirm("End this live room? Viewers will no longer be able to join.")) return;
@@ -192,7 +216,17 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       .eq("id", selected.id).eq("host_id", userId);
     setEnding(false);
     if (error) { setNotice("Could not end the live room. Please try again."); return; }
-    stopMedia(); setLiveCameraControl(null); setSelected(null); await loadRooms(); setNotice("Your live room has ended. Viewers have been disconnected.");
+    // Clear stage permissions as the room closes; connected guests also
+    // receive the room-ended realtime event and leave their video session.
+    await supabase.from("social_live_join_requests")
+      .update({ status: "declined", responded_at: new Date().toISOString() })
+      .eq("room_id", selected.id).in("status", ["pending", "accepted"]);
+    stopMedia();
+    setGuestLiveKitEnabled(false);
+    setLiveCameraControl(null);
+    setSelected(null);
+    await loadRooms();
+    setNotice("Your LIVE has ended. Guests and viewers are being returned to the live list.");
   };
 
   const openChatProfile = async (profileId: string) => {
