@@ -93,12 +93,6 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
   const closeGuestTile = async () => {
     if (!accepted || busy || !myRequest) return;
     setBusy(true); setNotice("");
-    try {
-      await onStageClosed?.();
-    } catch {
-      // Closing the stage must still update the request; unmounting LiveKit below
-      // will disconnect the guest even if an explicit camera-off call fails.
-    }
     const { data, error } = await supabase.from("social_live_join_requests")
       .update({ status: "declined", responded_at: new Date().toISOString() })
       .eq("id", myRequest.id).eq("requester_id", userId).eq("status", "accepted")
@@ -110,6 +104,7 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
     }
     setMyRequest(data as JoinRequest);
     setNotice("");
+    try { await onStageClosed?.(); } catch { /* Live room UI still closes; media is disconnected by unmount. */ }
   };
   return <div className="relative">
     <button type="button" disabled={busy || pending} onClick={accepted ? closeGuestTile : requestToJoin} aria-label={accepted ? "Close guest stage box" : pending ? "Guest request pending" : "Request to join live as a guest"} title={accepted ? "Close guest stage box" : pending ? "Request pending" : "Request to join"} className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-base shadow-[0_0_16px_rgba(168,85,247,.18)] transition sm:h-11 sm:w-11 sm:text-lg " + (accepted ? "border-rose-300/40 bg-rose-500/20 text-rose-100 hover:bg-rose-500/35" : "border-fuchsia-300/40 bg-[#21152e] text-fuchsia-100 hover:border-fuchsia-200 hover:bg-fuchsia-600/30 disabled:cursor-not-allowed disabled:opacity-60")}>
