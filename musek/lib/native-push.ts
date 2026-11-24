@@ -73,7 +73,7 @@ async function sendApns(deviceToken: string, message: NativePushMessage): Promis
       if (responseStatus === 200) return finish(undefined, { delivered: true, expired: false });
       let reason = "";
       try { reason = JSON.parse(responseBody).reason || ""; } catch {}
-      const expired = responseStatus === 410 || reason === "Unregistered" || reason === "BadDeviceToken";
+      const expired = responseStatus === 410 || reason === "Unregistered";
       finish(undefined, { delivered: false, expired });
     });
     request.on("error", error => finish(error));
