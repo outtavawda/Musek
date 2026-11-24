@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateProfile, uploadProfilePhoto, signOut } from "../auth-actions";
+import PushNotificationSettings from "@/components/push-notification-settings";
 
 const fieldStyle = {
   width: "100%",
@@ -137,6 +138,7 @@ export default async function ProfilePage({
           </form>
         </section>
       </div>
+      <div style={{ maxWidth: "1180px", margin: "22px auto 0" }}><PushNotificationSettings /></div>
       <p style={{ maxWidth: "1180px", margin: "25px auto 0", color: "#8d819b", fontSize: "12px" }}><Link href="/dashboard" style={{ color: "#c4a4e8" }}>← Back to dashboard</Link></p>
       <style>{`@media (max-width: 760px) { main > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; } }`}</style>
     </main>
