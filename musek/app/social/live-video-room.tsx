@@ -54,14 +54,20 @@ function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: 
     const channel = supabase.channel("musek-approved-stage-" + roomId)
       .on("postgres_changes", { event: "*", schema: "public", table: "social_live_join_requests", filter: "room_id=eq." + roomId }, loadApprovedGuests)
       .subscribe();
-    return () => { active = false; supabase.removeChannel(channel); };
+    // Reconcile periodically as a fallback if a Realtime event is missed.
+    const refreshId = window.setInterval(loadApprovedGuests, 2000);
+    return () => { active = false; window.clearInterval(refreshId); supabase.removeChannel(channel); };
   }, [roomId, hostId, supabase]);
 
   const hostTrack = cameraTracks.find((track) => track.participant.identity === hostId);
-  const guestTiles = approvedGuests.map((guest) => ({
+  // Only render an approved guest while their LiveKit participant is
+  // actually connected. Camera-off guests still remain visible as tiles,
+  // but a guest who disconnects can never leave a stale tile behind.
+  const connectedGuestIds = new Set(participants.map((participant) => participant.identity));
+  const guestTiles = approvedGuests.filter((guest) => connectedGuestIds.has(guest.id)).map((guest) => ({
     ...guest,
     track: cameraTracks.find((track) => track.participant.identity === guest.id),
-    connected: participants.some((participant) => participant.identity === guest.id),
+    connected: true,
   }));
 
   return (
