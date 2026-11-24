@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       targeted: results.length,
       delivered: results.filter(result => result.delivered).length,
-      expiredRemoved: results.filter(result => !result.delivered && [404, 410].includes(result.statusCode)).length
+      expiredRemoved: results.filter(result => !result.delivered && (result.statusCode === 404 || result.statusCode === 410)).length
     });
   } catch (error) {
     console.error("MUSEK push delivery failed:", error);
