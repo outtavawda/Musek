@@ -49,21 +49,14 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
   }, [load, roomId, supabase]);
 
   const requestToJoin = async () => {
-    if (pending) return;
+    if (pending || accepted) return;
     setBusy(true); setNotice("");
-    if (myRequest && myRequest.status !== "pending") {
-      const { data, error } = await supabase.from("social_live_join_requests")
-        .update({ status: "pending", responded_at: null })
-        .eq("id", myRequest.id).eq("requester_id", userId).eq("status", myRequest.status)
-        .select("id,room_id,requester_id,status,created_at").single();
-      setBusy(false);
-      if (error) setNotice("Could not resend your request. Please try again.");
-      else { setMyRequest(data as JoinRequest); setNotice("Request sent. The host must approve you before you return to the stage."); }
-      return;
-    }
-    const { data, error } = await supabase.from("social_live_join_requests").insert({ room_id: roomId, requester_id: userId }).select("id,room_id,requester_id,status,created_at").single();
+    // Declined requests are kept as history. A new request must be a new row.
+    const { data, error } = await supabase.from("social_live_join_requests")
+      .insert({ room_id: roomId, requester_id: userId })
+      .select("id,room_id,requester_id,status,created_at").single();
     setBusy(false);
-    if (error) setNotice(error.code === "23505" ? "Your request is already pending." : "Could not send your request. Apply migration 009 and try again.");
+    if (error) setNotice(error.code === "23505" ? "Your request is already pending." : "Could not send your request. Please try again.");
     else { setMyRequest(data as JoinRequest); setNotice("Request sent. The host will need to approve you before you can turn on your camera."); }
   };
 
