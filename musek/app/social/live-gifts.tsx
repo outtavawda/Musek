@@ -2,9 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import dynamic from "next/dynamic";
-import GiftArtwork from "./gift-artwork";
-const RealGift3D = dynamic(() => import("./real-gift-3d"), { ssr: false, loading: () => <div className="h-[240px] w-full animate-pulse rounded-xl bg-gradient-to-br from-indigo-950 via-purple-950 to-black" aria-label="Loading 3D gift" /> });
 import { createClient } from "@/lib/supabase/client";
 
 type Gift = {
@@ -355,23 +352,33 @@ export default function LiveGifts({
             <div className="musek-gift-effects" aria-hidden="true">{Array.from({ length: tier === "legendary" ? 30 : 18 }, (_, index) => <span key={index}>{index % 3 === 0 ? "✦" : index % 3 === 1 ? "✧" : "•"}</span>)}</div>
             <div className="musek-gift-flight">
               <div className="musek-gift-content">
-                {tier === "premium" || tier === "legendary" ? (
-                  <RealGift3D giftName={details?.name || "Galaxy"} senderName={activeGift.sender_name || "A fan"} />
-                ) : (
-                  <GiftArtwork category={details?.category || "Legend"} name={details?.name || "Live gift"} emoji={details?.emoji || "🎁"} tier={tier} />
-                )}
-{tier !== "premium" && tier !== "legendary" && <>
-                  <p className="musek-gift-eyebrow">{tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
-                  <p className="musek-gift-name">{details?.name || "Live gift"}</p>
-                  <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
-                  <p className="musek-gift-sender">sent by {activeGift.sender_name || "a MUSEK fan"}</p>
-                </>}
+                <div className={`musek-gallery-gift-preview musek-gallery-gift-${tier}`}>
+                  <img
+                    src={giftImagePath(details?.name || "gift")}
+                    alt={details?.name || "MUSEK gift"}
+                    draggable={false}
+                  />
+                </div>
+                <p className="musek-gift-eyebrow">{tier === "legendary" ? "✦ MUSEK LEGENDARY MOMENT ✦" : tier === "premium" ? "MUSEK PREMIUM GIFT" : tier === "medium" ? "A BIG MUSEK MOMENT" : "GIFT RECEIVED"}</p>
+                <p className="musek-gift-name">{details?.name || "Live gift"}</p>
+                <p className="musek-gift-value">{formatCoins(Number(activeGift.coins))} coins</p>
+                <p className="musek-gift-sender">sent by {activeGift.sender_name || "a MUSEK fan"}</p>
               </div>
             </div>
           </div>
         );
       })(), document.body)}
       <style jsx>{`
+        .musek-gallery-gift-preview { position:relative; display:grid; place-items:center; width:min(52vw,270px); aspect-ratio:1; margin:0 auto 8px; }
+        .musek-gallery-gift-preview::before { content:""; position:absolute; inset:8%; z-index:0; border-radius:50%; background:radial-gradient(circle,rgba(192,132,252,.42),rgba(99,102,241,.14) 50%,transparent 73%); filter:blur(12px); }
+        .musek-gallery-gift-preview img { position:relative; z-index:1; display:block; width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 18px 20px rgba(0,0,0,.6)); animation:musek-gallery-gift-float 2.8s ease-in-out infinite; }
+        .musek-gallery-gift-premium { width:min(66vw,340px); }
+        .musek-gallery-gift-premium::before { background:radial-gradient(circle,rgba(251,191,36,.5),rgba(217,119,6,.2) 44%,rgba(124,58,237,.18) 66%,transparent 78%); }
+        .musek-gallery-gift-legendary { width:min(76vw,410px); }
+        .musek-gallery-gift-legendary::before { inset:0; background:radial-gradient(circle,rgba(192,132,252,.58),rgba(126,34,206,.25) 45%,rgba(251,191,36,.18) 64%,transparent 80%); filter:blur(18px); }
+        .musek-gallery-gift-legendary img { filter:drop-shadow(0 0 22px rgba(192,132,252,.55)) drop-shadow(0 22px 22px rgba(0,0,0,.62)); animation-duration:2.2s; }
+        @keyframes musek-gallery-gift-float { 0%,100% { transform:translateY(0) rotate(-2deg) scale(1); } 50% { transform:translateY(-12px) rotate(2deg) scale(1.035); } }
+        @media (prefers-reduced-motion:reduce) { .musek-gallery-gift-preview img { animation:none !important; } }
         .musek-gift-overlay { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; pointer-events: none; overflow: hidden; isolation: isolate; background: transparent; }
         .musek-cosmic-reveal { position:relative; width:min(82vw,437px); height:clamp(240px,58vw,390px); overflow:hidden; display:flex; align-items:center; justify-content:center; isolation:isolate; background:radial-gradient(ellipse at 50% 55%,#172c89 0%,#111044 38%,#05051d 72%,#02020d 100%); border-radius:18px; box-shadow:0 0 55px rgba(99,102,241,.45); }
         .musek-cosmic-nebula { position:absolute; inset:-35%; background:radial-gradient(ellipse at 28% 42%,rgba(0,140,255,.7),transparent 28%),radial-gradient(ellipse at 70% 30%,rgba(168,85,247,.65),transparent 30%),radial-gradient(ellipse at 52% 70%,rgba(14,165,233,.48),transparent 32%); filter:blur(16px); animation:cosmic-nebula 16s linear infinite; }
