@@ -55,6 +55,9 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     setGuestLiveKitEnabled(false);
     setLiveCameraControl(null);
   }, []);
+  useEffect(() => {
+    if (selected) setGuestLiveKitEnabled(true);
+  }, [selected?.id]);
   const loadRooms = useCallback(async () => {
     const { data, error } = await supabase.from("social_live_rooms")
       .select("id,title,description,host_id,host_name,status,created_at")
