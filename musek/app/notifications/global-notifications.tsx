@@ -23,23 +23,22 @@ export default function GlobalNotifications() {
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let active = true;
-
     async function connect() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!active || !user) return;
       setUserId(user.id);
       const { data } = await supabase.from("user_notifications")
         .select("id,title,message,link,created_at,read_at")
-        .eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+        .eq("user_id", user.id).order("created_at", { ascending: false }).limit(30);
       if (!active) return;
       setItems((data || []) as Notice[]);
       channel = supabase.channel("musek-notifications-" + user.id)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_notifications", filter: "user_id=eq." + user.id },
-          (payload) => setItems((current) => [payload.new as Notice, ...current].slice(0, 20)))
+          (payload) => setItems((current) => [payload.new as Notice, ...current].slice(0, 30)))
         .subscribe();
     }
-    connect();
-    return () => { active = false; if (channel) supabase.removeChannel(channel); };
+    void connect();
+    return () => { active = false; if (channel) void supabase.removeChannel(channel); };
   }, [supabase]);
 
   async function markRead(item: Notice) {
@@ -52,28 +51,45 @@ export default function GlobalNotifications() {
   if (!userId) return null;
 
   return (
-    <div className="fixed right-5 top-5 z-[120]">
+    <div className="fixed right-4 top-4 z-[120] sm:right-6 sm:top-5">
       <button type="button" onClick={() => setOpen((value) => !value)}
         aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-purple-300/30 bg-[#171326] text-xl text-white shadow-xl hover:border-purple-300">
-        ♢
-        {unread > 0 && <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white">{unread > 9 ? "9+" : unread}</span>}
+        aria-expanded={open}
+        className="group relative grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-[#171326]/90 text-white shadow-[0_10px_35px_rgba(0,0,0,.38)] backdrop-blur-2xl transition hover:-translate-y-0.5 hover:border-fuchsia-300/50 hover:bg-[#21172f] focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300">
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[21px] w-[21px] transition group-hover:text-fuchsia-200" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+          <path d="M10 21h4"/>
+        </svg>
+        {unread > 0 && <span className="absolute -right-1.5 -top-1.5 grid h-[21px] min-w-[21px] place-items-center rounded-full border-2 border-[#100d19] bg-gradient-to-br from-rose-500 to-fuchsia-600 px-1 text-[9px] font-black text-white shadow-lg">{unread > 99 ? "99+" : unread}</span>}
       </button>
-      {open && <section className="absolute right-0 mt-3 w-[min(360px,calc(100vw-40px))] overflow-hidden rounded-2xl border border-purple-300/20 bg-[#11101d] text-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <h2 className="font-black">Notifications</h2>
-          <button onClick={() => setOpen(false)} className="text-xs text-gray-400">Close</button>
-        </div>
-        <div className="max-h-[420px] overflow-y-auto">
-          {items.length === 0 ? <p className="p-5 text-sm text-gray-400">You're all caught up. We'll let you know when an artist you follow goes live.</p> :
-            items.map((item) => <Link key={item.id} href={item.link || "/social"} onClick={() => markRead(item)}
-              className={`block border-b border-white/5 px-4 py-3 hover:bg-white/5 ${item.read_at ? "opacity-65" : "bg-purple-500/[.08]"}`}>
-              <p className="text-sm font-bold">{item.title}</p>
-              <p className="mt-1 text-xs text-gray-300">{item.message}</p>
-              <p className="mt-2 text-[10px] text-gray-500">{new Date(item.created_at).toLocaleString()}</p>
-            </Link>)}
-        </div>
-      </section>}
+
+      {open && <>
+        <button aria-label="Close notifications" onClick={() => setOpen(false)} className="fixed inset-0 z-[-1] cursor-default bg-black/15 sm:bg-transparent"/>
+        <section aria-label="Notifications panel" className="absolute right-0 mt-3 w-[min(390px,calc(100vw-24px))] overflow-hidden rounded-[22px] border border-white/10 bg-[#100e19]/95 text-white shadow-[0_24px_80px_rgba(0,0,0,.65)] backdrop-blur-2xl">
+          <div className="flex items-center justify-between border-b border-white/[.08] bg-gradient-to-r from-fuchsia-500/[.12] via-transparent to-violet-500/[.10] px-4 py-4">
+            <div>
+              <div className="flex items-center gap-2"><h2 className="text-[15px] font-extrabold tracking-tight">Notifications</h2><span className="rounded-full border border-fuchsia-300/20 bg-fuchsia-400/10 px-2 py-0.5 text-[9px] font-bold text-fuchsia-200">MUSEK</span></div>
+              <p className="mt-1 text-[11px] text-white/45">{unread ? `${unread} unread update${unread === 1 ? "" : "s"}` : "You're all caught up"}</p>
+            </div>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close notifications" className="grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/[.04] text-sm text-white/60 transition hover:bg-white/10 hover:text-white">✕</button>
+          </div>
+          <div className="max-h-[min(65vh,520px)] overflow-y-auto p-2">
+            {items.length === 0 ? <div className="px-6 py-10 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-fuchsia-300/15 bg-fuchsia-400/[.08] text-xl text-fuchsia-200">♢</span><p className="mt-3 text-sm font-bold">Nothing new yet</p><p className="mt-1 text-xs leading-5 text-white/45">Updates from artists and your MUSEK community will show up here.</p></div> :
+              items.map((item) => <Link key={item.id} href={item.link || "/social"} onClick={() => { void markRead(item); setOpen(false); }}
+                className={`group mb-1 flex gap-3 rounded-2xl border px-3 py-3 transition hover:border-fuchsia-300/25 hover:bg-white/[.045] ${item.read_at ? "border-transparent bg-white/[.015]" : "border-fuchsia-300/15 bg-fuchsia-400/[.07]"}`}>
+                <span className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl ${item.read_at ? "bg-white/[.06] text-white/50" : "bg-gradient-to-br from-fuchsia-500/25 to-violet-500/20 text-fuchsia-100"}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 10 21 7v10l-6-3"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-start justify-between gap-2"><span className="text-[12px] font-bold leading-5 text-white">{item.title}</span>{!item.read_at && <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-fuchsia-300 shadow-[0_0_10px_rgba(216,180,254,.8)]"/>}</span>
+                  <span className="mt-0.5 block text-[11px] leading-[1.55] text-white/60">{item.message}</span>
+                  <span className="mt-2 block text-[9px] font-medium text-white/35">{new Date(item.created_at).toLocaleString()}</span>
+                </span>
+              </Link>)}
+          </div>
+          <div className="border-t border-white/[.07] px-4 py-2.5"><p className="text-center text-[9px] font-semibold tracking-wide text-white/30">YOU'RE CONNECTED TO THE MUSEK COMMUNITY</p></div>
+        </section>
+      </>}
     </div>
   );
 }
