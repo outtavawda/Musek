@@ -8,6 +8,7 @@ import "@livekit/components-styles";
 
 export type LiveCameraControl = {
   toggle: () => Promise<void>;
+  disableMedia: () => Promise<void>;
   enabled: boolean;
   canPublish: boolean;
 };
@@ -21,11 +22,18 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
     if (!canPublish) return;
     await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution });
   }, [canPublish, isCameraEnabled, localParticipant]);
+  const disableMedia = useCallback(async () => {
+    if (!canPublish) return;
+    await Promise.all([
+      localParticipant.setCameraEnabled(false),
+      localParticipant.setMicrophoneEnabled(false),
+    ]);
+  }, [canPublish, localParticipant]);
 
   useEffect(() => {
-    onCameraControl?.({ toggle, enabled: isCameraEnabled, canPublish });
+    onCameraControl?.({ toggle, disableMedia, enabled: isCameraEnabled, canPublish });
     return () => onCameraControl?.(null);
-  }, [toggle, isCameraEnabled, canPublish, onCameraControl]);
+  }, [toggle, disableMedia, isCameraEnabled, canPublish, onCameraControl]);
 
   return null;
 }
