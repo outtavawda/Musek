@@ -24,6 +24,30 @@ if (fs.existsSync(iosInfo)) {
   fs.writeFileSync(iosInfo, plist);
 }
 
+const iosAppDelegate = path.join("ios", "App", "App", "AppDelegate.swift");
+if (fs.existsSync(iosAppDelegate)) {
+  let appDelegate = fs.readFileSync(iosAppDelegate, "utf8");
+  if (!appDelegate.includes("AVAudioSession.sharedInstance().setCategory(.playback")) {
+    if (!appDelegate.includes("import AVFoundation")) {
+      appDelegate = appDelegate.replace("import UIKit", "import UIKit\\nimport AVFoundation");
+    }
+    const launchMethod = /(func application\\(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: \\[UIApplication\\.LaunchOptionsKey: Any\\]?\\) -> Bool \\{)/;
+    if (launchMethod.test(appDelegate)) {
+      appDelegate = appDelegate.replace(launchMethod, `$1
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playback, mode: .default, options: [.allowBluetooth, .allowAirPlay])
+            try audioSession.setActive(true)
+        } catch {
+            NSLog("MUSEK audio session setup failed: %@", error.localizedDescription)
+        }`);
+    } else {
+      console.warn("Could not locate AppDelegate launch method to configure AVAudioSession.");
+    }
+    fs.writeFileSync(iosAppDelegate, appDelegate);
+  }
+}
+
 const androidManifest = path.join("android", "app", "src", "main", "AndroidManifest.xml");
 if (fs.existsSync(androidManifest)) {
   let manifest = fs.readFileSync(androidManifest, "utf8");
