@@ -1,447 +1,101 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useMusekPlayback, type MusekSong } from "@/components/music-playback-provider";
 
-type Song = {
-  id: string;
-  title: string;
-  artistName: string;
-  genre: string;
-  audioUrl: string | null;
-  artworkUrl?: string | null;
-};
+type Song = MusekSong;
 
 export default function MusicPlayer({ songs }: { songs: Song[] }) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const { currentSong, isPlaying, playSong, setQueue, togglePlayback, nextSong, previousSong } = useMusekPlayback();
   const [userId, setUserId] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [favoriteLoading, setFavoriteLoading] = useState(false);
-
-  const playbackSession = useRef<{ songId: string; sessionId: string | null; starting: boolean; completed: boolean; heartbeatAt: number; heartbeatBusy: boolean; creditedSeconds: number }>({ songId: "", sessionId: null, starting: false, completed: false, heartbeatAt: 0, heartbeatBusy: false, creditedSeconds: 0 });
-
-  const availableSongs = songs.filter((song) => song.audioUrl);
-  const selectedSong = availableSongs[selectedIndex];
+  const availableSongs = songs.filter(song => !!song.audioUrl);
 
   useEffect(() => {
-    playbackSession.current = { songId: selectedSong?.id || "", sessionId: null, starting: false, completed: false, heartbeatAt: 0, heartbeatBusy: false, creditedSeconds: 0 };
-  }, [selectedSong?.id]);
+    setQueue(availableSongs);
+  }, [songs, setQueue]);
 
   useEffect(() => {
     async function loadFavorites() {
-      try {
-        const supabase = createClient();
-
-        const {
-          data: { user },
-          error: authError,
-        } = await supabase.auth.getUser();
-
-        if (authError) {
-          console.error("MUSEK login check error:", authError);
-          return;
-        }
-
-        if (!user) return;
-
-        setUserId(user.id);
-
-        const { data, error } = await supabase
-          .from("favorite_tracks")
-          .select("track_id")
-          .eq("user_id", user.id);
-
-        if (error) {
-          console.error("MUSEK load favourites error:", error);
-          setMessage("Could not load favourites: " + error.message);
-          return;
-        }
-
-        setFavorites((data || []).map((item) => item.track_id));
-      } catch (error: unknown) {
-        console.error("MUSEK favourites loading error:", error);
-        setMessage(
-          error instanceof Error
-            ? error.message
-            : "Could not load favourites."
-        );
-      }
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) { console.error("MUSEK login check error:", authError); return; }
+      if (!user) return;
+      setUserId(user.id);
+      const { data, error } = await supabase.from("favorite_tracks").select("track_id").eq("user_id", user.id);
+      if (error) { console.error("MUSEK load favourites error:", error); setMessage("Could not load favourites: " + error.message); return; }
+      setFavorites((data || []).map(item => item.track_id));
     }
-
-    loadFavorites();
+    void loadFavorites();
   }, []);
 
-  async function startPlaybackSession(songId: string) {
-    const current = playbackSession.current;
-    if (current.songId !== songId) {
-      playbackSession.current = { songId, sessionId: null, starting: false, completed: false, heartbeatAt: 0, heartbeatBusy: false, creditedSeconds: 0 };
-    }
-
-    const session = playbackSession.current;
-    if (session.sessionId || session.starting || session.completed) return;
-
-    session.starting = true;
-    try {
-      const response = await fetch("/api/music/record-play", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackId: songId, action: "start" }),
-      });
-      const result = await response.json();
-      if (!response.ok || typeof result.sessionId !== "string") {
-        throw new Error(result.error || "Could not start playback session.");
-      }
-      if (playbackSession.current.songId === songId) {
-        playbackSession.current.sessionId = result.sessionId;
-      }
-    } catch (error) {
-      console.error("MUSEK playback session start failed:", error);
-    } finally {
-      if (playbackSession.current.songId === songId) {
-        playbackSession.current.starting = false;
-      }
-    }
-  }
-
-  async function heartbeatPlaybackSession(songId: string, playbackPositionSeconds: number) {
-    const session = playbackSession.current;
-    const now = Date.now();
-    if (
-      session.songId !== songId ||
-      !session.sessionId ||
-      session.completed ||
-      session.heartbeatBusy ||
-      now - session.heartbeatAt < 4500
-    ) return;
-
-    session.heartbeatAt = now;
-    session.heartbeatBusy = true;
-    try {
-      const response = await fetch("/api/music/record-play", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trackId: songId,
-          action: "heartbeat",
-          sessionId: session.sessionId,
-          playbackPositionSeconds,
-        }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Playback heartbeat failed.");
-      session.creditedSeconds = Number(result.creditedSeconds) || 0;
-      if (session.creditedSeconds >= 30) {
-        await completePlaybackSession(songId, playbackPositionSeconds);
-      }
-    } catch (error) {
-      console.error("MUSEK playback heartbeat failed:", error);
-      session.heartbeatAt = 0;
-    } finally {
-      session.heartbeatBusy = false;
-    }
-  }
-
-  async function completePlaybackSession(songId: string, playbackPositionSeconds: number) {
-    const session = playbackSession.current;
-    if (
-      session.songId !== songId ||
-      !session.sessionId ||
-      session.completed ||
-      playbackPositionSeconds < 30 ||
-      session.creditedSeconds < 30
-    ) return;
-
-    session.completed = true;
-    try {
-      const response = await fetch("/api/music/record-play", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trackId: songId,
-          action: "complete",
-          sessionId: session.sessionId,
-          playbackPositionSeconds,
-        }),
-      });
-      if (!response.ok) {
-        session.completed = false;
-        console.error("MUSEK play count completion failed:", response.status);
-      }
-    } catch (error) {
-      session.completed = false;
-      console.error("MUSEK play count completion error:", error);
-    }
-  }
-
   async function toggleFavorite(songId: string) {
-    if (!userId) {
-      setMessage("Please log in to save favourite songs.");
-      return;
-    }
-
-    setFavoriteLoading(true);
-    setMessage("");
-
+    if (!userId) { setMessage("Please log in to save favourite songs."); return; }
+    setFavoriteLoading(true); setMessage("");
     try {
       const supabase = createClient();
-      const alreadyFavorite = favorites.includes(songId);
-
-      if (alreadyFavorite) {
-        const { error } = await supabase
-          .from("favorite_tracks")
-          .delete()
-          .eq("user_id", userId)
-          .eq("track_id", songId);
-
+      if (favorites.includes(songId)) {
+        const { error } = await supabase.from("favorite_tracks").delete().eq("user_id", userId).eq("track_id", songId);
         if (error) throw error;
-
-        setFavorites((current) => current.filter((id) => id !== songId));
+        setFavorites(current => current.filter(id => id !== songId));
         setMessage("Song removed from favourites.");
       } else {
-        const { error } = await supabase.from("favorite_tracks").insert({
-          user_id: userId,
-          track_id: songId,
-        });
-
+        const { error } = await supabase.from("favorite_tracks").insert({ user_id: userId, track_id: songId });
         if (error) throw error;
-
-        setFavorites((current) =>
-          current.includes(songId) ? current : [...current, songId]
-        );
+        setFavorites(current => current.includes(songId) ? current : [...current, songId]);
         setMessage("Song added to favourites!");
       }
     } catch (error: unknown) {
-      console.error("MUSEK favourites error:", error);
-
-      const errorMessage =
-        error &&
-        typeof error === "object" &&
-        "message" in error &&
-        typeof error.message === "string"
-          ? error.message
-          : JSON.stringify(error);
-
-      setMessage("Favourite error: " + errorMessage);
-    } finally {
-      setFavoriteLoading(false);
-    }
+      const detail = error instanceof Error ? error.message : "Please try again.";
+      setMessage("Favourite error: " + detail);
+    } finally { setFavoriteLoading(false); }
   }
 
-  function nextSong() {
-    setSelectedIndex((current) =>
-      current >= availableSongs.length - 1 ? 0 : current + 1
-    );
-  }
-
-  function previousSong() {
-    setSelectedIndex((current) =>
-      current <= 0 ? availableSongs.length - 1 : current - 1
-    );
-  }
-
-  if (availableSongs.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-12 text-center">
-        <div className="mb-3 text-4xl text-fuchsia-300">♫</div>
-        <h3 className="font-semibold text-white">No playable music yet</h3>
-        <p className="mt-2 text-sm text-gray-500">
-          Published tracks with playable audio will appear here.
-        </p>
-      </div>
-    );
-  }
+  if (!availableSongs.length) return (
+    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-12 text-center">
+      <div className="mb-3 text-4xl text-fuchsia-300">♫</div>
+      <h3 className="font-semibold text-white">No playable music yet</h3>
+      <p className="mt-2 text-sm text-gray-500">Published tracks with playable audio will appear here.</p>
+    </div>
+  );
 
   return (
-    <div className="pb-44 text-white">
+    <div className="pb-24 text-white">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold">Your playlist</h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Select a track to load it into the player.
-          </p>
-        </div>
-        <span className="rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold text-fuchsia-200">
-          {availableSongs.length} playable
-        </span>
+        <div><h2 className="text-lg font-bold">Your playlist</h2><p className="mt-1 text-xs text-gray-500">Select a track to load it into the player.</p></div>
+        <span className="rounded-full border border-fuchsia-400/20 bg-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold text-fuchsia-200">{availableSongs.length} playable</span>
       </div>
-
       <div className="space-y-3">
-        {availableSongs.map((song, index) => {
-          const active = selectedIndex === index;
+        {availableSongs.map(song => {
+          const active = currentSong?.id === song.id;
           const liked = favorites.includes(song.id);
-
           return (
-            <div
-              key={song.id}
-              className={
-                active
-                  ? "flex items-center gap-3 rounded-2xl border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/15 to-violet-500/10 p-3 shadow-lg shadow-fuchsia-950/20 sm:gap-4 sm:p-4"
-                  : "flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#0b0a14] p-3 transition hover:border-white/20 hover:bg-white/[0.04] sm:gap-4 sm:p-4"
-              }
-            >
-              <button
-                type="button"
-                onClick={() => setSelectedIndex(index)}
-                aria-label={`Play ${song.title} in player`}
-                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-violet-700 to-fuchsia-600 sm:h-16 sm:w-16"
-              >
-                {song.artworkUrl ? (
-                  <img
-                    src={song.artworkUrl}
-                    alt={`${song.title} artwork`}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center text-2xl">
-                    ♫
-                  </span>
-                )}
-                <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-xl text-white opacity-0 transition hover:opacity-100">
-                  ▶
-                </span>
+            <div key={song.id} className={active ? "flex items-center gap-3 rounded-2xl border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/15 to-violet-500/10 p-3 sm:gap-4 sm:p-4" : "flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#0b0a14] p-3 sm:gap-4 sm:p-4"}>
+              <button type="button" onClick={() => playSong(song, availableSongs)} aria-label={`Play ${song.title}`} className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-violet-700 to-fuchsia-600 sm:h-16 sm:w-16">
+                {song.artworkUrl ? <img src={song.artworkUrl} alt="" className="h-full w-full object-cover"/> : <span className="flex h-full w-full items-center justify-center text-2xl">♫</span>}
+                <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-xl text-white">{active && isPlaying ? "Ⅱ" : "▶"}</span>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedIndex(index)}
-                className="min-w-0 flex-1 text-left"
-              >
-                <span className="block truncate text-sm font-bold text-white sm:text-base">
-                  {song.title}
-                </span>
-                <span className="mt-1 block truncate text-xs text-gray-400">
-                  {song.artistName}
-                </span>
-                <span className="mt-2 inline-flex max-w-full truncate rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                  {song.genre || "Music"}
-                </span>
+              <button type="button" onClick={() => playSong(song, availableSongs)} className="min-w-0 flex-1 text-left">
+                <span className="block truncate text-sm font-bold">{song.title}</span><span className="mt-1 block truncate text-xs text-gray-400">{song.artistName}</span>
+                <span className="mt-2 inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] uppercase text-gray-400">{song.genre || "Music"}</span>
               </button>
-
               <div className="flex shrink-0 flex-col items-end gap-2">
-                {active && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
-                    Selected
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => toggleFavorite(song.id)}
-                  disabled={favoriteLoading}
-                  aria-label={liked ? "Remove from favourites" : "Add to favourites"}
-                  aria-pressed={liked}
-                  className={
-                    liked
-                      ? "rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-2 text-xs font-semibold text-pink-300 transition hover:bg-pink-500/20 disabled:opacity-50"
-                      : "rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-pink-400/30 hover:text-pink-300 disabled:opacity-50"
-                  }
-                >
-                  {liked ? "♥ Liked" : "♡ Like"}
-                </button>
+                {active && <span className="text-[10px] font-bold uppercase text-fuchsia-300">Playing</span>}
+                <button type="button" onClick={() => void toggleFavorite(song.id)} disabled={favoriteLoading} aria-pressed={liked} className={liked ? "rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-2 text-xs text-pink-300" : "rounded-full border border-white/10 px-3 py-2 text-xs text-gray-300"}>{liked ? "♥ Liked" : "♡ Like"}</button>
               </div>
             </div>
           );
         })}
       </div>
-
-      {message && (
-        <p
-          role="status"
-          className="mt-4 rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-3 text-sm text-fuchsia-100"
-        >
-          {message}
-        </p>
-      )}
-
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-fuchsia-400/20 bg-[#0b0914]/95 px-3 py-3 shadow-[0_-12px_45px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 sm:gap-5">
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-violet-700 to-fuchsia-600 sm:h-14 sm:w-14">
-            {selectedSong.artworkUrl ? (
-              <img
-                src={selectedSong.artworkUrl}
-                alt={`${selectedSong.title} artwork`}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="flex h-full w-full items-center justify-center text-xl">
-                ♫
-              </span>
-            )}
-          </div>
-
-          <div className="hidden min-w-0 w-44 shrink-0 sm:block">
-            <p className="truncate text-sm font-bold text-white">
-              {selectedSong.title}
-            </p>
-            <p className="mt-1 truncate text-xs text-gray-400">
-              {selectedSong.artistName}
-            </p>
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="mb-1 sm:hidden">
-              <p className="truncate text-xs font-bold text-white">
-                {selectedSong.title}
-              </p>
-              <p className="truncate text-[10px] text-gray-400">
-                {selectedSong.artistName}
-              </p>
-            </div>
-            <audio
-              key={selectedSong.id}
-              controls
-              preload="none"
-              src={selectedSong.audioUrl || undefined}
-              onPlay={() => {
-                void startPlaybackSession(selectedSong.id);
-              }}
-              onTimeUpdate={(event) => {
-                const audio = event.currentTarget;
-                if (!audio.paused && !audio.seeking) {
-                  void heartbeatPlaybackSession(selectedSong.id, audio.currentTime);
-                }
-              }}
-              onEnded={nextSong}
-              className="h-9 w-full"
-            />
-          </div>
-
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={previousSong}
-              aria-label="Previous song"
-              className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-semibold text-gray-200 transition hover:border-fuchsia-400/40 hover:text-white"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              onClick={nextSong}
-              aria-label="Next song"
-              className="rounded-full bg-fuchsia-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-fuchsia-950/40 transition hover:bg-fuchsia-400"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-        <div className="mt-2 flex justify-center gap-3 sm:hidden">
-          <button
-            type="button"
-            onClick={previousSong}
-            className="rounded-full border border-white/10 px-4 py-1.5 text-[11px] font-semibold text-gray-300"
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            onClick={nextSong}
-            className="rounded-full bg-fuchsia-500 px-4 py-1.5 text-[11px] font-bold text-white"
-          >
-            Next Song
-          </button>
-        </div>
-      </div>
+      {message && <p role="status" className="mt-4 rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-3 text-sm text-fuchsia-100">{message}</p>}
+      {currentSong && <div className="mt-5 flex items-center justify-center gap-3 sm:hidden">
+        <button type="button" onClick={previousSong} className="rounded-full border border-white/10 px-4 py-2 text-xs">Previous</button>
+        <button type="button" onClick={togglePlayback} className="rounded-full bg-fuchsia-500 px-5 py-2 text-xs font-bold">{isPlaying ? "Pause" : "Play"}</button>
+        <button type="button" onClick={nextSong} className="rounded-full border border-white/10 px-4 py-2 text-xs">Next</button>
+      </div>}
     </div>
   );
 }
