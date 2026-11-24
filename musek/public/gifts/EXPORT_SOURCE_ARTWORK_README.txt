@@ -1,0 +1,1 @@
+Temporary source-artwork export trigger. The export workflow packages the 29 original 500+ coin gift images from this folder.
