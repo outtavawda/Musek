@@ -64,7 +64,7 @@ export default async function MyMusicPage() {
     <main className="min-h-screen bg-[#080811] text-white">
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9">
         <nav className="mb-8 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-black tracking-tight">MUSEK<span className="text-purple-500">.</span></Link>
+          <Link href="/" className="text-2xl font-black tracking-tight">YASUH<span className="text-purple-500">.</span></Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/dashboard" className="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold text-gray-300 transition hover:border-purple-500 hover:text-white">Dashboard</Link>
             <Link href="/upload" className="rounded-full bg-purple-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-purple-900/30 transition hover:bg-purple-500">＋ Upload Music</Link>
@@ -76,7 +76,7 @@ export default async function MyMusicPage() {
           <div className="relative z-10">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-purple-300">Artist Studio / Library</p>
             <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">My <span className="text-purple-300">Music</span></h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">Your releases, drafts and catalogue in one place. Manage your music and control what listeners can discover on MUSEK.</p>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-300">Your releases, drafts and catalogue in one place. Manage your music and control what listeners can discover on YASUH.</p>
             <p className="mt-4 text-xs font-semibold text-purple-200/80">SIGNED IN AS {artistName.toUpperCase()}</p>
           </div>
         </section>
@@ -110,7 +110,7 @@ export default async function MyMusicPage() {
           <MusicLibrary initialSongs={songs} userId={user.id} />
         </section>
 
-        <footer className="mt-12 border-t border-white/10 py-6 text-center text-xs text-gray-600">MUSEK. Artist Studio</footer>
+        <footer className="mt-12 border-t border-white/10 py-6 text-center text-xs text-gray-600">YASUH. Artist Studio</footer>
       </div>
     </main>
   );
