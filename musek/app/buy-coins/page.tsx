@@ -94,7 +94,7 @@ export default function BuyCoinsPage() {
             marginBottom: "12px",
           }}
         >
-          Buy MUSEK Coins
+          Buy YASUH Coins
         </h1>
 
         <p
@@ -105,7 +105,7 @@ export default function BuyCoinsPage() {
           }}
         >
           Purchase coins to support your favourite artists.
-          100 MUSEK Coins = CAD $1.00.
+          100 YASUH Coins = CAD $1.00.
         </p>
 
         <div
@@ -149,7 +149,7 @@ export default function BuyCoinsPage() {
               >
                 <img
                   src={item.image}
-                  alt={`${item.coins} MUSEK Coins`}
+                  alt={`${item.coins} YASUH Coins`}
                   style={{
                     width: "55px",
                     height: "55px",
@@ -174,7 +174,7 @@ export default function BuyCoinsPage() {
                     fontSize: "13px",
                   }}
                 >
-                  MUSEK Coin Package
+                  YASUH Coin Package
                 </span>
 
                 <span
