@@ -105,7 +105,7 @@ export default function DiscoverSearch({ profiles }: { profiles: Profile[] }) {
       `}</style>
 
       <section className="discoverHero">
-        <p className="discoverKicker">MUSEK • ARTIST DISCOVERY</p>
+        <p className="discoverKicker">YASUH • ARTIST DISCOVERY</p>
         <h2>Find the sound<br />you <span>haven’t heard</span><br />yet.</h2>
         <p className="discoverLead">Explore independent artists, discover fresh genres and connect with the people shaping what comes next.</p>
         <div className="discoverStats">
@@ -145,9 +145,9 @@ export default function DiscoverSearch({ profiles }: { profiles: Profile[] }) {
                   <div className="discoverImageShade" />
                 </div>
                 <div className="discoverArtistBody">
-                  <span className="discoverType">MUSEK ARTIST</span>
+                  <span className="discoverType">YASUH ARTIST</span>
                   <h3 className="discoverName"><Link href={`/artist/${profile.id}`}>{name}</Link></h3>
-                  <p className="discoverBio">{profile.bio || "Discover this artist’s music and story on MUSEK."}</p>
+                  <p className="discoverBio">{profile.bio || "Discover this artist’s music and story on YASUH."}</p>
                   {profile.genres && profile.genres.length > 0 && <div className="discoverTags">{profile.genres.slice(0, 3).map((genre) => <span className="discoverTag" key={genre}>{genre}</span>)}</div>}
                   {profile.location && <p className="discoverMeta">⌖ {profile.location}</p>}
                   <div className="discoverCardBottom">
