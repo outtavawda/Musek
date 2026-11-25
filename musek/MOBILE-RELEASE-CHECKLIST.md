@@ -117,3 +117,33 @@ Priority routes: home, login/signup, Discover Music, feed, social/live rooms, ar
 - Test camera/microphone permission, rotation and low-connectivity recovery.
 
 Record OS/device/browser versions and attach screenshots or screen recordings for each failed case. Do not mark device testing complete based on emulator or desktop browser tests alone.
+
+
+## Supabase security audit — 2026-11-25
+
+Live project checked: **Musek** (project ref pragtvilfgyllabizlyw, PostgreSQL 17; ACTIVE_HEALTHY).
+
+### Verified protections
+
+- [x] All inspected public tables have RLS enabled (zero public tables without RLS).
+- [x] Internal push-token/subscription and playback guard/session tables have RLS enabled and grant table access only to server roles (service_role/postgres); browser roles have no table privileges. Their lack of user-facing RLS policies is intentional for this server-only access model.
+- [x] creator_wallets, fan_coin_wallets, creator_withdrawals, and gift_transactions have RLS enabled and user-facing read policies scoped to the relevant user's own wallet/withdrawal or gift relationship.
+- [x] Admin payout RPCs check membership in public.admin_users using the caller's auth.uid() before allowing changes.
+- [x] Reviewed user-facing privileged RPCs require an authenticated caller and use auth.uid() to scope the operation; gift and withdrawal functions include balance/eligibility and idempotency checks.
+- [x] Payment-credit RPCs and internal playback-session functions are not executable by anon or authenticated roles; they are reserved for trusted server execution.
+- [x] public schema CREATE privilege is not granted to anon or authenticated, reducing risk from functions that pin search_path to public.
+- [x] The public follower-count RPC is intentionally callable by anon and authenticated; its SQL returns a count only when the target profile is a public artist. Do not revoke anonymous access unless product requirements change.
+
+### Remaining security work
+
+- [ ] Enable Supabase Auth leaked-password protection in the Supabase Dashboard (Auth → settings/password security). The live security advisor currently reports it disabled; this is a dashboard-level setting, not changed by this database audit.
+- [ ] Re-run and review the security advisor after enabling leaked-password protection.
+- [ ] Complete code-level review and end-to-end negative tests for all admin and financial RPCs using non-admin, wrong-owner, insufficient-balance, replayed-idempotency-key and invalid-state cases.
+- [ ] Review production environment variables and confirm SUPABASE_SERVICE_ROLE_KEY, payment secrets, push secrets, APNs and FCM credentials are server-only and absent from client bundles/logs.
+- [ ] Confirm backup/PITR and recovery procedures in the production Supabase project.
+
+### Advisor interpretation
+
+The current security advisor reports four RLS-enabled/no-policy tables; these are the server-only tables above and have no browser-role table grants. It also reports SECURITY DEFINER RPC warnings: these include intended authenticated user operations and the public-profile follower-count RPC. The reviewed admin payout functions explicitly check admin_users; the warnings are not, by themselves, proof that these functions are exploitable. Do not blanket-revoke these grants because the app relies on authenticated RPCs. The leaked-password protection warning remains a genuine outstanding dashboard setting.
+
+Security remediation reference: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
