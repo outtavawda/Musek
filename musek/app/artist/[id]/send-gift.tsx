@@ -63,25 +63,31 @@ export default function SendGift({
       setIdempotencyKey(requestKey);
     }
 
-    const { data, error } = await supabase.rpc("send_musek_gift", {
-      p_creator_id: artistId,
-      p_coins: coins,
-      p_idempotency_key: requestKey,
-    });
+    try {
+      const { error } = await supabase.rpc("send_musek_gift", {
+        p_creator_id: artistId,
+        p_coins: coins,
+        p_idempotency_key: requestKey,
+      });
 
-    setSending(false);
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
 
-    if (error) {
-      setMessage(error.message);
-      return;
+      setMessage(
+        `Gift sent successfully! ${coins.toLocaleString()} coins sent to the artist.`
+      );
+
+      setIdempotencyKey(null);
+      router.refresh();
+    } catch {
+      // Keep the same idempotency key so a retry cannot create a duplicate gift
+      // if the first request reached the server but its response was lost.
+      setMessage("We could not confirm your gift. Please try again.");
+    } finally {
+      setSending(false);
     }
-
-    setMessage(
-      `Gift sent successfully! ${coins.toLocaleString()} coins sent to the artist.`
-    );
-
-    setIdempotencyKey(null);
-    router.refresh();
   }
 
   if (loadingAccount) {
