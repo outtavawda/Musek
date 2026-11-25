@@ -33,6 +33,8 @@ export default function WithdrawalForm({
   const [requestKey, setRequestKey] = useState("");
 
   async function submitWithdrawal() {
+    if (isSubmitting) return;
+
     setMessage("");
     const requestedAmount = Number(amount);
 
@@ -109,7 +111,14 @@ export default function WithdrawalForm({
               max={availableBalance}
               step="0.01"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) => {
+                const nextAmount = event.target.value;
+                if (nextAmount !== amount) {
+                  setRequestKey("");
+                }
+                setAmount(nextAmount);
+                setMessage("");
+              }}
               placeholder="Enter amount"
               disabled={isSubmitting}
               style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.25)", background: "transparent", color: "inherit", fontSize: "16px" }}
