@@ -50,19 +50,50 @@ if (!manifest.includes("MusekPlaybackService")) {
 }
 fs.writeFileSync(manifestPath, manifest);
 
-const activityPath = path.join(packageDir, "MainActivity.kt");
-if (!fs.existsSync(activityPath)) throw new Error("Expected MainActivity.kt at " + activityPath);
+const javaRoot = path.join(androidRoot, "app", "src", "main", "java");
+function findMainActivity(directory) {
+  if (!fs.existsSync(directory)) return null;
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      const found = findMainActivity(fullPath);
+      if (found) return found;
+    } else if (entry.name === "MainActivity.kt" || entry.name === "MainActivity.java") {
+      return fullPath;
+    }
+  }
+  return null;
+}
+
+const activityPath = findMainActivity(javaRoot);
+if (!activityPath) throw new Error("Could not locate MainActivity.kt or MainActivity.java under " + javaRoot);
 let activity = fs.readFileSync(activityPath, "utf8");
 if (!activity.includes("MusekPlaybackPlugin")) {
-  activity = activity.replace(/(package [^\n]+\n)/, '$1\nimport com.musek.app.playback.MusekPlaybackPlugin\n');
-  activity = activity.replace(/class MainActivity\s*:\s*BridgeActivity(?:\(\))?\s*(?:\{\s*\})?/, `class MainActivity : BridgeActivity() {
+  if (activityPath.endsWith(".kt")) {
+    activity = activity.replace(/(package [^\\n]+\\n)/, '$1\\nimport com.musek.app.playback.MusekPlaybackPlugin\\n');
+    activity = activity.replace(/class MainActivity\\s*:\\s*BridgeActivity(?:\\(\\))?\\s*(?:\\{\\s*\\})?/, `class MainActivity : BridgeActivity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         registerPlugin(MusekPlaybackPlugin::class.java)
         super.onCreate(savedInstanceState)
     }
 }`);
-  if (!activity.includes("registerPlugin(MusekPlaybackPlugin::class.java)")) {
-    throw new Error("Could not safely register MusekPlaybackPlugin in MainActivity.kt.");
+    if (!activity.includes("registerPlugin(MusekPlaybackPlugin::class.java)")) {
+      throw new Error("Could not safely register MusekPlaybackPlugin in Kotlin MainActivity.");
+    }
+  } else {
+    if (!activity.includes("import com.musek.app.playback.MusekPlaybackPlugin;")) {
+      activity = activity.replace(/(package [^;]+;)/, '$1\\n\\nimport com.musek.app.playback.MusekPlaybackPlugin;');
+    }
+    activity = activity.replace(/public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}/, `public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(android.os.Bundle savedInstanceState) {
+        registerPlugin(MusekPlaybackPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}`);
+    if (!activity.includes("registerPlugin(MusekPlaybackPlugin.class);")) {
+      throw new Error("Could not safely register MusekPlaybackPlugin in Java MainActivity.");
+    }
   }
   fs.writeFileSync(activityPath, activity);
 }
