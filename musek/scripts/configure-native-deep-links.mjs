@@ -18,7 +18,7 @@ if (fs.existsSync(iosInfo)) {
 const iosAppDelegate = path.join("ios", "App", "App", "AppDelegate.swift");
 if (fs.existsSync(iosAppDelegate)) {
   let appDelegate = fs.readFileSync(iosAppDelegate, "utf8");
-  if (!appDelegate.includes("AVAudioSession.sharedInstance().setCategory(.playback")) {
+  if (!appDelegate.includes("YASUH audio session setup failed")) {
     if (!appDelegate.includes("import AVFoundation")) {
       appDelegate = appDelegate.replace("import UIKit", "import UIKit\nimport AVFoundation");
     }
