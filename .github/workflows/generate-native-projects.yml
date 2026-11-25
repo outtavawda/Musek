@@ -1,6 +1,11 @@
 name: Generate YASUH native projects
 
 on:
+  push:
+    branches:
+      - square-sandbox
+    paths:
+      - .github/workflows/generate-native-projects.yml
   workflow_dispatch:
     inputs:
       capacitor_server_url:
