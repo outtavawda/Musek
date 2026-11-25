@@ -57,8 +57,8 @@ export default function GlobalNotifications() {
         aria-expanded={open}
         className="group relative grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-[linear-gradient(145deg,rgba(44,31,66,.96),rgba(15,13,25,.96))] text-white shadow-[0_8px_30px_rgba(0,0,0,.42),inset_0_1px_0_rgba(255,255,255,.12)] backdrop-blur-2xl transition duration-200 hover:-translate-y-0.5 hover:border-fuchsia-300/60 hover:shadow-[0_10px_34px_rgba(217,70,239,.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300">
         <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[21px] w-[21px] transition duration-200 group-hover:scale-110 group-hover:text-fuchsia-200" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-          <path d="M10 21h4"/>
+          <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/>
+          <circle cx="12" cy="10" r="2.5"/>
         </svg>
         {unread > 0 && <span className="absolute -right-1 -top-1 grid h-[21px] min-w-[21px] place-items-center rounded-full border-2 border-[#100d19] bg-gradient-to-br from-rose-500 via-fuchsia-600 to-violet-600 px-1 text-[9px] font-black text-white shadow-[0_2px_12px_rgba(217,70,239,.5)]">{unread > 99 ? "99+" : unread}</span>}
       </button>
