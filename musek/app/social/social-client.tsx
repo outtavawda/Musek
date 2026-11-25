@@ -310,7 +310,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   return (
     <div className="relative min-h-[100dvh] w-full bg-[#080811] pb-24 text-white">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080811]/95 px-4 py-3 backdrop-blur-xl sm:rounded-b-2xl">
-        <div className="flex items-center gap-2"><span className="text-xl font-black tracking-tight">MUSEK<span className="text-fuchsia-400">.</span></span><span className="rounded-full bg-fuchsia-500/15 px-2 py-1 text-[9px] font-black tracking-widest text-fuchsia-200">LIVE</span></div>
+        <div className="flex items-center gap-2"><span className="text-xl font-black tracking-tight">YASUH<span className="text-fuchsia-400">.</span></span><span className="rounded-full bg-fuchsia-500/15 px-2 py-1 text-[9px] font-black tracking-widest text-fuchsia-200">LIVE</span></div>
         <div className="flex items-center gap-3 text-xs"><Link href="/feed" className="text-gray-400 hover:text-white">Music</Link><Link href="/profile" className="rounded-full border border-white/10 px-3 py-2 font-semibold">Profile</Link></div>
       </header>
 
@@ -347,7 +347,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-black/30 text-2xl font-black shadow-xl">{room.host_name.slice(0,1).toUpperCase()}</div>
                 <span className="absolute left-2 top-2 rounded-md bg-rose-600 px-2 py-1 text-[9px] font-black tracking-wider">● LIVE</span><span className="absolute bottom-2 left-2 right-2 line-clamp-2 text-sm font-black drop-shadow-lg">{room.title}</span>
               </div>
-              <div className="flex items-center gap-2 p-3">{room.avatar_url ? <img src={room.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover"/> : <span className="grid h-7 w-7 place-items-center rounded-full bg-fuchsia-500/20 text-xs font-bold">{room.host_name.slice(0,1)}</span>}<div className="min-w-0"><p className="truncate text-[11px] font-bold">{room.host_name}</p><p className="text-[9px] text-gray-500">MUSEK creator</p></div></div>
+              <div className="flex items-center gap-2 p-3">{room.avatar_url ? <img src={room.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover"/> : <span className="grid h-7 w-7 place-items-center rounded-full bg-fuchsia-500/20 text-xs font-bold">{room.host_name.slice(0,1)}</span>}<div className="min-w-0"><p className="truncate text-[11px] font-bold">{room.host_name}</p><p className="text-[9px] text-gray-500">YASUH creator</p></div></div>
             </button>)}</div>}
         </section>
 
@@ -378,7 +378,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <div className="relative z-10 flex items-start justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))]">
             <div className="flex min-w-0 items-center gap-3 rounded-full border border-white/15 bg-black/35 p-2 pr-4 backdrop-blur-xl">
               {selected.avatar_url ? <img src={selected.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover"/> : <span className="grid h-10 w-10 place-items-center rounded-full bg-fuchsia-500/30 font-black">{selected.host_name.slice(0,1).toUpperCase()}</span>}
-              <div className="min-w-0"><p className="max-w-[170px] truncate text-xs font-black">{selected.host_name}</p><p className="text-[10px] text-white/70">MUSEK LIVE · {messages.length} messages</p></div>
+              <div className="min-w-0"><p className="max-w-[170px] truncate text-xs font-black">{selected.host_name}</p><p className="text-[10px] text-white/70">YASUH LIVE · {messages.length} messages</p></div>
               <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] font-black tracking-widest">● LIVE</span>
             </div>
             <button onClick={async () => {
@@ -453,7 +453,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
         {(profileLoading || viewingProfile) && <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm" onClick={() => { if (!profileLoading) setViewingProfile(null); }}>
           <section role="dialog" aria-modal="true" aria-label="Member profile" onClick={(event) => event.stopPropagation()} className="w-full max-w-sm rounded-3xl border border-fuchsia-300/20 bg-[#171321] p-5 shadow-2xl">
             {profileLoading ? <p className="py-8 text-center text-sm text-gray-300">Loading profile…</p> : viewingProfile && <>
-              <div className="flex items-start justify-between"><div className="flex items-center gap-3">{viewingProfile.avatar_url ? <img src={viewingProfile.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover"/> : <span className="grid h-14 w-14 place-items-center rounded-full bg-fuchsia-500/20 text-xl font-black">{(viewingProfile.artist_name || viewingProfile.display_name || "M").slice(0,1).toUpperCase()}</span>}<div><p className="text-base font-black">{viewingProfile.artist_name || viewingProfile.display_name || "MUSEK Member"}</p><p className="mt-1 text-[10px] uppercase tracking-widest text-fuchsia-200">{viewingProfile.account_type || "member"}</p></div></div><button type="button" onClick={() => setViewingProfile(null)} aria-label="Close profile" className="grid h-8 w-8 place-items-center rounded-full border border-white/10 text-gray-300">✕</button></div>
+              <div className="flex items-start justify-between"><div className="flex items-center gap-3">{viewingProfile.avatar_url ? <img src={viewingProfile.avatar_url} alt="" className="h-14 w-14 rounded-full object-cover"/> : <span className="grid h-14 w-14 place-items-center rounded-full bg-fuchsia-500/20 text-xl font-black">{(viewingProfile.artist_name || viewingProfile.display_name || "M").slice(0,1).toUpperCase()}</span>}<div><p className="text-base font-black">{viewingProfile.artist_name || viewingProfile.display_name || "YASUH Member"}</p><p className="mt-1 text-[10px] uppercase tracking-widest text-fuchsia-200">{viewingProfile.account_type || "member"}</p></div></div><button type="button" onClick={() => setViewingProfile(null)} aria-label="Close profile" className="grid h-8 w-8 place-items-center rounded-full border border-white/10 text-gray-300">✕</button></div>
               {viewingProfile.location && <p className="mt-4 text-xs text-gray-400">{viewingProfile.location}</p>}
               {viewingProfile.genres && viewingProfile.genres.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{viewingProfile.genres.map((genre) => <span key={genre} className="rounded-full border border-fuchsia-300/20 bg-fuchsia-500/10 px-3 py-1 text-[10px] font-semibold text-fuchsia-100">{genre}</span>)}</div>}
               {viewingProfile.bio && <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-gray-200">{viewingProfile.bio}</p>}
