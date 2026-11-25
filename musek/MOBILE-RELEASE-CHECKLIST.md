@@ -1,6 +1,6 @@
-# MUSEK mobile release checklist
+# YASUH mobile release checklist
 
-All application changes are being developed on `square-sandbox`. Do not merge to production until the checks below pass.
+All application changes are being developed on `square-sandbox`. Do not merge to production until the checks below pass. The approved primary native-app URL is **https://yasuh.ca**; `www.yasuh.ca` should redirect to the primary domain.
 
 ## Browser/PWA push setup
 
@@ -26,30 +26,29 @@ The profile page contains an explicit opt-in control. The web push send endpoint
 
 ## Native project generation
 
-1. Confirm the production HTTPS deployment URL.
-2. In GitHub, open Actions → **Generate MUSEK native projects** → Run workflow.
-3. Supply the deployed HTTPS URL as `capacitor_server_url`.
-4. The workflow creates the iOS and Android Capacitor projects, syncs plugins, applies the `musek://` URL scheme, and commits generated projects to `square-sandbox`.
+1. In GitHub, open Actions → **Generate YASUH native projects** → Run workflow.
+2. The approved URL `https://yasuh.ca` is prefilled and validated by the workflow.
+3. The workflow creates the iOS and Android Capacitor projects, syncs plugins, applies the `musek://` URL scheme, configures iOS background audio and Android Media3 background playback, and commits generated projects to `square-sandbox`.
 
 Local equivalent:
 
 ```bash
 cd musek
 npm install
-CAPACITOR_SERVER_URL=https://YOUR-DEPLOYED-MUSEK-HOST npx cap add ios
-CAPACITOR_SERVER_URL=https://YOUR-DEPLOYED-MUSEK-HOST npx cap add android
+CAPACITOR_SERVER_URL=https://yasuh.ca npx cap add ios
+CAPACITOR_SERVER_URL=https://yasuh.ca npx cap add android
 node scripts/configure-native-deep-links.mjs
 node scripts/configure-native-playback.mjs
-CAPACITOR_SERVER_URL=https://YOUR-DEPLOYED-MUSEK-HOST npx cap sync
+CAPACITOR_SERVER_URL=https://yasuh.ca npx cap sync
 npx cap open ios
 npx cap open android
 ```
 
-The native projects load the deployed MUSEK web application. The placeholder web shell is not the production app.
+The native projects load the deployed YASUH web application. The placeholder web shell is not the production app.
 
 ## Native push credentials still required
 
-The app requests native notification permission only when the user enables notifications in Profile. It registers the iOS APNs or Android FCM device token with MUSEK and stores it under the signed-in user.
+The app requests native notification permission only when the user enables notifications in Profile. It registers the iOS APNs or Android FCM device token with YASUH and stores it under the signed-in user.
 
 Native APNs and FCM HTTP v1 delivery adapters are implemented in `musek/lib/native-push.ts` and are called by the artist-live notification endpoint alongside browser Web Push. Native token registration and invalid-token cleanup are already wired.
 
@@ -66,13 +65,13 @@ The app's iOS bundle identifier must match the APNs topic, and the Firebase proj
 
 ## Lock-screen/background playback
 
-The shared player remains app-wide. On Android, the native playback bridge now routes music through an AndroidX Media3 ExoPlayer hosted by a MediaSessionService, with a native media notification, lock-screen controls, queue metadata, and play/pause/seek synchronization to the MUSEK player. The native generation workflow copies and registers the service and adds its Media3 dependencies.
+The shared player remains app-wide. On Android, the native playback bridge routes music through an AndroidX Media3 ExoPlayer hosted by a MediaSessionService, with a native media notification, lock-screen controls, queue metadata, and play/pause/seek synchronization to the YASUH player. The native generation workflow copies and registers the service and adds its Media3 dependencies.
 
 On iOS, the native generation script enables the audio background mode and configures AVAudioSession for the playback category. The web player continues to publish Media Session metadata and transport actions. This configuration is implemented but is not yet certified on a physical iPhone. Both platforms must be tested with the screen locked, app backgrounded, Bluetooth connected, an incoming call, and a network interruption.
 
 ## Responsive route audit
 
-The app has 25 page routes. The global mobile safeguards now constrain horizontal overflow, media width, long text, tables, touch interactions and reduced-motion behavior. Each route still needs visual verification at:
+The app has 25 page routes. The global mobile safeguards constrain horizontal overflow, media width, long text, tables, touch interactions and reduced-motion behavior. Each route still needs visual verification at:
 - 320 × 568 (small phone)
 - 375 × 812 (iPhone-sized viewport)
 - 390 × 844
@@ -88,7 +87,7 @@ Priority routes: home, login/signup, Discover Music, feed, social/live rooms, ar
 - Install from the generated Xcode project on a physical iPhone.
 - Sign in, play a track, navigate to other pages, lock the phone, and verify playback and lock-screen controls.
 - Verify AirPods/Bluetooth controls, interruption/resume, background/foreground transitions.
-- Add MUSEK to the Home Screen and verify manifest/icon/standalone display.
+- Add YASUH to the Home Screen and verify manifest/icon/standalone display.
 - Enable notifications, receive a test notification, tap it, and verify deep-link routing.
 - Test live camera/microphone permissions and room reconnect.
 
