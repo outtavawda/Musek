@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.musek.app",
-  appName: "MUSEK",
+  appName: "YASUH",
   webDir: "capacitor-web",
   server: {
     url: process.env.CAPACITOR_SERVER_URL,
