@@ -14,7 +14,7 @@ export default async function SocialPage() {
     .maybeSingle();
 
   const displayName = profile?.artist_name || profile?.display_name ||
-    user.user_metadata?.display_name || "MUSEK Member";
+    user.user_metadata?.display_name || "YASUH Member";
 
   return (
     <SocialClient userId={user.id} displayName={displayName} accountType={profile?.account_type || "fan"} avatarUrl={profile?.avatar_url || null} />
