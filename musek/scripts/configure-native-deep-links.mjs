@@ -31,7 +31,7 @@ if (fs.existsSync(iosAppDelegate)) {
     if (!appDelegate.includes("import AVFoundation")) {
       appDelegate = appDelegate.replace("import UIKit", "import UIKit\nimport AVFoundation");
     }
-    const launchMethod = /(func application\(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: \[UIApplication\.LaunchOptionsKey: Any\]?\) -> Bool \{)/;
+    const launchMethod = /(func application\\([\\s\\S]*?didFinishLaunchingWithOptions[\\s\\S]*?-> Bool \\{)/;
     if (launchMethod.test(appDelegate)) {
       appDelegate = appDelegate.replace(launchMethod, `$1
         do {
