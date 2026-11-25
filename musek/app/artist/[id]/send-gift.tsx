@@ -20,6 +20,7 @@ export default function SendGift({
   const [isFan, setIsFan] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [loadingAccount, setLoadingAccount] = useState(true);
+  const [accountCheckFailed, setAccountCheckFailed] = useState(false);
   const [coins, setCoins] = useState(100);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
@@ -29,23 +30,36 @@ export default function SendGift({
 
   useEffect(() => {
     async function checkAccount() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-      if (user) {
-        setLoggedIn(true);
+        if (authError) {
+          throw authError;
+        }
 
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("account_type")
-          .eq("id", user.id)
-          .maybeSingle();
+        if (user) {
+          setLoggedIn(true);
 
-        setIsFan(profile?.account_type === "fan");
+          const { data: profile, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("account_type")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (profileError) {
+            throw profileError;
+          }
+
+          setIsFan(profile?.account_type === "fan");
+        }
+      } catch {
+        setAccountCheckFailed(true);
+      } finally {
+        setLoadingAccount(false);
       }
-
-      setLoadingAccount(false);
     }
 
     checkAccount();
@@ -92,6 +106,23 @@ export default function SendGift({
 
   if (loadingAccount) {
     return null;
+  }
+
+  if (accountCheckFailed) {
+    return (
+      <div style={{ marginTop: "30px" }}>
+        <p role="alert" className="muted">
+          We could not verify your account. Please try again.
+        </p>
+        <button
+          type="button"
+          className="primaryButton"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   if (!loggedIn) {
