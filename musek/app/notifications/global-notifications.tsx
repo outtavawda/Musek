@@ -50,10 +50,10 @@ export default function GlobalNotifications() {
     await supabase.from("user_notifications").update({ read_at: readAt }).eq("id", item.id).eq("user_id", userId);
   }
 
-  if (!userId || pathname === "/profile") return null;
+  if (!userId) return null;
 
   return (
-    <div className="fixed right-3 top-3 z-[120] sm:right-6 sm:top-5">
+    <div className="fixed left-4 top-3 z-[120] flex items-center gap-3 sm:left-6 sm:top-5">\n      <Link href="/" aria-label="YASUH home" className="text-[23px] font-black tracking-[-0.08em] text-white drop-shadow-lg">YASUH<span className="text-purple-400">.</span></Link>
       <button type="button" onClick={() => setOpen((value) => !value)}
         aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
         aria-expanded={open}
