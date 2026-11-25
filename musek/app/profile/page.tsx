@@ -62,7 +62,7 @@ export default async function ProfilePage({
   return (
     <main style={{ minHeight: "100vh", padding: "0 24px 80px", color: "#fbf8ff", background: "radial-gradient(ellipse at 18% 0%, rgba(111, 38, 169, .28), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(82, 32, 125, .17), transparent 30%), #08070d" }}>
       <nav style={{ maxWidth: "1180px", height: "82px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(204, 173, 255, .12)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}><Link href="/" style={{ fontSize: "25px", fontWeight: 950, letterSpacing: "-1.5px", color: "#fff" }}>YASUH<span style={{ color: "#c084fc" }}>.</span></Link><GlobalNotifications /></div>
+        <div style={{ minWidth: "110px" }} aria-hidden="true" />
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link href="/dashboard" style={{ color: "#c9bdd8", fontSize: "13px" }}>Dashboard</Link>
           <form action={signOut}><button type="submit" style={{ border: "1px solid rgba(216,180,254,.3)", background: "rgba(255,255,255,.04)", color: "#eee4fa", borderRadius: "999px", padding: "10px 17px", cursor: "pointer" }}>Log out</button></form>
