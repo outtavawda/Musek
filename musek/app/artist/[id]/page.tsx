@@ -64,7 +64,7 @@ export default async function ArtistPage({
     <main className="min-h-screen overflow-hidden bg-[#08070d] pb-20 text-white">
       <div className="pointer-events-none fixed inset-0 -z-0" style={{ background: "radial-gradient(ellipse at 50% -10%, rgba(126,34,206,.28), transparent 48%), radial-gradient(ellipse at 100% 40%, rgba(88,28,135,.13), transparent 35%)" }} />
       <nav className="relative z-10 mx-auto flex h-[78px] max-w-7xl items-center justify-between border-b border-white/[0.08] px-5 sm:px-8">
-        <Link className="text-[25px] font-black tracking-[-1.5px]" href="/">MUSEK<span className="text-fuchsia-400">.</span></Link>
+        <Link className="text-[25px] font-black tracking-[-1.5px]" href="/">YASUH<span className="text-fuchsia-400">.</span></Link>
         <Link className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs font-semibold text-gray-200 transition hover:border-fuchsia-400/40 hover:text-white" href="/discover">← Discover artists</Link>
       </nav>
 
@@ -85,7 +85,7 @@ export default async function ArtistPage({
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="mb-3 text-[10px] font-black uppercase tracking-[.28em] text-fuchsia-300">MUSEK · Artist spotlight</p>
+                <p className="mb-3 text-[10px] font-black uppercase tracking-[.28em] text-fuchsia-300">YASUH · Artist spotlight</p>
                 <h1 className="break-words text-4xl font-black leading-[.98] tracking-[-.055em] sm:text-6xl">{artistName}</h1>
                 {artist.location && <p className="mt-4 flex items-center gap-2 text-sm text-gray-300"><span className="text-fuchsia-300">⌖</span>{artist.location}</p>}
                 <div className="mt-5 flex flex-wrap gap-2">
@@ -146,11 +146,11 @@ export default async function ArtistPage({
           <div className="rounded-[22px] border border-fuchsia-300/15 bg-gradient-to-br from-[#20122f] to-[#100d17] p-6">
             <p className="mb-2 text-[10px] font-black uppercase tracking-[.22em] text-fuchsia-300">Support independent music</p>
             <h2 className="text-2xl font-black tracking-tight">Show some love.</h2>
-            <p className="mt-3 text-sm leading-6 text-gray-400">Send a MUSEK gift directly to this artist and support their creative journey.</p>
+            <p className="mt-3 text-sm leading-6 text-gray-400">Send a YASUH gift directly to this artist and support their creative journey.</p>
             <SendGift artistId={artist.id} />
           </div>
           <div className="rounded-[22px] border border-white/[0.08] bg-[#100d17] p-6">
-            <p className="text-[10px] font-black uppercase tracking-[.2em] text-gray-500">MUSEK community</p>
+            <p className="text-[10px] font-black uppercase tracking-[.2em] text-gray-500">YASUH community</p>
             <p className="mt-3 text-sm leading-6 text-gray-300">Discover new sounds, follow the artists you love and support the music that moves you.</p>
             <Link href="/discover-music" className="mt-5 inline-flex text-xs font-bold text-fuchsia-200 hover:text-white">Explore more music →</Link>
           </div>
