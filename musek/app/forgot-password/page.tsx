@@ -7,11 +7,11 @@ export default function ForgotPasswordPage({ searchParams }: { searchParams?: { 
       <div className="authGlow authGlowOne" aria-hidden="true" />
       <div className="authGlow authGlowTwo" aria-hidden="true" />
       <section className="authCard" aria-labelledby="forgot-heading">
-        <Link className="authBrand" href="/" aria-label="MUSEK home">MUSEK<span>.</span></Link>
+        <Link className="authBrand" href="/" aria-label="YASUH home">YASUH<span>.</span></Link>
         <div className="authIntro">
           <p className="authEyebrow"><span className="authEyebrowDot" /> ACCOUNT RECOVERY</p>
           <h1 id="forgot-heading">Forgot your <span>password?</span></h1>
-          <p className="authDescription">Enter the email address linked to your MUSEK account. If an account exists, we'll send you a secure reset link.</p>
+          <p className="authDescription">Enter the email address linked to your YASUH account. If an account exists, we'll send you a secure reset link.</p>
         </div>
         {searchParams?.error && <div className="authError" role="alert">{searchParams.error}</div>}
         {searchParams?.message && <div className="authMessage" role="status">{searchParams.message}</div>}
@@ -22,7 +22,7 @@ export default function ForgotPasswordPage({ searchParams }: { searchParams?: { 
         </form>
         <div className="authDivider"><span>REMEMBERED YOUR PASSWORD?</span></div>
         <Link className="authSignup" href="/login">Back to log in <span aria-hidden="true">→</span></Link>
-        <p className="authFooter"><Link href="/">← Back to MUSEK</Link><span>Music brings us together.</span></p>
+        <p className="authFooter"><Link href="/">← Back to YASUH</Link><span>Music brings us together.</span></p>
       </section>
     </main>
   );
