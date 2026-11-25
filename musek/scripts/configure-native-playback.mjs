@@ -64,18 +64,18 @@ const gradlePath = path.join(androidRoot, "app", "build.gradle");
 if (!fs.existsSync(gradlePath)) throw new Error("Android app/build.gradle was not found.");
 let gradle = fs.readFileSync(gradlePath, "utf8");
 
-const androidBlock = /android\\s*\\{/;
+const androidBlock = /android\s*\{/;
 if (!androidBlock.test(gradle)) {
   throw new Error("Could not find the android block in app/build.gradle to align Kotlin and Java JVM targets.");
 }
-if (/kotlinOptions\\s*\\{/.test(gradle)) {
-  if (/jvmTarget\\s*=/.test(gradle)) {
-    gradle = gradle.replace(/jvmTarget\\s*=\\s*["'][^"']+["']/, 'jvmTarget = "17"');
+if (/kotlinOptions\s*\{/.test(gradle)) {
+  if (/jvmTarget\s*=/.test(gradle)) {
+    gradle = gradle.replace(/jvmTarget\s*=\s*["'][^"']+["']/, 'jvmTarget = "17"');
   } else {
-    gradle = gradle.replace(/kotlinOptions\\s*\\{/, 'kotlinOptions { jvmTarget = "17"');
+    gradle = gradle.replace(/kotlinOptions\s*\{/, 'kotlinOptions { jvmTarget = "17"');
   }
 } else {
-  gradle = gradle.replace(androidBlock, match => match + '\\n    kotlinOptions { jvmTarget = "17" }');
+  gradle = gradle.replace(androidBlock, match => match + '\n    kotlinOptions { jvmTarget = "17" }');
 }
 if (!gradle.includes("kotlin-android")) {
   gradle = "apply plugin: 'kotlin-android'\n" + gradle;
