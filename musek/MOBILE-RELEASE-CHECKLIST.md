@@ -1,5 +1,23 @@
 # YASUH mobile release checklist
 
+## Verified status — 2026-11-25
+
+Latest native generation workflow: **successful** on `square-sandbox` at commit `be595c09adbbfb39aa9b6b01115a71e4e35a0a5c`.
+
+- [x] Capacitor iOS and Android projects generated and synced.
+- [x] iOS simulator build completed successfully. This is not a device-signed IPA and does not establish physical-iPhone readiness.
+- [x] Android debug APK build completed successfully.
+- [x] Android debug APK uploaded as workflow artifact `yasuh-android-debug-apk` (artifact ID `14999800353`; expires 2026-12-09).
+- [x] Native playback configuration steps completed in CI.
+- [ ] Install and verify either native app on physical hardware.
+- [ ] Configure Apple Developer signing and TestFlight distribution.
+- [ ] Configure and verify production APNs/FCM credentials and actual device notification delivery.
+- [ ] Complete remaining responsive, security, payment, legal and store-release checks.
+
+Legal/support pages were not found in the inspected `square-sandbox` repository tree. Tracking issue: https://github.com/outtavawda/Musek/issues/3. Do not treat this as legal advice or publish policy drafts until the operator details and actual data practices are confirmed and reviewed.
+
+---
+
 All application changes are being developed on `square-sandbox`. Do not merge to production until the checks below pass. The approved primary native-app URL is **https://yasuh.ca**; `www.yasuh.ca` should redirect to the primary domain.
 
 ## Browser/PWA push setup
