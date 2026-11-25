@@ -15,6 +15,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } catch {
             NSLog("YASUH audio session setup failed: %@", error.localizedDescription)
         }
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playback, mode: .default, options: [.allowBluetooth, .allowAirPlay])
+            try audioSession.setActive(true)
+        } catch {
+            NSLog("YASUH audio session setup failed: %@", error.localizedDescription)
+        }
         // Override point for customization after application launch.
         return true
     }
