@@ -52,7 +52,7 @@ export default async function DiscoverMusicPage() {
         artistName:
           profile?.artist_name ||
           profile?.display_name ||
-          "MUSEK Artist",
+          "YASUH Artist",
         genre: track.genre || "",
         audioUrl: audio?.signedUrl || null,
         artworkUrl,
@@ -69,7 +69,7 @@ export default async function DiscoverMusicPage() {
       <div className="mx-auto max-w-7xl">
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
           <Link href="/" className="text-2xl font-black tracking-[0.18em] text-white">
-            MUSEK<span className="text-fuchsia-500">.</span>
+            YASUH<span className="text-fuchsia-500">.</span>
           </Link>
 
           <nav className="flex flex-wrap items-center gap-2 text-sm">
@@ -123,7 +123,7 @@ export default async function DiscoverMusicPage() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
             <p className="text-sm text-gray-400">Made for discovery</p>
-            <p className="mt-2 text-3xl font-bold text-fuchsia-300">MUSEK</p>
+            <p className="mt-2 text-3xl font-bold text-fuchsia-300">YASUH</p>
             <p className="mt-1 text-xs text-gray-500">Independent music lives here</p>
           </div>
         </section>
@@ -143,7 +143,7 @@ export default async function DiscoverMusicPage() {
         </section>
 
         <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-sm text-gray-500">
-          <span>Discover independent music on MUSEK.</span>
+          <span>Discover independent music on YASUH.</span>
           <div className="flex gap-5">
             <Link href="/favorites" className="transition hover:text-fuchsia-300">Favourites</Link>
             <Link href="/dashboard" className="transition hover:text-fuchsia-300">Dashboard</Link>
