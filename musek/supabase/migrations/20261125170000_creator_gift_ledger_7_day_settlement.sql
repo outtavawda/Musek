@@ -97,7 +97,7 @@ REVOKE ALL ON FUNCTION public.record_creator_gift_earning() FROM PUBLIC, anon, a
 
 DROP TRIGGER IF EXISTS gift_transactions_record_creator_earning ON public.gift_transactions;
 CREATE TRIGGER gift_transactions_record_creator_earning
-AFTER INSERT ON public.gift_transactions
+AFTER INSERT OR UPDATE OF status ON public.gift_transactions
 FOR EACH ROW EXECUTE FUNCTION public.record_creator_gift_earning();
 
 -- Idempotent historical backfill. This records earnings only; it does not
@@ -358,7 +358,7 @@ BEGIN
       )::numeric(12,2) AS pending_hold,
       (
         COALESCE(sum(e.amount_cad) FILTER (WHERE e.event_type = 'settlement'), 0)
-        + COALESCE(sum(e.amount_cad) FILTER (WHERE e.event_type IN ('withdrawal','adjustment')), 0)
+        + COALESCE(sum(e.amount_cad) FILTER (WHERE e.event_type IN ('withdrawal','adjustment','reversal')), 0)
       )::numeric(12,2) AS expected_settled
     FROM public.creator_earning_ledger e
     GROUP BY e.creator_id
