@@ -27,13 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: musek/package-lock.json
       - name: Validate YASUH production URL
         run: |
           node -e 'const u = new URL(process.env.CAPACITOR_SERVER_URL); if (u.protocol !== "https:" || u.hostname !== "yasuh.ca" || u.pathname !== "/" || u.search || u.hash) { console.error("Use the approved production URL https://yasuh.ca"); process.exit(1); }'
-      - name: Install locked YASUH dependencies
-        run: npm ci --no-audit --no-fund
+      - name: Install YASUH dependencies
+        run: npm install --no-audit --no-fund
       - name: Generate iOS project if missing
         run: |
           if [ ! -d ios/App ]; then
