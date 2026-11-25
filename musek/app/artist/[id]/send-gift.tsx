@@ -191,6 +191,14 @@ export default function SendGift({
         MUSEK retains 30%.
       </p>
 
+      <p className="muted" style={{ marginTop: "14px", fontSize: "13px", lineHeight: 1.6 }}>
+        Gifts are final once successfully sent. Review the{" "}
+        <a href="/policies/coins-and-gifts" style={{ color: "inherit", textDecoration: "underline" }}>
+          YASUH Coin &amp; Gift Policy
+        </a>{" "}
+        before sending.
+      </p>
+
       <button
         type="button"
         className="primaryButton"
