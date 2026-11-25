@@ -87,7 +87,7 @@ export default async function FavoritesPage() {
   const artistMap = new Map(
     (artists || []).map((artist) => [
       artist.id,
-      artist.artist_name || artist.display_name || "MUSEK Artist",
+      artist.artist_name || artist.display_name || "YASUH Artist",
     ])
   );
 
@@ -100,7 +100,7 @@ export default async function FavoritesPage() {
       return {
         id: track.id,
         title: track.title,
-        artistName: artistMap.get(track.artist_id) || "MUSEK Artist",
+        artistName: artistMap.get(track.artist_id) || "YASUH Artist",
         genre: track.genre || "",
         audioUrl: signedUrl?.signedUrl || null,
       };
@@ -111,7 +111,7 @@ export default async function FavoritesPage() {
     <main style={{ width: "min(100% - 32px, 1440px)", margin: "40px auto", padding: "clamp(16px, 2.5vw, 36px)", boxSizing: "border-box" }}>
       <h1>❤️ My Favourites</h1>
 
-      <p>Your saved MUSEK songs, all in one place.</p>
+      <p>Your saved YASUH songs, all in one place.</p>
 
       <p style={{ marginBottom: "25px" }}>
         <Link href="/dashboard">← Back to Dashboard</Link>
