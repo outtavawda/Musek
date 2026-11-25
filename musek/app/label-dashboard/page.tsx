@@ -302,7 +302,7 @@ export default async function LabelDashboardPage() {
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-purple-400">
-              MUSEK
+              YASUH
             </p>
             <h1 className="mt-2 text-3xl font-bold">
               Label Dashboard
@@ -314,7 +314,7 @@ export default async function LabelDashboardPage() {
 
           <div className="flex flex-wrap gap-2">
             <Link href="/social" className="rounded-lg border border-purple-400/30 bg-purple-500/10 px-5 py-3 text-sm font-semibold text-purple-200">
-              MUSEK Social
+              YASUH Social
             </Link>
             <Link
               href="/dashboard"
@@ -648,7 +648,7 @@ export default async function LabelDashboardPage() {
 
             <div style={cardStyle}>
               <p className="text-xs uppercase tracking-widest text-gray-400">
-                MUSEK SHARE · 30%
+                YASUH SHARE · 30%
               </p>
               <h3 className="mt-2 text-3xl font-bold">
                 {cadFormatter.format(totalMusekShare)}
@@ -708,7 +708,7 @@ export default async function LabelDashboardPage() {
                       </strong>
                     </div>
                     <p className="mt-3 text-xs text-gray-500">
-                      MUSEK share: {cadFormatter.format(artist.musekShare)}
+                      YASUH share: {cadFormatter.format(artist.musekShare)}
                     </p>
                   </div>
                 ))}
@@ -759,7 +759,7 @@ export default async function LabelDashboardPage() {
           </div>
 
           <p className="mt-6 text-xs text-gray-500">
-            Gift figures are based on settled transactions recorded in MUSEK.
+            Gift figures are based on settled transactions recorded in YASUH.
             They are not label earnings or a promise of payment to the label.
             Sandbox test transactions are not real-money revenue.
           </p>
