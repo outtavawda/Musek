@@ -125,6 +125,8 @@ Live project checked: **Musek** (project ref pragtvilfgyllabizlyw, PostgreSQL 17
 
 ### Verified protections
 
+- [x] Hardened all 13 reviewed SECURITY DEFINER RPCs with an empty function search_path; all referenced application objects are explicitly schema-qualified. The corresponding repeatable migration is `musek/supabase/migrations/022_harden_security_definer_search_paths.sql`.
+
 - [x] All inspected public tables have RLS enabled (zero public tables without RLS).
 - [x] Internal push-token/subscription and playback guard/session tables have RLS enabled and grant table access only to server roles (service_role/postgres); browser roles have no table privileges. Their lack of user-facing RLS policies is intentional for this server-only access model.
 - [x] creator_wallets, fan_coin_wallets, creator_withdrawals, and gift_transactions have RLS enabled and user-facing read policies scoped to the relevant user's own wallet/withdrawal or gift relationship.
@@ -138,7 +140,7 @@ Live project checked: **Musek** (project ref pragtvilfgyllabizlyw, PostgreSQL 17
 
 - [ ] Enable Supabase Auth leaked-password protection in the Supabase Dashboard (Auth → settings/password security). The live security advisor currently reports it disabled; this is a dashboard-level setting, not changed by this database audit.
 - [ ] Re-run and review the security advisor after enabling leaked-password protection.
-- [ ] Complete code-level review and end-to-end negative tests for all admin and financial RPCs using non-admin, wrong-owner, insufficient-balance, replayed-idempotency-key and invalid-state cases.
+- [ ] Complete code-level review and end-to-end negative tests for all admin and financial RPCs using non-admin, wrong-owner, insufficient-balance, replayed-idempotency-key and invalid-state cases. The SECURITY DEFINER advisor findings remain visible because these intended RPCs are still executable by authenticated users (and follower count by anon); the search_path hardening does not remove those lint findings.
 - [ ] Review production environment variables and confirm SUPABASE_SERVICE_ROLE_KEY, payment secrets, push secrets, APNs and FCM credentials are server-only and absent from client bundles/logs.
 - [ ] Confirm backup/PITR and recovery procedures in the production Supabase project.
 
