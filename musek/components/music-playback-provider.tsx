@@ -82,8 +82,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
       void createSupabaseClient().rpc("record_music_skip", { p_track_id: currentSong.id })
         .then(({ error }) => {
           if (error) console.error("YASUH skip tracking failed", error.message);
-        })
-        .catch(error => console.error("YASUH skip tracking failed", error));
+        });
     }
     nextSong();
   }, [currentSong?.id, nextSong]);
