@@ -1,4 +1,4 @@
-const CACHE_NAME = "musek-shell-v1";
+const CACHE_NAME = "yasuh-shell-v1";
 const APP_SHELL = ["/", "/musek-icon.svg"];
 
 self.addEventListener("install", event => {
@@ -23,7 +23,7 @@ self.addEventListener("fetch", event => {
 self.addEventListener("push", event => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch {}
-  const title = data.title || "MUSEK";
+  const title = data.title || "YASUH";
   event.waitUntil(self.registration.showNotification(title, {
     body: data.body || "You have a new update.",
     icon: "/musek-icon.svg",
