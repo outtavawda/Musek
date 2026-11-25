@@ -22,7 +22,7 @@ export default async function FeedPage() {
       .maybeSingle();
 
     if (error) {
-      console.error("MUSEK preference loading error:", error);
+      console.error("YASUH preference loading error:", error);
     }
 
     preferredGenres = (preferences?.preferred_genres || [])
@@ -39,7 +39,7 @@ export default async function FeedPage() {
         .limit(200);
 
     if (listeningError) {
-      console.error("MUSEK listening history error:", listeningError);
+      console.error("YASUH listening history error:", listeningError);
     }
 
     // Load songs the fan has liked.
@@ -50,7 +50,7 @@ export default async function FeedPage() {
         .eq("user_id", user.id);
 
     if (favouritesError) {
-      console.error("MUSEK favourites loading error:", favouritesError);
+      console.error("YASUH favourites loading error:", favouritesError);
     }
 
     const listenedTrackIds = Array.from(
@@ -81,7 +81,7 @@ export default async function FeedPage() {
           .in("id", knownTrackIds);
 
       if (knownTracksError) {
-        console.error("MUSEK taste analysis error:", knownTracksError);
+        console.error("YASUH taste analysis error:", knownTracksError);
       }
 
       const artistByTrack = new Map<string, string>();
@@ -98,7 +98,7 @@ export default async function FeedPage() {
         }
       });
 
-      // Listening activity helps MUSEK understand what fans enjoy.
+      // Listening activity helps YASUH understand what fans enjoy.
       for (const event of listeningEvents || []) {
         const seconds = event.listened_seconds || 0;
 
@@ -167,7 +167,7 @@ export default async function FeedPage() {
     .limit(100);
 
   if (tracksError) {
-    console.error("MUSEK feed loading error:", tracksError);
+    console.error("YASUH feed loading error:", tracksError);
   }
 
   const availableTracks = tracks || [];
@@ -276,7 +276,7 @@ export default async function FeedPage() {
         track.artist_id
       );
 
-      let recommendationReason = "Popular on MUSEK";
+      let recommendationReason = "Popular on YASUH";
 
       if (isPreferredArtist) {
         recommendationReason = "Because you enjoy this artist";
@@ -295,7 +295,7 @@ export default async function FeedPage() {
         artistName:
           artist?.artist_name ||
           artist?.display_name ||
-          "MUSEK Artist",
+          "YASUH Artist",
         genre,
         audioUrl: audio?.signedUrl || null,
         artworkUrl,
@@ -313,7 +313,7 @@ export default async function FeedPage() {
     <main>
       <nav className="nav">
         <Link className="brand" href="/">
-          MUSEK<span>.</span>
+          YASUH<span>.</span>
         </Link>
 
         <Link className="secondaryButton" href="/discover">
