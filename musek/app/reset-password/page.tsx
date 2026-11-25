@@ -7,11 +7,11 @@ export default function ResetPasswordPage({ searchParams }: { searchParams?: { e
       <div className="authGlow authGlowOne" aria-hidden="true" />
       <div className="authGlow authGlowTwo" aria-hidden="true" />
       <section className="authCard" aria-labelledby="reset-heading">
-        <Link className="authBrand" href="/" aria-label="MUSEK home">MUSEK<span>.</span></Link>
+        <Link className="authBrand" href="/" aria-label="YASUH home">YASUH<span>.</span></Link>
         <div className="authIntro">
           <p className="authEyebrow"><span className="authEyebrowDot" /> SECURE YOUR ACCOUNT</p>
           <h1 id="reset-heading">Create a new <span>password.</span></h1>
-          <p className="authDescription">Choose a new password for your MUSEK account. Use at least 8 characters.</p>
+          <p className="authDescription">Choose a new password for your YASUH account. Use at least 8 characters.</p>
         </div>
         {searchParams?.error && <div className="authError" role="alert">{searchParams.error}</div>}
         <form action={updatePassword} className="authForm">
