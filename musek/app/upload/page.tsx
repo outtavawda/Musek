@@ -27,7 +27,7 @@ export default async function UploadPage() {
 
   return (
     <main style={{ maxWidth: "700px", margin: "40px auto", padding: "20px" }}>
-      <h1>Upload Music to MUSEK</h1>
+      <h1>Upload Music to YASUH</h1>
 
       <p>
         Welcome, {profile.artist_name || profile.display_name}.
