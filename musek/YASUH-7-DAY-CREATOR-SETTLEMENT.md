@@ -10,6 +10,18 @@
 - The 30% platform share and the coin debit/credit logic remain unchanged.
 - `gift_transactions.status = 'settled'` means the coin gift completed; it does not mean the creator's cash share is settled.
 
+
+
+## Gift finality, refunds, and creator responsibility
+
+- A completed gift is final. YASUH does not offer voluntary refunds, cancellations, or charge reversals for completed gifts.
+- Fans should send gifts only when they intend to make a final, voluntary contribution. A gift is not a purchase of a guaranteed result, service, response, or creator activity.
+- Creators are responsible for their own content, statements, conduct, promises, and interactions with fans, and for resolving claims that arise from their own actions or omissions.
+- YASUH does not insure creator activity, guarantee creator performance, or assume a creator's debts, promises, or other personal or business obligations. YASUH is not the guarantor of disputes between a fan and a creator.
+- YASUH does not voluntarily reimburse a fan or absorb a creator-related loss, and does not automatically deduct alleged refund amounts from a creator's future earnings.
+- This policy does not override applicable law, card-network rules, payment-provider requirements, or YASUH's responsibility for its own errors or misconduct. Where a payment dispute, fraud report, provider instruction, or legal requirement requires action, YASUH may investigate and take the specific action required. Such an exceptional compliance or payment-network reversal is not a voluntary gift refund.
+- Any exceptional reversal must be documented separately, restricted to authorized personnel, and reconciled transparently. No automatic future-earnings deduction is authorized by this policy; any recovery or adjustment requires a separately reviewed legal and contractual basis and an auditable decision.
+
 ## Ledger model
 
 `creator_earning_ledger` is append-only and stores signed CAD events:
