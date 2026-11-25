@@ -35,9 +35,9 @@ fs.mkdirSync(playbackDir, { recursive: true });
 for (const file of ["MusekPlaybackPlugin.kt", "MusekPlaybackService.kt"]) {
   const sourcePath = path.resolve("native", "android", file);
   const source = fs.readFileSync(sourcePath, "utf8");
-  const sourcePackage = source.match(/^package\\s+[\\w.]+/m);
+  const sourcePackage = source.match(/^package\s+[\w.]+/m);
   if (!sourcePackage) throw new Error("Could not read package declaration in native template " + file);
-  const configuredSource = source.replace(/^package\\s+[\\w.]+/m, "package " + appPackage + ".playback");
+  const configuredSource = source.replace(/^package\s+[\w.]+/m, "package " + appPackage + ".playback");
   fs.writeFileSync(path.join(playbackDir, file), configuredSource);
 }
 
