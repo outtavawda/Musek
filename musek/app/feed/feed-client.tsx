@@ -211,8 +211,8 @@ export default function FeedClient({
     const shareUrl = `${window.location.origin}/artist/${song.artistId}`;
 
     const shareData = {
-      title: `${song.title} - ${song.artistName} | MUSEK`,
-      text: `Listen to ${song.title} by ${song.artistName} on MUSEK!`,
+      title: `${song.title} - ${song.artistName} | YASUH`,
+      text: `Listen to ${song.title} by ${song.artistName} on YASUH!`,
       url: shareUrl,
     };
 
@@ -221,7 +221,7 @@ export default function FeedClient({
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        setMessage("Thanks for sharing MUSEK!");
+        setMessage("Thanks for sharing YASUH!");
       } else {
         await navigator.clipboard.writeText(shareUrl);
         setMessage("Song link copied! Share it with your friends.");
@@ -400,7 +400,7 @@ export default function FeedClient({
       `}</style>
 
       <header className="feed-topbar">
-        <Link className="feed-logo" href="/">MUSEK<span>.</span></Link>
+        <Link className="feed-logo" href="/">YASUH<span>.</span></Link>
         <nav className="feed-nav" aria-label="Music navigation">
           <Link href="/discover-music">Discover Music</Link>
           <Link href="/fan-dashboard">My Dashboard</Link>
@@ -442,7 +442,7 @@ export default function FeedClient({
                   ) : (
                     <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",fontSize:"110px",color:"#d8b4fe"}}>♫</div>
                   )}
-                  <div className="feed-art-tag">MUSEK • DISCOVER</div>
+                  <div className="feed-art-tag">YASUH • DISCOVER</div>
                   <div className="feed-art-title">
                     <small>NOW IN YOUR FEED</small>
                     <strong>{song.title}</strong>
