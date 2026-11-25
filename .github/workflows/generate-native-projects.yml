@@ -28,7 +28,7 @@ jobs:
       run:
         working-directory: musek
     env:
-      CAPACITOR_SERVER_URL: ${{ inputs.capacitor_server_url }}
+      CAPACITOR_SERVER_URL: ${{ inputs.capacitor_server_url || 'https://yasuh.ca' }}
     steps:
       - uses: actions/checkout@v4
         with:
