@@ -1,11 +1,12 @@
-name: Generate MUSEK native projects
+name: Generate YASUH native projects
 
 on:
   workflow_dispatch:
     inputs:
       capacitor_server_url:
-        description: "Deployed MUSEK HTTPS URL (for example, https://your-production-domain)"
+        description: "YASUH production HTTPS URL"
         required: true
+        default: "https://yasuh.ca"
         type: string
 
 permissions:
@@ -26,7 +27,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Install MUSEK dependencies
+      - name: Validate YASUH production URL
+        run: |
+          node -e 'const u = new URL(process.env.CAPACITOR_SERVER_URL); if (u.protocol !== "https:" || u.hostname !== "yasuh.ca") { console.error("Use the approved production URL https://yasuh.ca"); process.exit(1); }'
+      - name: Install YASUH dependencies
         run: npm install --no-audit --no-fund
       - name: Generate iOS project
         run: npx cap add ios
@@ -34,7 +38,7 @@ jobs:
         run: npx cap add android
       - name: Sync Capacitor plugins and web configuration
         run: npx cap sync
-      - name: Configure MUSEK URL scheme and iOS background audio mode
+      - name: Configure YASUH URL scheme and iOS background audio mode
         run: node scripts/configure-native-deep-links.mjs
       - name: Configure Android native background playback
         run: node scripts/configure-native-playback.mjs
@@ -47,6 +51,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Native projects already exist and are unchanged."
           else
-            git commit -m "Generate MUSEK iOS and Android projects"
+            git commit -m "Generate YASUH iOS and Android projects"
             git push origin HEAD:square-sandbox
           fi
