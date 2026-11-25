@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Notice = {
@@ -14,6 +15,7 @@ type Notice = {
 };
 
 export default function GlobalNotifications() {
+  const pathname = usePathname();
   const [items, setItems] = useState<Notice[]>([]);
   const [open, setOpen] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -48,15 +50,15 @@ export default function GlobalNotifications() {
     await supabase.from("user_notifications").update({ read_at: readAt }).eq("id", item.id).eq("user_id", userId);
   }
 
-  if (!userId) return null;
+  if (!userId || pathname === "/profile") return null;
 
   return (
     <div className="fixed right-3 top-3 z-[120] sm:right-6 sm:top-5">
       <button type="button" onClick={() => setOpen((value) => !value)}
         aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
         aria-expanded={open}
-        className="group relative grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-[linear-gradient(145deg,rgba(44,31,66,.96),rgba(15,13,25,.96))] text-white shadow-[0_8px_30px_rgba(0,0,0,.42),inset_0_1px_0_rgba(255,255,255,.12)] backdrop-blur-2xl transition duration-200 hover:-translate-y-0.5 hover:border-fuchsia-300/60 hover:shadow-[0_10px_34px_rgba(217,70,239,.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300">
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[21px] w-[21px] transition duration-200 group-hover:scale-110 group-hover:text-fuchsia-200" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        className="group relative grid h-10 w-10 place-items-center rounded-full border border-amber-300/35 bg-[#17131b] text-amber-200 shadow-[0_6px_20px_rgba(0,0,0,.35)] transition duration-200 hover:border-amber-200/70 hover:bg-[#211b24] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200">
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[21px] w-[21px] transition duration-200 group-hover:scale-110 group-hover:text-amber-100" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/>
           <circle cx="12" cy="10" r="2.5"/>
         </svg>
