@@ -12,15 +12,32 @@
 
 
 
-## Gift finality, refunds, and creator responsibility
+## Coins, gifts, refunds, and creator responsibility
 
-- A completed gift is final. YASUH does not offer voluntary refunds, cancellations, or charge reversals for completed gifts.
-- Fans should send gifts only when they intend to make a final, voluntary contribution. A gift is not a purchase of a guaranteed result, service, response, or creator activity.
+### Coin purchases
+
+- Fans purchase virtual coins to use inside YASUH. The coin price and quantity must be shown clearly before checkout.
+- As a general policy, completed coin purchases are final and non-refundable, including unused coin balances, except where a refund or other remedy is required by applicable law or the payment provider.
+- If coins are purchased through Apple App Store or Google Play billing, refund requests must be submitted through the applicable store's refund process and are subject to that store's rules.
+- For purchases processed directly by YASUH or its payment processor, fans may contact YASUH support about duplicate charges, unauthorized transactions, missing coins, or checkout errors. This does not create a general right to cancel a valid completed purchase.
+- If payment is confirmed but coins were not credited because of a YASUH technical error, YASUH will investigate and correct the failed delivery, which may include crediting the missing coins or providing another remedy required by law.
+
+### Gifts
+
+- Once a fan confirms and successfully sends a gift, the gift is final. YASUH does not offer voluntary cancellations or refunds for completed gifts.
+- Fans should send gifts only when they intend to make a final, voluntary contribution. A gift does not purchase a guaranteed result, service, response, or creator activity.
+- YASUH does not reverse a completed gift merely because a fan changes their mind or is dissatisfied with a creator's content, response, or conduct.
+- If a gift was charged but not successfully delivered because of a YASUH technical error, YASUH will investigate and correct the failed transaction.
+
+### Creator responsibility and exceptional payment reversals
+
 - Creators are responsible for their own content, statements, conduct, promises, and interactions with fans, and for resolving claims that arise from their own actions or omissions.
 - YASUH does not insure creator activity, guarantee creator performance, or assume a creator's debts, promises, or other personal or business obligations. YASUH is not the guarantor of disputes between a fan and a creator.
 - YASUH does not voluntarily reimburse a fan or absorb a creator-related loss, and does not automatically deduct alleged refund amounts from a creator's future earnings.
 - This policy does not override applicable law, card-network rules, payment-provider requirements, or YASUH's responsibility for its own errors or misconduct. Where a payment dispute, fraud report, provider instruction, or legal requirement requires action, YASUH may investigate and take the specific action required. Such an exceptional compliance or payment-network reversal is not a voluntary gift refund.
 - Any exceptional reversal must be documented separately, restricted to authorized personnel, and reconciled transparently. No automatic future-earnings deduction is authorized by this policy; any recovery or adjustment requires a separately reviewed legal and contractual basis and an auditable decision.
+- Nothing in this policy limits any non-waivable consumer rights or remedies under applicable law.
+
 
 ## Ledger model
 
