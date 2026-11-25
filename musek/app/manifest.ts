@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "MUSEK — Music, Creators & Community",
-    short_name: "MUSEK",
+    name: "YASUH — Music, Creators & Community",
+    short_name: "YASUH",
     description: "Discover independent music, support artists and connect with creators.",
     start_url: "/",
     scope: "/",
