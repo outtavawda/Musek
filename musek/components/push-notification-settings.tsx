@@ -47,7 +47,7 @@ export default function PushNotificationSettings() {
           if (!response.ok) throw new Error((await response.json()).error || "Could not turn off notifications.");
           setEnabled(false); setNativeToken("");
           window.localStorage.removeItem("musek-native-push-token");
-          setMessage("MUSEK notifications are disabled for this device.");
+          setMessage("YASUH notifications are disabled for this device.");
           return;
         }
         const permission = await PushNotifications.checkPermissions();
@@ -61,11 +61,11 @@ export default function PushNotificationSettings() {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token: token.value, platform })
           });
-          if (!response.ok) setMessage("Device permission was granted, but MUSEK could not save this device.");
-          else { setEnabled(true); setMessage("This device is registered for MUSEK notifications."); }
+          if (!response.ok) setMessage("Device permission was granted, but YASUH could not save this device.");
+          else { setEnabled(true); setMessage("This device is registered for YASUH notifications."); }
         });
         const registrationError = await PushNotifications.addListener("registrationError", error => {
-          console.error("MUSEK native push registration failed:", error);
+          console.error("YASUH native push registration failed:", error);
           setMessage("Could not register this device for notifications.");
         });
         const action = await PushNotifications.addListener("pushNotificationActionPerformed", (event: ActionPerformed) => {
@@ -93,7 +93,7 @@ export default function PushNotificationSettings() {
         });
         if (!response.ok) throw new Error((await response.json()).error || "Could not turn off notifications.");
         await existing.unsubscribe();
-        setEnabled(false); setMessage("MUSEK notifications turned off.");
+        setEnabled(false); setMessage("YASUH notifications turned off.");
       } else {
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -107,7 +107,7 @@ export default function PushNotificationSettings() {
           await subscription.unsubscribe();
           throw new Error((await response.json()).error || "Could not save notification settings.");
         }
-        setEnabled(true); setMessage("MUSEK notifications are enabled on this device.");
+        setEnabled(true); setMessage("YASUH notifications are enabled on this device.");
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not update notification settings.");
