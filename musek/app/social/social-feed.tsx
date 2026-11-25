@@ -70,7 +70,7 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
       const postLikes = likeRows.filter((like: any) => like.post_id === post.id);
       return {
         ...post,
-        author_name: profile?.artist_name || profile?.display_name || "MUSEK Member",
+        author_name: profile?.artist_name || profile?.display_name || "YASUH Member",
         avatar_url: profile?.avatar_url || null,
         likes: postLikes.length,
         comments_count: commentRows.filter((item: any) => item.post_id === post.id).length,
@@ -156,7 +156,7 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     setCaption(""); setMusicUrl(""); setMusicTitle(""); setFile(null);
     const picker = document.getElementById("musek-social-media") as HTMLInputElement | null;
     if (picker) picker.value = "";
-    setNotice("Your post is live on MUSEK.");
+    setNotice("Your post is live on YASUH.");
     await loadPosts();
   };
 
@@ -182,8 +182,8 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     const { data: profiles } = ids.length
       ? await supabase.from("user_profiles").select("id,display_name,artist_name").in("id", ids)
       : { data: [] as any[] };
-    const names = new Map((profiles || []).map((profile: any) => [profile.id, profile.artist_name || profile.display_name || "MUSEK Member"]));
-    setComments(current => ({ ...current, [postId]: rows.map((row: any) => ({ ...row, display_name: names.get(row.user_id) || "MUSEK Member" })) }));
+    const names = new Map((profiles || []).map((profile: any) => [profile.id, profile.artist_name || profile.display_name || "YASUH Member"]));
+    setComments(current => ({ ...current, [postId]: rows.map((row: any) => ({ ...row, display_name: names.get(row.user_id) || "YASUH Member" })) }));
   };
 
   const submitComment = async (postId: string) => {
@@ -206,7 +206,7 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
     <section id="social-feed" className="mt-12">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div><p className="text-xs font-black tracking-[.25em] text-purple-300">YOUR MUSIC COMMUNITY</p><h2 className="mt-2 text-3xl font-black sm:text-4xl">The Social Feed<span className="text-purple-400">.</span></h2><p className="mt-2 text-sm text-gray-400">Share your sound, your moments and what inspires you.</p></div>
-        <span className="rounded-full border border-purple-300/20 bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-200">MUSEK COMMUNITY</span>
+        <span className="rounded-full border border-purple-300/20 bg-purple-500/10 px-3 py-1.5 text-xs font-bold text-purple-200">YASUH COMMUNITY</span>
       </div>
 
       <form onSubmit={publish} className="overflow-hidden rounded-3xl border border-purple-400/20 bg-gradient-to-br from-[#1b1429] to-[#10101b] p-5 shadow-[0_20px_70px_rgba(88,28,135,.12)] sm:p-6">
@@ -214,7 +214,7 @@ export default function SocialFeed({ userId, displayName, avatarUrl }: {
           {avatarUrl ? <img src={avatarUrl} alt="" className="h-11 w-11 rounded-full border border-purple-300/30 object-cover" /> : <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-purple-300/30 bg-purple-500/20 font-black text-purple-100">{initials}</div>}
           <div className="min-w-0 flex-1">
             <p className="text-sm font-extrabold text-white">{displayName}</p>
-            <p className="mt-0.5 text-xs text-gray-500">Share something with the MUSEK community</p>
+            <p className="mt-0.5 text-xs text-gray-500">Share something with the YASUH community</p>
           </div>
         </div>
         <textarea value={caption} onChange={e => setCaption(e.target.value)} maxLength={2200} rows={3} placeholder="What's happening in your world of music?" className="mt-5 w-full resize-y rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm leading-6 text-white outline-none placeholder:text-gray-500 focus:border-purple-400/60" />
