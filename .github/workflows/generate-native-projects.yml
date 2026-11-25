@@ -27,21 +27,39 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: musek/package-lock.json
       - name: Validate YASUH production URL
         run: |
-          node -e 'const u = new URL(process.env.CAPACITOR_SERVER_URL); if (u.protocol !== "https:" || u.hostname !== "yasuh.ca") { console.error("Use the approved production URL https://yasuh.ca"); process.exit(1); }'
-      - name: Install YASUH dependencies
-        run: npm install --no-audit --no-fund
-      - name: Generate iOS project
-        run: npx cap add ios
-      - name: Generate Android project
-        run: npx cap add android
+          node -e 'const u = new URL(process.env.CAPACITOR_SERVER_URL); if (u.protocol !== "https:" || u.hostname !== "yasuh.ca" || u.pathname !== "/" || u.search || u.hash) { console.error("Use the approved production URL https://yasuh.ca"); process.exit(1); }'
+      - name: Install locked YASUH dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Generate iOS project if missing
+        run: |
+          if [ ! -d ios/App ]; then
+            npx cap add ios
+          else
+            echo "Existing iOS project found; preserving it."
+          fi
+      - name: Generate Android project if missing
+        run: |
+          if [ ! -d android/app ]; then
+            npx cap add android
+          else
+            echo "Existing Android project found; preserving it."
+          fi
       - name: Sync Capacitor plugins and web configuration
         run: npx cap sync
       - name: Configure YASUH URL scheme and iOS background audio mode
         run: node scripts/configure-native-deep-links.mjs
       - name: Configure Android native background playback
         run: node scripts/configure-native-playback.mjs
+      - name: Build Android debug app
+        working-directory: musek/android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Build iOS simulator app
+        working-directory: musek
+        run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
       - name: Commit generated native projects to sandbox
         working-directory: .
         run: |
@@ -51,6 +69,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Native projects already exist and are unchanged."
           else
-            git commit -m "Generate YASUH iOS and Android projects"
+            git commit -m "Generate and verify YASUH iOS and Android projects"
             git push origin HEAD:square-sandbox
           fi
