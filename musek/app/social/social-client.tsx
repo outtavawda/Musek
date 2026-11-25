@@ -99,7 +99,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       .eq("room_id", selected.id).order("created_at", { ascending: true }).limit(100)
       .then(async ({ data, error }) => {
         if (!active) return;
-        if (error) { setNotice("Chat is not ready. Check that the MUSEK Social migration has been applied."); return; }
+        if (error) { setNotice("Chat is not ready. Check that the YASUH Social database migration has been applied."); return; }
         const rows = (data || []) as Message[];
         const senderIds = Array.from(new Set(rows.map((message) => message.user_id)));
         const { data: profiles } = senderIds.length
