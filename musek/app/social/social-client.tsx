@@ -68,7 +68,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     const { data, error } = await supabase.from("social_live_rooms")
       .select("id,title,description,host_id,host_name,status,created_at,host_left_at")
       .eq("status", "live").order("created_at", { ascending: false }).limit(50);
-    if (error) setNotice("Social rooms are not available yet. Apply the MUSEK Social database migration to enable them.");
+    if (error) setNotice("Social rooms are not available yet. Apply the YASUH Social database migration to enable them.");
     else {
       const roomRows = (data || []) as Room[];
       const hostIds = Array.from(new Set(roomRows.map((room) => room.host_id)));
@@ -159,17 +159,17 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       host_id: userId, host_name: displayName, status: "live"
     }).select("id,title,description,host_id,host_name,status,created_at").single();
     setBusy(false);
-    if (error) { console.error("MUSEK live room creation failed:", error); setNotice(`Could not create the room: ${error.message}${error.code ? ` (code ${error.code})` : ""}`); return; }
+    if (error) { console.error("YASUH live room creation failed:", error); setNotice(`Could not create the room: ${error.message}${error.code ? ` (code ${error.code})` : ""}`); return; }
     const newRoom = { ...(data as Room), avatar_url: avatarUrl };
     setRooms((current) => [newRoom, ...current]);
     setSelected(newRoom); setTitle(""); setDescription("");
-    setNotice("Your MUSEK Social room is open. Chat is live; video broadcasting will activate after the video provider is connected.");
+    setNotice("Your YASUH Social room is open. Chat is live; video broadcasting will activate after the video provider is connected.");
     void fetch("/api/push/artist-live", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ roomId: newRoom.id })
     }).then(async response => {
-      if (!response.ok) console.warn("MUSEK live push delivery was not completed:", await response.text());
-    }).catch(error => console.warn("MUSEK live push delivery failed:", error));
+      if (!response.ok) console.warn("YASUH live push delivery was not completed:", await response.text());
+    }).catch(error => console.warn("YASUH live push delivery failed:", error));
   };
 
   const sendMessage = async (event: React.FormEvent) => {
