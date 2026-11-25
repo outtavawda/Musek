@@ -5,20 +5,11 @@ const iosInfo = path.join("ios", "App", "App", "Info.plist");
 if (fs.existsSync(iosInfo)) {
   let plist = fs.readFileSync(iosInfo, "utf8");
   if (!plist.includes("<string>musek</string>")) {
-    const urlTypes = `
-  <key>CFBundleURLTypes</key>
-  <array>
-    <dict>
-      <key>CFBundleURLName</key><string>com.musek.app</string>
-      <key>CFBundleURLSchemes</key><array><string>musek</string></array>
-    </dict>
-  </array>`;
+    const urlTypes = "\n  <key>CFBundleURLTypes</key>\n  <array>\n    <dict>\n      <key>CFBundleURLName</key><string>com.musek.app</string>\n      <key>CFBundleURLSchemes</key><array><string>musek</string></array>\n    </dict>\n  </array>";
     plist = plist.replace(/<\/dict>\s*<\/plist>/, urlTypes + "\n</dict>\n</plist>");
   }
   if (!plist.includes("<string>audio</string>")) {
-    const background = `
-  <key>UIBackgroundModes</key>
-  <array><string>audio</string></array>`;
+    const background = "\n  <key>UIBackgroundModes</key>\n  <array><string>audio</string></array>";
     plist = plist.replace(/<\/dict>\s*<\/plist>/, background + "\n</dict>\n</plist>");
   }
   fs.writeFileSync(iosInfo, plist);
@@ -31,16 +22,11 @@ if (fs.existsSync(iosAppDelegate)) {
     if (!appDelegate.includes("import AVFoundation")) {
       appDelegate = appDelegate.replace("import UIKit", "import UIKit\nimport AVFoundation");
     }
-    const launchMethod = /(func application\\([\\s\\S]*?didFinishLaunchingWithOptions[\\s\\S]*?-> Bool \\{)/;
+    const launchMethod = /func\s+application\s*\([\s\S]*?didFinishLaunchingWithOptions[\s\S]*?->\s*Bool\s*\{/;
     if (launchMethod.test(appDelegate)) {
-      appDelegate = appDelegate.replace(launchMethod, `$1
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.playback, mode: .default, options: [.allowBluetooth, .allowAirPlay])
-            try audioSession.setActive(true)
-        } catch {
-            NSLog("MUSEK audio session setup failed: %@", error.localizedDescription)
-        }`);
+      appDelegate = appDelegate.replace(launchMethod, function (match) {
+        return match + "\n        do {\n            let audioSession = AVAudioSession.sharedInstance()\n            try audioSession.setCategory(.playback, mode: .default, options: [.allowBluetooth, .allowAirPlay])\n            try audioSession.setActive(true)\n        } catch {\n            NSLog(\"YASUH audio session setup failed: %@\", error.localizedDescription)\n        }";
+      });
     } else {
       console.warn("Could not locate AppDelegate launch method to configure AVAudioSession.");
     }
@@ -52,18 +38,14 @@ const androidManifest = path.join("android", "app", "src", "main", "AndroidManif
 if (fs.existsSync(androidManifest)) {
   let manifest = fs.readFileSync(androidManifest, "utf8");
   if (!manifest.includes('android:scheme="musek"')) {
-    manifest = manifest.replace(/(<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>)/, `$1
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="musek" />
-            </intent-filter>`);
+    const activityTag = /(<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>)/;
+    if (activityTag.test(manifest)) {
+      const filter = "\n            <intent-filter>\n                <action android:name=\"android.intent.action.VIEW\" />\n                <category android:name=\"android.intent.category.DEFAULT\" />\n                <category android:name=\"android.intent.category.BROWSABLE\" />\n                <data android:scheme=\"musek\" />\n            </intent-filter>";
+      manifest = manifest.replace(activityTag, "$1" + filter);
+    }
   }
   if (!manifest.includes("android.permission.FOREGROUND_SERVICE")) {
-    manifest = manifest.replace("<application", `<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <application`);
+    manifest = manifest.replace("<application", '<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />\n    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />\n    <application');
   }
   fs.writeFileSync(androidManifest, manifest);
 }
