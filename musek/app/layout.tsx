@@ -8,11 +8,11 @@ import PwaInstallPrompt from "@/components/pwa-install-prompt";
 import NativeDeepLinkHandler from "@/components/native-deep-link-handler";
 
 export const metadata: Metadata = {
-  title: "MUSEK — Music, creators & community",
-  description: "Discover music, support artists and connect with creators on MUSEK.",
-  applicationName: "MUSEK",
+  title: "YASUH — Music, creators & community",
+  description: "Discover music, support artists and connect with creators on YASUH.",
+  applicationName: "YASUH",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "MUSEK" }
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "YASUH" }
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#080711" };
