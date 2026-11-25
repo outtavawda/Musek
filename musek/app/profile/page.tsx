@@ -61,7 +61,7 @@ export default async function ProfilePage({
   return (
     <main style={{ minHeight: "100vh", padding: "0 24px 80px", color: "#fbf8ff", background: "radial-gradient(ellipse at 18% 0%, rgba(111, 38, 169, .28), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(82, 32, 125, .17), transparent 30%), #08070d" }}>
       <nav style={{ maxWidth: "1180px", height: "82px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(204, 173, 255, .12)" }}>
-        <Link href="/" style={{ fontSize: "25px", fontWeight: 950, letterSpacing: "-1.5px", color: "#fff" }}>MUSEK<span style={{ color: "#c084fc" }}>.</span></Link>
+        <Link href="/" style={{ fontSize: "25px", fontWeight: 950, letterSpacing: "-1.5px", color: "#fff" }}>YASUH<span style={{ color: "#c084fc" }}>.</span></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
           <Link href="/dashboard" style={{ color: "#c9bdd8", fontSize: "13px" }}>Dashboard</Link>
           <form action={signOut}><button type="submit" style={{ border: "1px solid rgba(216,180,254,.3)", background: "rgba(255,255,255,.04)", color: "#eee4fa", borderRadius: "999px", padding: "10px 17px", cursor: "pointer" }}>Log out</button></form>
@@ -73,7 +73,7 @@ export default async function ProfilePage({
         <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: "20px", flexWrap: "wrap" }}>
           <div>
             <h1 style={{ fontSize: "clamp(36px, 6vw, 62px)", lineHeight: .98, letterSpacing: "-.055em", margin: 0, fontWeight: 900 }}>Make your mark<span style={{ color: "#c084fc" }}>.</span></h1>
-            <p style={{ color: "#a99bb8", fontSize: "15px", lineHeight: 1.7, maxWidth: "560px", marginTop: "16px" }}>Shape how the MUSEK community sees you. Build a profile that feels unmistakably yours.</p>
+            <p style={{ color: "#a99bb8", fontSize: "15px", lineHeight: 1.7, maxWidth: "560px", marginTop: "16px" }}>Shape how the YASUH community sees you. Build a profile that feels unmistakably yours.</p>
           </div>
           <div style={{ border: "1px solid rgba(192,132,252,.3)", background: "rgba(147,51,234,.1)", color: "#dfc2ff", borderRadius: "999px", padding: "9px 15px", fontSize: "11px", fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase" }}>{accountType} account</div>
         </div>
@@ -111,7 +111,7 @@ export default async function ProfilePage({
           </div>
           <form action={updateProfile}>
             <label style={labelStyle}>Display name<input name="display_name" defaultValue={profile?.display_name || user.user_metadata?.display_name || ""} required style={fieldStyle} /></label>
-            <label style={labelStyle}>About you<textarea name="bio" rows={5} maxLength={500} defaultValue={profile?.bio || ""} placeholder="Tell the MUSEK community a little about yourself..." style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.65 }} /></label>
+            <label style={labelStyle}>About you<textarea name="bio" rows={5} maxLength={500} defaultValue={profile?.bio || ""} placeholder="Tell the YASUH community a little about yourself..." style={{ ...fieldStyle, resize: "vertical", lineHeight: 1.65 }} /></label>
             <label style={labelStyle}>Account type<input value={accountType} readOnly style={{ ...fieldStyle, color: "#a99bb8", textTransform: "capitalize", cursor: "not-allowed" }} /></label>
 
             {accountType === "artist" && <div style={{ borderTop: "1px solid rgba(216,180,254,.13)", paddingTop: "24px", marginTop: "8px" }}>
@@ -131,7 +131,7 @@ export default async function ProfilePage({
               {(accountType === "artist" || accountType === "label") && <label style={labelStyle}>Website<input name="website_url" type="url" defaultValue={profile?.website_url || ""} placeholder="https://yourwebsite.com" style={fieldStyle} /></label>}
               <label style={{ display: "flex", alignItems: "center", gap: "12px", padding: "16px", borderRadius: "13px", border: "1px solid rgba(192,132,252,.18)", background: "rgba(147,51,234,.07)", color: "#e5d7f4", fontSize: "13px", cursor: "pointer" }}>
                 <input name="is_public" type="checkbox" value="true" defaultChecked={profile?.is_public || false} style={{ width: "17px", height: "17px", accentColor: "#a855f7" }} />
-                <span><strong style={{ display: "block", marginBottom: "3px" }}>Make my profile public</strong><span style={{ color: "#9e91ad", fontSize: "11px" }}>Allow people to discover and view your profile on MUSEK.</span></span>
+                <span><strong style={{ display: "block", marginBottom: "3px" }}>Make my profile public</strong><span style={{ color: "#9e91ad", fontSize: "11px" }}>Allow people to discover and view your profile on YASUH.</span></span>
               </label>
             </div>
             <button type="submit" style={{ width: "100%", marginTop: "24px", padding: "16px 20px", border: 0, borderRadius: "13px", background: "linear-gradient(100deg, #7e22ce, #a855f7 55%, #c026d3)", color: "white", fontWeight: 900, fontSize: "14px", letterSpacing: ".03em", cursor: "pointer", boxShadow: "0 10px 34px rgba(147,51,234,.3)" }}>Save profile changes <span aria-hidden="true">→</span></button>
