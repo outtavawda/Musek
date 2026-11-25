@@ -152,7 +152,7 @@ RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   v_current_settled numeric(12,2);
   v_reserved numeric(12,2);
@@ -187,7 +187,7 @@ BEGIN
   SET payout_verified = p_verified, payout_eligible = p_eligible, updated_at = now()
   WHERE user_id = p_creator_id;
 END;
-$;
+$$;
 
 -- Backfill already-paid withdrawals so the ledger starts with the same net
 -- settled cash as the existing wallet. This is idempotent and does not touch balances.
