@@ -49,11 +49,11 @@ export default function BuyCoinsPage() {
   return (
     <main className="min-h-screen bg-black px-6 py-12 text-white">
       <div className="mx-auto max-w-xl">
-        <h1 className="mb-3 text-4xl font-bold">Buy MUSEK Coins</h1>
+        <h1 className="mb-3 text-4xl font-bold">Buy YASUH Coins</h1>
 
         <p className="mb-8 text-gray-400">
           Purchase coins to support your favourite artists.
-          100 MUSEK Coins = CAD $1.00.
+          100 YASUH Coins = CAD $1.00.
         </p>
 
         <div className="space-y-4">
@@ -73,7 +73,7 @@ export default function BuyCoinsPage() {
                   {item.coins.toLocaleString()} Coins
                 </span>
                 <span className="text-sm text-gray-400">
-                  MUSEK Coin Package
+                  YASUH Coin Package
                 </span>
               </span>
 
