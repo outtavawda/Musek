@@ -2,6 +2,7 @@
 
 import { Capacitor } from "@capacitor/core";
 import { MusekNativePlayback } from "@/lib/native-playback";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
@@ -27,6 +28,7 @@ type PlaybackContextValue = {
   setQueue: (songs: MusekSong[]) => void;
   togglePlayback: () => void;
   nextSong: () => void;
+  skipCurrentSong: () => void;
   previousSong: () => void;
   seek: (seconds: number) => void;
 };
@@ -74,6 +76,17 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     setCurrentSong(queue[index < 0 ? queue.length - 1 : (index - 1 + queue.length) % queue.length]);
     setIsPlaying(true);
   }, [queue, currentSong]);
+
+  const skipCurrentSong = useCallback(() => {
+    if (currentSong?.id) {
+      void createSupabaseClient().rpc("record_music_skip", { p_track_id: currentSong.id })
+        .then(({ error }) => {
+          if (error) console.error("YASUH skip tracking failed", error.message);
+        })
+        .catch(error => console.error("YASUH skip tracking failed", error));
+    }
+    nextSong();
+  }, [currentSong?.id, nextSong]);
 
   const togglePlayback = useCallback(() => {
     if (Capacitor.getPlatform() === "android") {
@@ -244,7 +257,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     navigator.mediaSession.setActionHandler("play", () => { void audioRef.current?.play(); });
     navigator.mediaSession.setActionHandler("pause", () => audioRef.current?.pause());
     navigator.mediaSession.setActionHandler("previoustrack", previousSong);
-    navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+    navigator.mediaSession.setActionHandler("nexttrack", skipCurrentSong);
     navigator.mediaSession.setActionHandler("seekbackward", details => { if (audioRef.current) audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - (details.seekOffset || 10)); });
     navigator.mediaSession.setActionHandler("seekforward", details => { if (audioRef.current) audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + (details.seekOffset || 10)); });
     return () => {
@@ -252,7 +265,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
         try { navigator.mediaSession.setActionHandler(action, null); } catch {}
       }
     };
-  }, [currentSong, nextSong, previousSong, duration]);
+  }, [currentSong, nextSong, skipCurrentSong, previousSong, duration]);
 
   useEffect(() => {
     if (Capacitor.getPlatform() !== "android" && "mediaSession" in navigator && duration > 0) {
@@ -260,7 +273,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
     }
   }, [currentTime, duration]);
 
-  const value = useMemo(() => ({ currentSong, isPlaying, currentTime, duration, queue, playSong, setQueue, togglePlayback, nextSong, previousSong, seek }), [currentSong, isPlaying, currentTime, duration, queue, playSong, setQueue, togglePlayback, nextSong, previousSong, seek]);
+  const value = useMemo(() => ({ currentSong, isPlaying, currentTime, duration, queue, playSong, setQueue, togglePlayback, nextSong, skipCurrentSong, previousSong, seek }), [currentSong, isPlaying, currentTime, duration, queue, playSong, setQueue, togglePlayback, nextSong, skipCurrentSong, previousSong, seek]);
 
   return (
     <PlaybackContext.Provider value={value}>
@@ -277,7 +290,7 @@ export default function MusekPlaybackProvider({ children }: { children: ReactNod
           </div>
           <button type="button" className="musek-player-control" onClick={previousSong} aria-label="Previous track">|◀</button>
           <button type="button" className="musek-player-control primary" onClick={togglePlayback} aria-label={isPlaying ? "Pause" : "Play"}>{isPlaying ? "Ⅱ" : "▶"}</button>
-          <button type="button" className="musek-player-control" onClick={nextSong} aria-label="Next track">▶|</button>
+          <button type="button" className="musek-player-control" onClick={skipCurrentSong} aria-label="Next track">▶|</button>
           {expanded && <button type="button" className="musek-player-close" onClick={() => setExpanded(false)}>Collapse</button>}
         </section>
       )}
