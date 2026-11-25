@@ -190,7 +190,7 @@ export default async function DashboardPage() {
     { href: "/dashboard", icon: "⌂", name: "Dashboard" },
     { href: "/profile", icon: "●", name: "Profile" },
     { href: "/discover-music", icon: "♫", name: "Discover Music" },
-    { href: "/social", icon: "◉", name: "MUSEK Social" },
+    { href: "/social", icon: "◉", name: "YASUH Social" },
     { href: "/favorites", icon: "♡", name: "My Favourites" },
     { href: "/discover", icon: "♧", name: "Discover Artists" },
     { href: "/my-music", icon: "♫", name: "My Music" },
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
             href="/"
             className="mb-12 px-3 text-3xl font-black tracking-tight"
           >
-            MUSEK<span className="text-purple-500">.</span>
+            YASUH<span className="text-purple-500">.</span>
           </Link>
 
           <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
@@ -251,7 +251,7 @@ export default async function DashboardPage() {
           {/* TOP BAR */}
           <header className="flex items-center justify-between border-b border-white/10 bg-[#080811]/90 px-5 py-4 backdrop-blur-xl sm:px-8">
             <Link href="/" className="text-xl font-black lg:hidden">
-              MUSEK<span className="text-purple-500">.</span>
+              YASUH<span className="text-purple-500">.</span>
             </Link>
 
             <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 sm:block">
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
               <div className="pointer-events-none absolute bottom-0 right-0 h-48 w-2/3 bg-gradient-to-l from-purple-500/10 to-transparent" />
 
               <div className="relative z-10 max-w-3xl">
-                <p className={label}>Your MUSEK Account</p>
+                <p className={label}>Your YASUH Account</p>
                 <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">
                   Welcome,{" "}
                   <span className="bg-gradient-to-r from-purple-300 to-fuchsia-500 bg-clip-text text-transparent">
@@ -318,7 +318,7 @@ export default async function DashboardPage() {
                     href="/social"
                     className="group relative inline-flex items-center gap-2 rounded-full border border-fuchsia-200/70 bg-[linear-gradient(110deg,#f5eaff_0%,#c084fc_18%,#7c3aed_42%,#e9d5ff_68%,#9333ea_100%)] px-6 py-3 text-sm font-black tracking-wide text-[#160b25] shadow-[0_0_10px_rgba(216,180,254,.75),0_0_28px_rgba(168,85,247,.45),inset_0_1px_0_rgba(255,255,255,.9)] transition duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_0_16px_rgba(216,180,254,.95),0_0_38px_rgba(168,85,247,.65)]"
                   >
-                    <span aria-hidden="true">◉</span> MUSEK Social · Live <span aria-hidden="true">→</span>
+                    <span aria-hidden="true">◉</span> YASUH Social · Live <span aria-hidden="true">→</span>
                   </Link>
                   <Link
                     href="/profile"
@@ -381,7 +381,7 @@ export default async function DashboardPage() {
                   <h3 className="mt-3 text-4xl font-black text-white">
                     {walletBalance.toLocaleString()}
                   </h3>
-                  <p className="mt-2 text-xs text-gray-400">MUSEK Coins</p>
+                  <p className="mt-2 text-xs text-gray-400">YASUH Coins</p>
                   <p className="mt-5 text-2xl text-purple-400">◉</p>
                 </div>
 
@@ -435,7 +435,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <div className="rounded-xl bg-white/5 px-4 py-3">
-                    <p className="text-xs text-gray-400">MUSEK share</p>
+                    <p className="text-xs text-gray-400">YASUH share</p>
                     <p className="mt-1 text-xl font-bold">30%</p>
                   </div>
                 </div>
@@ -609,7 +609,7 @@ export default async function DashboardPage() {
                   },
                   {
                     title: "Discover Artists",
-                    description: "Explore the MUSEK community.",
+                    description: "Explore the YASUH community.",
                     href: "/discover",
                   },
                   {
@@ -655,7 +655,7 @@ export default async function DashboardPage() {
             )}
 
             <footer className="border-t border-white/10 py-7 text-center text-xs text-gray-600">
-              MUSEK. Artist Studio
+              YASUH. Artist Studio
             </footer>
           </div>
         </div>
