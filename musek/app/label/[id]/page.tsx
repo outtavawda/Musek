@@ -46,7 +46,7 @@ export default async function LabelPage({
 
   if (labelError || !label) notFound();
 
-  const labelName = label.label_name || label.display_name || "MUSEK Label";
+  const labelName = label.label_name || label.display_name || "YASUH Label";
   const { data: relationships } = await supabase
     .from("label_artists")
     .select("artist_id")
@@ -98,7 +98,7 @@ export default async function LabelPage({
         return {
           id: track.id,
           title: track.title,
-          artistName: artist?.artist_name || artist?.display_name || "MUSEK Artist",
+          artistName: artist?.artist_name || artist?.display_name || "YASUH Artist",
           genre: track.genre || "",
           audioUrl: audio?.signedUrl || null,
           artworkUrl,
@@ -111,7 +111,7 @@ export default async function LabelPage({
     <main className="min-h-screen overflow-hidden bg-[#08070d] pb-20 text-white">
       <div className="pointer-events-none fixed inset-0 -z-0" style={{ background: "radial-gradient(ellipse at 50% -10%, rgba(126,34,206,.28), transparent 48%), radial-gradient(ellipse at 100% 40%, rgba(88,28,135,.13), transparent 35%)" }} />
       <nav className="relative z-10 mx-auto flex h-[78px] max-w-7xl items-center justify-between border-b border-white/[0.08] px-5 sm:px-8">
-        <Link className="text-[25px] font-black tracking-[-1.5px]" href="/">MUSEK<span className="text-fuchsia-400">.</span></Link>
+        <Link className="text-[25px] font-black tracking-[-1.5px]" href="/">YASUH<span className="text-fuchsia-400">.</span></Link>
         <Link className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-xs font-semibold text-gray-200 transition hover:border-fuchsia-400/40 hover:text-white" href="/discover">← Discover labels</Link>
       </nav>
 
@@ -132,7 +132,7 @@ export default async function LabelPage({
                 </div>
               </div>
               <div className="min-w-0">
-                <p className="mb-3 text-[10px] font-black uppercase tracking-[.28em] text-fuchsia-300">MUSEK · Record label spotlight</p>
+                <p className="mb-3 text-[10px] font-black uppercase tracking-[.28em] text-fuchsia-300">YASUH · Record label spotlight</p>
                 <h1 className="break-words text-4xl font-black leading-[.98] tracking-[-.055em] sm:text-6xl">{labelName}</h1>
                 {label.location && <p className="mt-4 flex items-center gap-2 text-sm text-gray-300"><span className="text-fuchsia-300">⌖</span>{label.location}</p>}
               </div>
@@ -170,7 +170,7 @@ export default async function LabelPage({
           ) : (
             <div className="space-y-5">
               {artists.map((artist) => {
-                const artistName = artist.artist_name || artist.display_name || "MUSEK Artist";
+                const artistName = artist.artist_name || artist.display_name || "YASUH Artist";
                 const artistTracks = tracks.filter((track) => track.artist_id === artist.id);
                 const artistPlayerSongs = playerSongs.filter((song) => artistTracks.some((track) => track.id === song.id));
 
@@ -210,7 +210,7 @@ export default async function LabelPage({
           <div className="rounded-[22px] border border-white/[0.08] bg-[#100d17] p-6">
             <p className="text-[10px] font-black uppercase tracking-[.2em] text-gray-500">Label catalogue</p>
             <h2 className="mt-3 text-xl font-black">More music to discover.</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">Explore releases from this label's artists and discover more independent sounds across MUSEK.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">Explore releases from this label's artists and discover more independent sounds across YASUH.</p>
             <Link href="/discover-music" className="mt-5 inline-flex text-xs font-bold text-fuchsia-200 transition hover:text-white">Explore all music →</Link>
           </div>
         </aside>
