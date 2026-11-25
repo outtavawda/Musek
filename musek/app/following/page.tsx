@@ -79,7 +79,7 @@ export default async function FollowingPage() {
       (artists || []).map((artist) => [
         artist.id,
         {
-          name: artist.artist_name || artist.display_name || "MUSEK Artist",
+          name: artist.artist_name || artist.display_name || "YASUH Artist",
           avatar: artist.avatar_url,
         },
       ])
@@ -108,7 +108,7 @@ export default async function FollowingPage() {
         return {
           id: track.id,
           title: track.title,
-          artistName: artist?.name || "MUSEK Artist",
+          artistName: artist?.name || "YASUH Artist",
           genre: track.genre || "",
           audioUrl: audio?.signedUrl || null,
           artworkUrl,
@@ -121,7 +121,7 @@ export default async function FollowingPage() {
     <main className="pageWrap">
       <nav className="nav">
         <Link className="brand" href="/">
-          MUSEK<span>.</span>
+          YASUH<span>.</span>
         </Link>
 
         <Link className="secondaryButton" href="/discover">
