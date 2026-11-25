@@ -110,7 +110,7 @@ export default async function FanDashboardPage() {
   const artistMap = new Map(
     (artistProfiles || []).map((artist) => [
       artist.id,
-      artist.artist_name || artist.display_name || "MUSEK Artist",
+      artist.artist_name || artist.display_name || "YASUH Artist",
     ])
   );
 
@@ -121,7 +121,7 @@ export default async function FanDashboardPage() {
       return {
         id: event.track_id + event.created_at,
         title: track.title,
-        artist: artistMap.get(track.artist_id) || "MUSEK Artist",
+        artist: artistMap.get(track.artist_id) || "YASUH Artist",
         listenedSeconds: Number(event.listened_seconds || 0),
         date: event.created_at,
       };
@@ -146,7 +146,7 @@ export default async function FanDashboardPage() {
       <div className="flex min-h-screen">
         <aside className="hidden w-64 shrink-0 flex-col border-r border-purple-500/15 bg-[#0b0b17] px-5 py-7 lg:flex">
           <Link href="/" className="mb-12 px-3 text-3xl font-black tracking-tight">
-            MUSEK<span className="text-purple-500">.</span>
+            YASUH<span className="text-purple-500">.</span>
           </Link>
           <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
             Your Music
@@ -245,7 +245,7 @@ export default async function FanDashboardPage() {
                 Find your next favourite song.
               </h2>
               <p className="mt-2 text-sm leading-6 text-purple-100/70">
-                Explore independent music, follow the artists you love and support them with MUSEK Coins.
+                Explore independent music, follow the artists you love and support them with YASUH Coins.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href="/feed" className="rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#171022] hover:bg-purple-100">
@@ -255,7 +255,7 @@ export default async function FanDashboardPage() {
                   Discover Music
                 </Link>
                 <Link href="/social" className="rounded-xl border border-fuchsia-300/30 bg-fuchsia-500/15 px-5 py-3 text-sm font-bold text-white hover:bg-fuchsia-500/25">
-                  MUSEK Social · Live
+                  YASUH Social · Live
                 </Link>
               </div>
             </div>
