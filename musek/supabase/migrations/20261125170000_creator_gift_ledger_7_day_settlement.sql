@@ -142,6 +142,65 @@ CREATE TRIGGER creator_withdrawals_record_paid_ledger
 AFTER UPDATE OF status ON public.creator_withdrawals
 FOR EACH ROW EXECUTE FUNCTION public.record_creator_paid_withdrawal();
 
+-- Preserve the existing admin RPC signature for compatibility, but stop arbitrary
+-- manual edits to settled cash. Only the settlement and paid-withdrawal ledger
+-- operations may move this balance.
+CREATE OR REPLACE FUNCTION public.admin_set_creator_payout_eligibility(
+  p_creator_id uuid, p_verified boolean, p_eligible boolean, p_settled_balance_cad numeric
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  v_current_settled numeric(12,2);
+  v_reserved numeric(12,2);
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.admin_users WHERE user_id = auth.uid()) THEN
+    RAISE EXCEPTION 'Unauthorized: admin access required';
+  END IF;
+  IF p_creator_id IS NULL OR p_verified IS NULL OR p_eligible IS NULL
+     OR p_settled_balance_cad IS NULL OR p_settled_balance_cad < 0
+     OR p_settled_balance_cad <> round(p_settled_balance_cad, 2) THEN
+    RAISE EXCEPTION 'Invalid payout eligibility details';
+  END IF;
+  IF p_eligible AND NOT p_verified THEN
+    RAISE EXCEPTION 'A creator must be verified before becoming payout eligible';
+  END IF;
+
+  SELECT settled_balance_cad INTO v_current_settled
+  FROM public.creator_wallets WHERE user_id = p_creator_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Creator wallet not found'; END IF;
+  IF p_settled_balance_cad IS DISTINCT FROM v_current_settled THEN
+    RAISE EXCEPTION 'Settled balance is ledger-controlled and cannot be manually changed.';
+  END IF;
+
+  SELECT COALESCE(sum(amount_cad), 0) INTO v_reserved
+  FROM public.creator_withdrawals
+  WHERE user_id = p_creator_id AND status IN ('pending','approved','processing');
+  IF v_current_settled < v_reserved THEN
+    RAISE EXCEPTION 'Settled balance is below existing reserved withdrawals ($%).', v_reserved;
+  END IF;
+
+  UPDATE public.creator_wallets
+  SET payout_verified = p_verified, payout_eligible = p_eligible, updated_at = now()
+  WHERE user_id = p_creator_id;
+END;
+$;
+
+-- Backfill already-paid withdrawals so the ledger starts with the same net
+-- settled cash as the existing wallet. This is idempotent and does not touch balances.
+INSERT INTO public.creator_earning_ledger (
+  creator_id, event_type, amount_cad, source_withdrawal_id, created_at, metadata
+)
+SELECT w.user_id, 'withdrawal', -w.amount_cad, w.id,
+       COALESCE(w.paid_at, w.updated_at),
+       jsonb_build_object('backfilled', true, 'payout_reference', w.payout_reference)
+FROM public.creator_withdrawals w
+WHERE w.status = 'paid'
+ON CONFLICT DO NOTHING;
+
 -- Admin-only, idempotent settlement. Matured earnings are settled only for
 -- creators who are both payout-verified and payout-eligible.
 CREATE OR REPLACE FUNCTION public.settle_creator_gift_earnings(p_batch_key uuid)
@@ -251,6 +310,7 @@ RETURNS TABLE (
   wallet_settled_balance_cad numeric,
   ledger_expected_settled_cad numeric,
   pending_eligible_cad numeric,
+  pending_hold_cad numeric,
   earnings_match boolean,
   settled_balance_match boolean
 )
@@ -275,6 +335,7 @@ BEGIN
     cw.settled_balance_cad,
     COALESCE(x.settled, 0)::numeric(12,2),
     COALESCE(x.pending_eligible, 0)::numeric(12,2),
+    COALESCE(x.pending_hold, 0)::numeric(12,2),
     cw.total_earnings_cad = COALESCE(x.earned, 0),
     cw.settled_balance_cad = COALESCE(x.expected_settled, 0)
   FROM public.creator_wallets cw
@@ -291,6 +352,10 @@ BEGIN
             WHERE s.event_type = 'settlement' AND s.related_ledger_id = e.id
           )
       )::numeric(12,2) AS pending_eligible,
+      sum(e.amount_cad) FILTER (
+        WHERE e.event_type = 'earning'
+          AND e.available_at > now()
+      )::numeric(12,2) AS pending_hold,
       (
         COALESCE(sum(e.amount_cad) FILTER (WHERE e.event_type = 'settlement'), 0)
         + COALESCE(sum(e.amount_cad) FILTER (WHERE e.event_type IN ('withdrawal','adjustment')), 0)
