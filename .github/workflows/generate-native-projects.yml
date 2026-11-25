@@ -6,6 +6,10 @@ on:
       - square-sandbox
     paths:
       - .github/workflows/generate-native-projects.yml
+      - musek/scripts/configure-native-playback.mjs
+      - musek/scripts/configure-native-deep-links.mjs
+      - musek/native/android/**
+      - musek/capacitor.config.ts
   workflow_dispatch:
     inputs:
       capacitor_server_url:
