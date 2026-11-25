@@ -41,9 +41,24 @@ for (const file of ["MusekPlaybackPlugin.kt", "MusekPlaybackService.kt"]) {
   fs.writeFileSync(path.join(playbackDir, file), configuredSource);
 }
 
+const rootGradlePath = path.join(androidRoot, "build.gradle");
+if (!fs.existsSync(rootGradlePath)) throw new Error("Android root build.gradle was not found.");
+let rootGradle = fs.readFileSync(rootGradlePath, "utf8");
+if (!rootGradle.includes("org.jetbrains.kotlin:kotlin-gradle-plugin")) {
+  if (!/buildscript\\s*\\{[\\s\\S]*?dependencies\\s*\\{/.test(rootGradle)) {
+    throw new Error("Could not find the Android root buildscript dependencies block for Kotlin support.");
+  }
+  rootGradle = rootGradle.replace(/(buildscript\\s*\\{[\\s\\S]*?dependencies\\s*\\{)/, '$1\\n        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"');
+  fs.writeFileSync(rootGradlePath, rootGradle);
+}
+
 const gradlePath = path.join(androidRoot, "app", "build.gradle");
 if (!fs.existsSync(gradlePath)) throw new Error("Android app/build.gradle was not found.");
 let gradle = fs.readFileSync(gradlePath, "utf8");
+if (!gradle.includes("kotlin-android")) {
+  gradle = "apply plugin: 'kotlin-android'\\n" + gradle;
+  fs.writeFileSync(gradlePath, gradle);
+}
 if (!gradle.includes("androidx.media3:media3-exoplayer")) {
   if (!/dependencies\s*\{/.test(gradle)) throw new Error("Could not find dependencies block in app/build.gradle.");
   gradle = gradle.replace(/dependencies\s*\{/, function (match) {
