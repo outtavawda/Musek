@@ -41,14 +41,14 @@ export default async function GiftHistoryPage() {
     <main className="min-h-screen bg-[#080811] px-5 py-6 text-white sm:px-8 lg:px-12">
       <div className="mx-auto max-w-5xl">
         <nav className="flex items-center justify-between">
-          <Link href="/" className="text-2xl font-black tracking-[-0.08em]">MUSEK<span className="text-purple-400">.</span></Link>
+          <Link href="/" className="text-2xl font-black tracking-[-0.08em]">YASUH<span className="text-purple-400">.</span></Link>
           <Link href="/dashboard" className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-gray-200 transition hover:border-purple-400/40 hover:bg-purple-500/10">Dashboard</Link>
         </nav>
 
         <section className="relative mt-10 overflow-hidden rounded-[30px] border border-purple-400/20 bg-gradient-to-br from-[#24163b] via-[#171326] to-[#101019] p-7 sm:p-10">
           <div className="pointer-events-none absolute -right-20 -top-28 h-72 w-72 rounded-full bg-purple-500/20 blur-[90px]" />
           <div className="relative">
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-purple-300">MUSEK WALLET</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-purple-300">YASUH WALLET</p>
             <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Gift history</h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-gray-300">{isArtist ? "A record of the support your fans have sent your way." : "A record of the gifts you have sent to support artists."}</p>
           </div>
@@ -98,7 +98,7 @@ export default async function GiftHistoryPage() {
                     <div className="min-w-0">
                       <h3 className="font-bold">{Number(gift.coins).toLocaleString()} coins</h3>
                       <p className="mt-1 text-xs text-gray-400">{isArtist ? "Gift received" : "Gift sent"} · {new Date(gift.created_at).toLocaleString()}</p>
-                      <p className="mt-1 text-xs text-gray-500">Creator share: CAD ${Number(gift.creator_share_cad).toFixed(2)} <span className="px-1 text-gray-700">·</span> MUSEK share: CAD ${Number(gift.musek_share_cad).toFixed(2)}</p>
+                      <p className="mt-1 text-xs text-gray-500">Creator share: CAD ${Number(gift.creator_share_cad).toFixed(2)} <span className="px-1 text-gray-700">·</span> YASUH share: CAD ${Number(gift.musek_share_cad).toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
