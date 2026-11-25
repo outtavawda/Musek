@@ -233,9 +233,15 @@ export default function BuyCoinsPage() {
             color: "#777",
             fontSize: "13px",
             marginTop: "18px",
+            lineHeight: 1.6,
           }}
         >
           Secure checkout powered by Square.
+          <br />
+          By continuing, you acknowledge the{" "}
+          <Link href="/policies/coins-and-gifts" style={{ color: "#c4a1ff", textDecoration: "underline" }}>
+            Coin &amp; Gift Policy
+          </Link>.
         </p>
 
         <div
