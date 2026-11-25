@@ -32,23 +32,31 @@ const appPackage = packageMatch[1];
 const packageDir = path.join(javaRoot, ...appPackage.split("."));
 const playbackDir = path.join(packageDir, "playback");
 fs.mkdirSync(playbackDir, { recursive: true });
+
 for (const file of ["MusekPlaybackPlugin.kt", "MusekPlaybackService.kt"]) {
   const sourcePath = path.resolve("native", "android", file);
-  const source = fs.readFileSync(sourcePath, "utf8");
-  const sourcePackage = source.match(/^package\s+[\w.]+/m);
-  if (!sourcePackage) throw new Error("Could not read package declaration in native template " + file);
-  const configuredSource = source.replace(/^package\s+[\w.]+/m, "package " + appPackage + ".playback");
-  fs.writeFileSync(path.join(playbackDir, file), configuredSource);
+  let source = fs.readFileSync(sourcePath, "utf8");
+  if (!/^package\s+[\w.]+/m.test(source)) {
+    throw new Error("Could not read package declaration in native template " + file);
+  }
+  source = source.replace(/^package\s+[\w.]+/m, "package " + appPackage + ".playback");
+  fs.writeFileSync(path.join(playbackDir, file), source);
 }
 
+// Capacitor 6 uses a Groovy root build.gradle with a buildscript dependencies block.
 const rootGradlePath = path.join(androidRoot, "build.gradle");
 if (!fs.existsSync(rootGradlePath)) throw new Error("Android root build.gradle was not found.");
 let rootGradle = fs.readFileSync(rootGradlePath, "utf8");
-if (!rootGradle.includes("org.jetbrains.kotlin:kotlin-gradle-plugin")) {
-  if (!/buildscript\\s*\\{[\\s\\S]*?dependencies\\s*\\{/.test(rootGradle)) {
-    throw new Error("Could not find the Android root buildscript dependencies block for Kotlin support.");
+if (!rootGradle.includes("kotlin-gradle-plugin")) {
+  const buildscriptStart = rootGradle.indexOf("buildscript {");
+  const dependenciesStart = buildscriptStart < 0 ? -1 : rootGradle.indexOf("dependencies {", buildscriptStart);
+  if (dependenciesStart < 0) {
+    throw new Error("Could not find buildscript dependencies in Android root build.gradle.");
   }
-  rootGradle = rootGradle.replace(/(buildscript\\s*\\{[\\s\\S]*?dependencies\\s*\\{)/, '$1\\n        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"');
+  const insertAt = dependenciesStart + "dependencies {".length;
+  rootGradle = rootGradle.slice(0, insertAt) +
+    '\n        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"' +
+    rootGradle.slice(insertAt);
   fs.writeFileSync(rootGradlePath, rootGradle);
 }
 
@@ -56,16 +64,18 @@ const gradlePath = path.join(androidRoot, "app", "build.gradle");
 if (!fs.existsSync(gradlePath)) throw new Error("Android app/build.gradle was not found.");
 let gradle = fs.readFileSync(gradlePath, "utf8");
 if (!gradle.includes("kotlin-android")) {
-  gradle = "apply plugin: 'kotlin-android'\\n" + gradle;
-  fs.writeFileSync(gradlePath, gradle);
+  gradle = "apply plugin: 'kotlin-android'\n" + gradle;
 }
 if (!gradle.includes("androidx.media3:media3-exoplayer")) {
-  if (!/dependencies\s*\{/.test(gradle)) throw new Error("Could not find dependencies block in app/build.gradle.");
-  gradle = gradle.replace(/dependencies\s*\{/, function (match) {
-    return match + "\n    implementation \"androidx.media3:media3-exoplayer:1.4.1\"\n    implementation \"androidx.media3:media3-session:1.4.1\"";
-  });
-  fs.writeFileSync(gradlePath, gradle);
+  const dependenciesStart = gradle.indexOf("dependencies {");
+  if (dependenciesStart < 0) throw new Error("Could not find dependencies block in app/build.gradle.");
+  const insertAt = dependenciesStart + "dependencies {".length;
+  gradle = gradle.slice(0, insertAt) +
+    '\n    implementation "androidx.media3:media3-exoplayer:1.4.1"' +
+    '\n    implementation "androidx.media3:media3-session:1.4.1"' +
+    gradle.slice(insertAt);
 }
+fs.writeFileSync(gradlePath, gradle);
 
 const manifestPath = path.join(androidRoot, "app", "src", "main", "AndroidManifest.xml");
 let manifest = fs.readFileSync(manifestPath, "utf8");
@@ -76,36 +86,49 @@ const permissions = [
 ];
 for (const permission of permissions) {
   if (!manifest.includes('android:name="' + permission + '"')) {
-    manifest = manifest.replace("<application", '<uses-permission android:name="' + permission + '" />\n    <application');
+    manifest = manifest.replace("<application", '    <uses-permission android:name="' + permission + '" />\n    <application');
   }
 }
 if (!manifest.includes("MusekPlaybackService")) {
-  const serviceBlock = "        <service\n" +
+  const serviceBlock = '        <service\n' +
     '            android:name="' + appPackage + '.playback.MusekPlaybackService"\n' +
     '            android:exported="true"\n' +
     '            android:foregroundServiceType="mediaPlayback">\n' +
-    "            <intent-filter>\n" +
+    '            <intent-filter>\n' +
     '                <action android:name="androidx.media3.session.MediaSessionService" />\n' +
     '                <action android:name="android.media.browse.MediaBrowserService" />\n' +
-    "            </intent-filter>\n" +
-    "        </service>\n    </application>";
-  manifest = manifest.replace("</application>", serviceBlock);
+    '            </intent-filter>\n' +
+    '        </service>\n';
+  manifest = manifest.replace("</application>", serviceBlock + "    </application>");
 }
 fs.writeFileSync(manifestPath, manifest);
 
 if (!activity.includes("MusekPlaybackPlugin")) {
   if (isKotlin) {
     const importLine = "import " + appPackage + ".playback.MusekPlaybackPlugin";
-    if (!activity.includes(importLine)) activity = activity.replace(packageMatch[0], packageMatch[0] + "\n\n" + importLine);
+    if (!activity.includes(importLine)) {
+      activity = activity.replace(packageMatch[0], packageMatch[0] + "\n\n" + importLine);
+    }
     const classStart = /class\s+MainActivity\s*:\s*BridgeActivity(?:\(\))?\s*\{/;
     if (!classStart.test(activity)) throw new Error("Could not locate the Kotlin MainActivity class body.");
-    activity = activity.replace(classStart, match => match + "\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\n        registerPlugin(MusekPlaybackPlugin::class.java)\n        super.onCreate(savedInstanceState)\n    }\n");
+    activity = activity.replace(classStart, match => match +
+      "\n    override fun onCreate(savedInstanceState: android.os.Bundle?) {\n" +
+      "        registerPlugin(MusekPlaybackPlugin::class.java)\n" +
+      "        super.onCreate(savedInstanceState)\n" +
+      "    }\n");
   } else {
     const importLine = "import " + appPackage + ".playback.MusekPlaybackPlugin;";
-    if (!activity.includes(importLine)) activity = activity.replace(packageMatch[0], packageMatch[0] + "\n\n" + importLine);
+    if (!activity.includes(importLine)) {
+      activity = activity.replace(packageMatch[0], packageMatch[0] + "\n\n" + importLine);
+    }
     const classStart = /public\s+class\s+MainActivity\s+extends\s+BridgeActivity\s*\{/;
     if (!classStart.test(activity)) throw new Error("Could not locate the Java MainActivity class body.");
-    activity = activity.replace(classStart, match => match + "\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(MusekPlaybackPlugin.class);\n        super.onCreate(savedInstanceState);\n    }\n");
+    activity = activity.replace(classStart, match => match +
+      "\n    @Override\n" +
+      "    public void onCreate(android.os.Bundle savedInstanceState) {\n" +
+      "        registerPlugin(MusekPlaybackPlugin.class);\n" +
+      "        super.onCreate(savedInstanceState);\n" +
+      "    }\n");
   }
   fs.writeFileSync(activityPath, activity);
 }
