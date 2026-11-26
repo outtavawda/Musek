@@ -48,7 +48,7 @@ export default function DiscoverSearch({ profiles }: { profiles: Profile[] }) {
   const filteredLabels = filteredProfiles.filter((profile) => profile.account_type === "label");
 
   return (
-    <div className="musekDiscover">
+    <div className="musekDiscover yasuh-discover-theme">
       <style>{`
         .musekDiscover{--purple:#a855f7;--lavender:#d8b4fe;color:#f8f6fb;width:100%;padding-bottom:24px}
         .discoverHero{position:relative;isolation:isolate;overflow:hidden;margin:28px 0 34px;padding:clamp(28px,5vw,58px);border:1px solid rgba(192,132,252,.2);border-radius:28px;background:radial-gradient(ellipse at 82% 18%,rgba(147,51,234,.32),transparent 38%),radial-gradient(ellipse at 100% 100%,rgba(91,33,182,.24),transparent 42%),linear-gradient(120deg,#17111f 0%,#0d0b12 65%,#171020 100%);box-shadow:0 25px 80px rgba(0,0,0,.3)}
