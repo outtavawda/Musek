@@ -66,3 +66,26 @@ For every case, record the staging project, account role, RPC name, input class 
 - Anonymous execution is revoked for the 12 user/admin operations; public follower count remains intentionally callable.
 - The Supabase security advisor still flags callable SECURITY DEFINER functions. These findings require authorization and behavior tests; they are not proof of exploitability by themselves.
 - Do not change grants or SECURITY INVOKER modes simply to silence the advisor without proving the corresponding feature still works under RLS.
+
+## Seven-day creator settlement regression cases
+
+Run these only in isolated staging with disposable accounts and a frozen, documented starting balance.
+
+| Area | Setup / caller | Expected result |
+|---|---|---|
+| Ledger access | Anonymous or ordinary authenticated user selects or mutates ledger tables | Denied; ledger remains private and append-only |
+| Gift earning trigger | Valid settled gift | Exactly one positive creator earning ledger row; available timestamp is gift creation plus seven days |
+| Gift idempotency | Retry same gift key and payload | One gift and one earning ledger row |
+| Gift status | Pending gift becomes settled | One earning row is recorded when it transitions to settled |
+| Seven-day hold | Earning available_at is in the future | Not settled and not withdrawable |
+| Maturity | Earning is at least seven full days old; creator is verified and eligible | Admin settlement credits exactly once |
+| Payout eligibility | Creator is unverified or ineligible | Matured earning remains pending and settled wallet does not change |
+| Settlement authorization | Anonymous or non-admin calls settlement/reconciliation RPC | Rejected; no batch or wallet change |
+| Batch idempotency | Same batch UUID submitted twice | Second call returns already_processed; no second credit |
+| Concurrent settlement | Two admin sessions settle concurrently | One settlement event per earning; no duplicate wallet credit |
+| Withdrawal ledger | Existing withdrawal transitions to paid | Exactly one negative ledger entry; wallet and ledger reconcile |
+| Ledger immutability | Attempt UPDATE or DELETE of ledger event | Rejected |
+| Reconciliation | Compare wallet totals and settled balance to ledger | Both match before and after settlement/withdrawal scenarios |
+| Payout verification UI | Change verification/eligibility only | Settled balance is read-only and cannot be manually edited |
+
+Capture before/after wallet and ledger rows for each case. Do not execute settlement tests against the production project or use real creator balances.
