@@ -40,7 +40,7 @@ export default async function HomePage() {
   return (
     <main className="yasuh-home-theme min-h-screen overflow-hidden bg-[#080811] text-white">
       <nav className="relative z-20 mx-auto flex max-w-[1400px] items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
-        <Link href="/" aria-label="YASUH home" className="text-2xl font-black tracking-[-0.08em]">YASUH<span className="text-purple-400">.</span></Link>
+        
         <div className="flex items-center gap-3 sm:gap-7">
           <Link href="/feed" className="hidden text-sm text-gray-300 transition hover:text-white sm:block">Feed</Link>
           <Link href="/discover" className="text-sm text-gray-300 transition hover:text-white">Discover</Link>
