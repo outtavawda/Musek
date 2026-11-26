@@ -141,13 +141,39 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
   const enableMedia = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (!window.isSecureContext) {
+        setNotice("Camera access requires a secure HTTPS connection. Open YASUH using its secure website address.");
+        return;
+      }
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setNotice("This browser does not provide camera access. Open YASUH in Safari or the installed YASUH app, then try again.");
+        return;
+      }
+      // Request video independently: a denied/unavailable microphone must
+      // never prevent the camera preview from opening.
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "user" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
-      setCameraOn(true); setMicOn(true);
-      setNotice("Your local camera and microphone preview is ready. Join a LiveKit room to broadcast to other participants once the service credentials are configured.");
-    } catch {
-      setNotice("Camera or microphone permission was denied, or no device is available.");
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => undefined);
+      }
+      setCameraOn(true);
+      setMicOn(false);
+      setNotice("Camera preview is ready. Your microphone stays off until you turn it on in the LIVE controls.");
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : "";
+      const detail = name === "NotAllowedError" || name === "SecurityError"
+        ? "Allow camera access for YASUH in your iPhone Settings or browser site settings, then try again."
+        : name === "NotFoundError" || name === "DevicesNotFoundError"
+          ? "No camera was found on this device."
+          : name === "NotReadableError" || name === "TrackStartError"
+            ? "The camera is being used by another app. Close other camera apps and try again."
+            : error instanceof Error ? error.message : "Check camera permission and try again.";
+      setNotice("Could not start the camera: " + detail);
     }
   };
 
@@ -413,7 +439,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                   <button
                       type="button"
                       disabled={!liveCameraControl?.canPublish}
-                      onClick={() => liveCameraControl?.toggle().catch(() => setNotice("Could not change your live camera. Check camera permission and try again."))}
+                      onClick={() => liveCameraControl?.toggle().catch((error: unknown) => setNotice("Could not start your LIVE camera: " + (error instanceof Error ? error.message : "Check camera permission and try again.")))}
                       aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
                       aria-pressed={Boolean(liveCameraControl?.enabled)}
                       title={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
@@ -427,7 +453,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                     <button
                       type="button"
                       disabled={!liveCameraControl?.canPublish}
-                      onClick={() => liveCameraControl?.toggleMicrophone().catch(() => setNotice("Could not change your microphone. Check microphone permission and try again."))}
+                      onClick={() => liveCameraControl?.toggleMicrophone().catch((error: unknown) => setNotice("Could not change your LIVE microphone: " + (error instanceof Error ? error.message : "Check microphone permission and try again.")))}
                       aria-label={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Unmute microphone"}
                       aria-pressed={Boolean(liveCameraControl?.microphoneEnabled)}
                       title={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Turn microphone on"}
