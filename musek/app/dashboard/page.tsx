@@ -198,7 +198,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#080811] text-white">
+    <main className="yasuh-wallet-theme min-h-screen bg-[#080811] text-white">
       <div className="flex min-h-screen">
         {/* DESKTOP SIDEBAR */}
         <aside className="hidden w-64 shrink-0 flex-col border-r border-purple-500/15 bg-[#0b0b17] px-5 py-7 lg:flex">
