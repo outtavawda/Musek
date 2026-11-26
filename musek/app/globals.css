@@ -813,3 +813,19 @@ a { text-decoration-color: rgba(198,154,53,.45); }
  [class*="text-slate-4"], [class*="text-slate-5"], [class*="text-zinc-4"],
  [class*="text-zinc-5"]) { color: #70695d !important; }
 :where([class*="hover:text-white"]:hover) { color: #8f6818 !important; }
+
+
+/* Route-specific YASUH gold/white palette. These selectors recolour existing
+   Social and Artist UI only; component structure and interactions are untouched. */
+.yasuh-social-theme,.yasuh-artist-theme{background:#fff!important;color:#24211b!important}
+.yasuh-social-theme header,.yasuh-social-theme nav:not([aria-label]),.yasuh-social-theme [class*="bg-[#13121d]"],.yasuh-social-theme [class*="bg-[#171321]"],.yasuh-social-theme [class*="bg-[#21152e]"],.yasuh-social-theme [class*="bg-[#0b0a12]"],.yasuh-social-theme [class*="bg-[#080811]"]{background:#fff!important;color:#24211b!important;border-color:#e9e1d2!important}
+.yasuh-social-theme [class*="text-white"],.yasuh-artist-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-social-theme [class*="text-gray-300"],.yasuh-social-theme [class*="text-gray-400"],.yasuh-social-theme [class*="text-gray-200"],.yasuh-artist-theme [class*="text-gray-300"],.yasuh-artist-theme [class*="text-gray-400"],.yasuh-artist-theme [class*="text-gray-200"]{color:#70695d!important}
+.yasuh-social-theme [class*="bg-fuchsia-"],.yasuh-social-theme [class*="bg-purple-"],.yasuh-artist-theme [class*="bg-fuchsia-"],.yasuh-artist-theme [class*="bg-purple-"]{background-color:#c69a35!important;color:#fff!important}
+.yasuh-social-theme [class*="text-fuchsia-"],.yasuh-social-theme [class*="text-purple-"],.yasuh-artist-theme [class*="text-fuchsia-"],.yasuh-artist-theme [class*="text-purple-"]{color:#8f6818!important}
+.yasuh-social-theme [class*="border-fuchsia-"],.yasuh-social-theme [class*="border-purple-"],.yasuh-artist-theme [class*="border-fuchsia-"],.yasuh-artist-theme [class*="border-purple-"]{border-color:#e5d4ad!important}
+.yasuh-social-theme input,.yasuh-social-theme textarea,.yasuh-artist-theme input,.yasuh-artist-theme textarea{background:#fff!important;color:#24211b!important;border-color:#e9e1d2!important}
+.yasuh-social-theme input::placeholder,.yasuh-social-theme textarea::placeholder{color:#8a8173!important}
+.yasuh-social-theme button[class*="bg-fuchsia-"],.yasuh-social-theme button[class*="bg-purple-"],.yasuh-artist-theme button[class*="bg-fuchsia-"],.yasuh-artist-theme button[class*="bg-purple-"]{background:linear-gradient(135deg,#e0c16f,#b88b2b)!important;color:#fff!important}
+.yasuh-artist-theme [class*="bg-[#130e1d]"],.yasuh-artist-theme [class*="bg-[#100d17]"],.yasuh-artist-theme [class*="bg-[#171020]"],.yasuh-artist-theme [class*="bg-[#20122f]"],.yasuh-artist-theme [class*="bg-[#0d0b13]"]{background:#fff!important;border-color:#e9e1d2!important}
+.yasuh-social-theme [class*="bg-gradient-to-"],.yasuh-artist-theme [class*="bg-gradient-to-"]{--tw-gradient-from:#fffaf0 var(--tw-gradient-from-position)!important;--tw-gradient-to:#fff var(--tw-gradient-to-position)!important}
