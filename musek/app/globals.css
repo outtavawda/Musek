@@ -840,3 +840,56 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 .yasuh-live-cta:hover{filter:brightness(1.06)}
 .yasuh-live-cta:active{filter:brightness(.97);transform:translateY(1px)}
 .yasuh-live-cta span[class*="bg-gradient-to-"]{background:linear-gradient(180deg,#fff4d1,#c69a35,#8f6818)!important}
+
+
+/* YASUH visual-reference pass — targeted colour corrections only.
+   Layout, spacing, typography, content, imagery and behavior remain unchanged. */
+
+/* Home page and its featured playlist/player panel */
+.yasuh-home-theme{background:#fff!important;color:#24211b!important}
+.yasuh-home-theme [class*="bg-[#080811]"],.yasuh-home-theme [class*="bg-[#0d0c18]"],.yasuh-home-theme [class*="bg-[#141321]"],.yasuh-home-theme [class*="bg-[#11101e]"],.yasuh-home-theme [class*="bg-[#171326]"],.yasuh-home-theme [class*="bg-[#10101a]"],.yasuh-home-theme [class*="bg-[#101019]"],.yasuh-home-theme [class*="bg-[#19152a]"]{background:#fff!important;color:#24211b!important}
+.yasuh-home-theme [class*="text-white"],.yasuh-home-theme [class*="text-gray-300"]{color:#24211b!important}
+.yasuh-home-theme [class*="text-gray-400"],.yasuh-home-theme [class*="text-gray-500"],.yasuh-home-theme [class*="text-gray-600"]{color:#70695d!important}
+.yasuh-home-theme [class*="text-purple-"],.yasuh-home-theme [class*="text-violet-"],.yasuh-home-theme [class*="text-fuchsia-"]{color:#8f6818!important}
+.yasuh-home-theme [class*="border-white/"],.yasuh-home-theme [class*="border-purple-"],.yasuh-home-theme [class*="border-violet-"],.yasuh-home-theme [class*="border-fuchsia-"]{border-color:#e9e1d2!important}
+.yasuh-home-theme [class*="bg-purple-"],.yasuh-home-theme [class*="bg-violet-"],.yasuh-home-theme [class*="bg-fuchsia-"]{background-color:#c69a35!important;color:#fff!important}
+.yasuh-home-theme [class*="bg-gradient-to-"]{--tw-gradient-from:#fffaf0 var(--tw-gradient-from-position)!important;--tw-gradient-to:#fff var(--tw-gradient-to-position)!important;--tw-gradient-stops:var(--tw-gradient-from),#f7efd9,var(--tw-gradient-to)!important}
+.yasuh-home-theme [class*="shadow-purple-"]{--tw-shadow-color:rgba(133,99,29,.12)!important}
+.yasuh-home-theme a[class*="bg-purple-"],.yasuh-home-theme a[class*="bg-gradient-to-"]{color:#fff!important}
+.yasuh-home-theme .musek-global-player,.yasuh-home-theme [class*="rounded-3xl"][class*="border-purple-"]{background:linear-gradient(145deg,#fffaf0,#fff)!important;border-color:#e5d4ad!important;color:#24211b!important}
+.yasuh-home-theme .musek-player-control{color:#805f19!important}
+.yasuh-home-theme .musek-player-control.primary{background:linear-gradient(145deg,#e4c477,#a77b22)!important;color:#fff!important}
+
+/* Social: fix LIVE heading/notice text contrast on the white-and-gold panels.
+   Keep the actual live-video stage and its dark media overlay untouched. */
+.yasuh-live-popover{background:#fffaf0!important;color:#24211b!important}
+.yasuh-live-popover [class*="text-white"]{color:#24211b!important}
+.yasuh-live-popover [class*="text-gray-"]{color:#70695d!important}
+.yasuh-social-theme>header{background:rgba(255,255,255,.96)!important;color:#24211b!important;border-color:#e9e1d2!important}
+.yasuh-social-theme>header [class*="text-white"]{color:#24211b!important}
+.yasuh-social-theme [class*="bg-fuchsia-500/10"],.yasuh-social-theme [class*="bg-fuchsia-500/15"],.yasuh-social-theme [class*="bg-purple-500/10"]{background:rgba(198,154,53,.10)!important}
+.yasuh-social-theme [class*="text-fuchsia-100"],.yasuh-social-theme [class*="text-fuchsia-200"],.yasuh-social-theme [class*="text-fuchsia-300"]{color:#805f19!important}
+
+/* Music discovery page: convert the hero, playlist shelf and filters to the
+   supplied white/gold reference while retaining all original dimensions. */
+.yasuh-music-discover-theme{background:#fff!important;color:#24211b!important}
+.yasuh-music-discover-theme [class*="bg-[#080711]"],.yasuh-music-discover-theme [class*="bg-[#11101b]"]{background:#fff!important;color:#24211b!important}
+.yasuh-music-discover-theme [class*="bg-gradient-to-br"]{--tw-gradient-from:#fffaf0 var(--tw-gradient-from-position)!important;--tw-gradient-to:#fff var(--tw-gradient-to-position)!important;--tw-gradient-stops:var(--tw-gradient-from),#f7efd9,var(--tw-gradient-to)!important;border-color:#e5d4ad!important}
+.yasuh-music-discover-theme [class*="text-white"],.yasuh-music-discover-theme [class*="text-gray-300"]{color:#24211b!important}
+.yasuh-music-discover-theme [class*="text-gray-400"],.yasuh-music-discover-theme [class*="text-gray-500"],.yasuh-music-discover-theme [class*="text-gray-600"]{color:#70695d!important}
+.yasuh-music-discover-theme [class*="text-fuchsia-"],.yasuh-music-discover-theme [class*="text-purple-"],.yasuh-music-discover-theme [class*="text-violet-"]{color:#8f6818!important}
+.yasuh-music-discover-theme [class*="border-white/"],.yasuh-music-discover-theme [class*="border-fuchsia-"],.yasuh-music-discover-theme [class*="border-purple-"]{border-color:#e9e1d2!important}
+.yasuh-music-discover-theme [class*="bg-fuchsia-"],.yasuh-music-discover-theme [class*="bg-purple-"],.yasuh-music-discover-theme [class*="bg-violet-"]{background-color:#c69a35!important;color:#fff!important}
+.yasuh-music-discover-theme input{background:#fff!important;color:#24211b!important;border-color:#e5d4ad!important}
+.yasuh-music-discover-theme button[class*="bg-"]{color:#fff!important}
+
+/* Wallet pages: keep balances and purchase/earnings cards bright and legible. */
+.yasuh-wallet-theme{background:#fff!important;color:#24211b!important}
+.yasuh-wallet-theme [class*="bg-[#080811]"],.yasuh-wallet-theme [class*="bg-[#0b0b17]"],.yasuh-wallet-theme [class*="bg-[#0b0a14]"],.yasuh-wallet-theme [class*="bg-[#11111d]"],.yasuh-wallet-theme [class*="bg-[#171326]"]{background:#fff!important;color:#24211b!important}
+.yasuh-wallet-theme [class*="bg-gradient-to-"]{--tw-gradient-from:#fffaf0 var(--tw-gradient-from-position)!important;--tw-gradient-to:#fff var(--tw-gradient-to-position)!important;--tw-gradient-stops:var(--tw-gradient-from),#f7efd9,var(--tw-gradient-to)!important;border-color:#e5d4ad!important}
+.yasuh-wallet-theme [class*="text-white"],.yasuh-wallet-theme [class*="text-gray-300"]{color:#24211b!important}
+.yasuh-wallet-theme [class*="text-gray-400"],.yasuh-wallet-theme [class*="text-gray-500"],.yasuh-wallet-theme [class*="text-gray-600"]{color:#70695d!important}
+.yasuh-wallet-theme [class*="text-purple-"],.yasuh-wallet-theme [class*="text-violet-"],.yasuh-wallet-theme [class*="text-fuchsia-"]{color:#8f6818!important}
+.yasuh-wallet-theme [class*="border-white/"],.yasuh-wallet-theme [class*="border-purple-"],.yasuh-wallet-theme [class*="border-fuchsia-"]{border-color:#e9e1d2!important}
+.yasuh-wallet-theme [class*="bg-purple-"],.yasuh-wallet-theme [class*="bg-fuchsia-"]{background-color:#c69a35!important;color:#fff!important}
+.yasuh-wallet-theme a[class*="bg-"],.yasuh-wallet-theme button[class*="bg-"]{color:#fff!important}
