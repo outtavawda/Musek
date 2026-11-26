@@ -145,9 +145,6 @@ export default async function FanDashboardPage() {
     <main className="yasuh-wallet-theme min-h-screen bg-[#080811] text-white">
       <div className="flex min-h-screen">
         <aside className="hidden w-64 shrink-0 flex-col border-r border-purple-500/15 bg-[#0b0b17] px-5 py-7 lg:flex">
-          <Link href="/" className="mb-12 px-3 text-3xl font-black tracking-tight">
-            YASUH<span className="text-purple-500">.</span>
-          </Link>
           <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
             Your Music
           </p>
