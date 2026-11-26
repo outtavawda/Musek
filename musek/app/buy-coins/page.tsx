@@ -63,7 +63,7 @@ export default function BuyCoinsPage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "#050505",
+        background: "#ffffff",
         color: "white",
         padding: "48px 20px",
       }}
@@ -78,7 +78,7 @@ export default function BuyCoinsPage() {
           href="/dashboard"
           style={{
             display: "inline-block",
-            color: "#b78cff",
+            color: "#805f19",
             textDecoration: "none",
             marginBottom: "35px",
             fontWeight: 600,
@@ -99,7 +99,7 @@ export default function BuyCoinsPage() {
 
         <p
           style={{
-            color: "#aaa",
+            color: "#70695d",
             marginBottom: "35px",
             lineHeight: 1.6,
           }}
@@ -129,11 +129,11 @@ export default function BuyCoinsPage() {
                   flex: "1 1 180px",
                   maxWidth: "260px",
                   minWidth: "0",
-                  background: "#111",
+                  background: "#fffaf0",
                   color: "white",
                   border: selected
-                    ? "2px solid #a855f7"
-                    : "1px solid #333",
+                    ? "2px solid #c69a35"
+                    : "1px solid #e9e1d2",
                   borderRadius: "14px",
                   padding: "20px 12px",
                   display: "flex",
@@ -143,7 +143,7 @@ export default function BuyCoinsPage() {
                   gap: "10px",
                   cursor: "pointer",
                   boxShadow: selected
-                    ? "0 0 16px rgba(168,85,247,0.2)"
+                    ? "0 0 16px rgba(198,154,53,0.18)"
                     : "none",
                 }}
               >
@@ -213,14 +213,14 @@ export default function BuyCoinsPage() {
             width: "100%",
             marginTop: "35px",
             padding: "17px",
-            background: loading ? "#398b25" : "#39ff14",
-            color: "#050505",
+            background: loading ? "#b88b2b" : "linear-gradient(100deg, #e4c477, #b88b2b)",
+            color: "#ffffff",
             border: "none",
             borderRadius: "12px",
             fontSize: "17px",
             fontWeight: 900,
             cursor: loading ? "not-allowed" : "pointer",
-            boxShadow: "0 0 18px rgba(57,255,20,0.35)",
+            boxShadow: "0 0 18px rgba(198,154,53,0.24)",
             opacity: loading ? 0.7 : 1,
           }}
         >
@@ -230,7 +230,7 @@ export default function BuyCoinsPage() {
         <p
           style={{
             textAlign: "center",
-            color: "#777",
+            color: "#70695d",
             fontSize: "13px",
             marginTop: "18px",
             lineHeight: 1.6,
@@ -239,14 +239,14 @@ export default function BuyCoinsPage() {
           Secure checkout powered by Square.
           <br />
           By continuing, you acknowledge the{" "}
-          <Link href="/policies/coins-and-gifts" style={{ color: "#c4a1ff", textDecoration: "underline" }}>
+          <Link href="/policies/coins-and-gifts" style={{ color: "#805f19", textDecoration: "underline" }}>
             Coin &amp; Gift Policy
           </Link>.
         </p>
 
         <div
           style={{
-            borderTop: "1px solid #292929",
+            borderTop: "1px solid #e9e1d2",
             marginTop: "35px",
             paddingTop: "25px",
             textAlign: "center",
