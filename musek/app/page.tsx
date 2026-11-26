@@ -41,7 +41,7 @@ export default async function HomePage() {
     <main className="yasuh-home-theme min-h-screen overflow-hidden bg-[#080811] text-white">
       <nav className="relative z-20 mx-auto flex max-w-[1400px] items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
         
-        <div className="flex items-center gap-3 sm:gap-7">
+        <div className="ml-auto flex items-center justify-end gap-3 sm:gap-7">
           <Link href="/feed" className="hidden text-sm text-gray-300 transition hover:text-white sm:block">Feed</Link>
           <Link href="/discover" className="text-sm text-gray-300 transition hover:text-white">Discover</Link>
           <Link href="/discover-music" className="hidden text-sm text-gray-300 transition hover:text-white sm:block">Music</Link>
