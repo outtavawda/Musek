@@ -102,6 +102,29 @@ export default function DiscoverSearch({ profiles }: { profiles: Profile[] }) {
         .discoverEmpty{padding:24px;border:1px dashed rgba(192,132,252,.25);border-radius:15px;color:#a99fb2;background:rgba(255,255,255,.02)}
         @media(max-width:600px){.discoverHero{border-radius:20px}.discoverHero h2{letter-spacing:-2px}.discoverArtistGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.discoverArtistImage{height:155px}.discoverArtistBody{padding:12px}.discoverName{font-size:16px}.discoverBio{font-size:11px}.discoverCardBottom{align-items:flex-start;flex-direction:column}.discoverLabelGrid{grid-template-columns:1fr}}
         @media(max-width:380px){.discoverArtistGrid{grid-template-columns:1fr}.discoverArtistImage{height:210px}}
+
+        /* YASUH gold + white palette — colours only; preserve discovery layout. */
+        .musekDiscover{color:#24211b}
+        .discoverHero{border-color:#eadbb9;background:radial-gradient(ellipse at 82% 18%,rgba(198,154,53,.16),transparent 38%),radial-gradient(ellipse at 100% 100%,rgba(225,190,111,.12),transparent 42%),linear-gradient(120deg,#fffaf0 0%,#ffffff 65%,#fbf8f0 100%);box-shadow:0 20px 55px rgba(80,61,22,.08)}
+        .discoverHero:after{border-color:rgba(198,154,53,.22);box-shadow:0 0 0 35px rgba(198,154,53,.025),0 0 100px rgba(198,154,53,.08) inset}
+        .discoverKicker,.discoverHero h2 span,.discoverType,.discoverAction{color:#8f6818}
+        .discoverLead,.discoverSectionCopy,.discoverBio,.discoverMeta,.discoverWebsite,.discoverLabelInfo p,.discoverEmpty{color:#70695d}
+        .discoverStat strong,.discoverSectionTitle,.discoverName a,.discoverLabelInfo h3{color:#24211b}
+        .discoverStat span,.discoverCount{color:#81796d}
+        .discoverSearchPanel{border-color:#e9e1d2;background:linear-gradient(120deg,#fffdf8,#fbf8f0)}
+        .discoverSearchInput{border-color:#e5d4ad;background:#fff;color:#24211b}
+        .discoverSearchInput:focus{border-color:#c69a35;box-shadow:0 0 0 3px rgba(198,154,53,.14)}
+        .discoverGenre{border-color:#e9e1d2;background:#fff;color:#625d54}
+        .discoverGenre:hover,.discoverGenre.active{border-color:#c69a35;background:linear-gradient(110deg,#d9b65f,#b88b2b);color:#fff}
+        .discoverArtistCard,.discoverLabelCard{border-color:#e9e1d2;background:linear-gradient(155deg,#fff,#fbf8f0)}
+        .discoverArtistCard:hover,.discoverLabelCard:hover{border-color:rgba(198,154,53,.55);box-shadow:0 15px 35px rgba(80,61,22,.10)}
+        .discoverArtistImage{background:linear-gradient(145deg,#f4ead0,#e8dcc0)}
+        .discoverImageShade{background:linear-gradient(transparent,rgba(25,21,14,.42))}
+        .discoverName a:hover,.discoverAction:hover{color:#c69a35}
+        .discoverTag{border-color:rgba(198,154,53,.25);background:rgba(198,154,53,.08);color:#805f19}
+        .discoverCardBottom{border-color:#e9e1d2}
+        .discoverLabelImage{background:linear-gradient(145deg,#e6d3a4,#f7f1e4)}
+        .discoverEmpty{border-color:rgba(198,154,53,.35);background:#fffdf8}
       `}</style>
 
       <section className="discoverHero">
