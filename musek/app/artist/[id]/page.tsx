@@ -61,7 +61,7 @@ export default async function ArtistPage({
   const genres = artist.genres || [];
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#08070d] pb-20 text-white">
+    <main className="yasuh-artist-theme min-h-screen overflow-hidden bg-[#08070d] pb-20 text-white">
       <div className="pointer-events-none fixed inset-0 -z-0" style={{ background: "radial-gradient(ellipse at 50% -10%, rgba(126,34,206,.28), transparent 48%), radial-gradient(ellipse at 100% 40%, rgba(88,28,135,.13), transparent 35%)" }} />
       <nav className="relative z-10 mx-auto flex h-[78px] max-w-7xl items-center justify-between border-b border-white/[0.08] px-5 sm:px-8">
         <Link className="text-[25px] font-black tracking-[-1.5px]" href="/">YASUH<span className="text-fuchsia-400">.</span></Link>
