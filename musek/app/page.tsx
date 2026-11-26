@@ -39,14 +39,14 @@ export default async function HomePage() {
 
   return (
     <main className="yasuh-home-theme min-h-screen overflow-hidden bg-[#080811] text-white">
-      <nav className="relative z-20 mx-auto flex max-w-[1400px] items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
+      <nav className="relative z-20 mx-auto flex max-w-[1400px] items-center justify-between pl-[132px] pr-4 py-6 sm:pl-[150px] sm:pr-8 lg:pl-[170px] lg:pr-12">
         
-        <div className="ml-auto flex items-center justify-end gap-3 sm:gap-7">
+        <div className="ml-auto flex min-w-0 items-center justify-end gap-2 sm:gap-7">
           <Link href="/feed" className="hidden text-sm text-gray-300 transition hover:text-white sm:block">Feed</Link>
-          <Link href="/discover" className="text-sm text-gray-300 transition hover:text-white">Discover</Link>
+          <Link href="/discover" className="hidden text-sm text-gray-300 transition hover:text-white min-[390px]:block">Discover</Link>
           <Link href="/discover-music" className="hidden text-sm text-gray-300 transition hover:text-white sm:block">Music</Link>
-          <Link href="/login" className="text-sm text-gray-300 transition hover:text-white">Log in</Link>
-          <Link href="/signup" className="rounded-full bg-purple-600 px-4 py-2.5 text-xs font-bold shadow-lg shadow-purple-950/40 transition hover:bg-purple-500 sm:px-5 sm:text-sm">Join YASUH</Link>
+          <Link href="/login" className="hidden text-sm text-gray-300 transition hover:text-white min-[480px]:block">Log in</Link>
+          <Link href="/signup" className="shrink-0 rounded-full bg-purple-600 px-3 py-2.5 text-[11px] font-bold shadow-lg shadow-purple-950/40 transition hover:bg-purple-500 sm:px-5 sm:text-sm">Join YASUH</Link>
         </div>
       </nav>
 
