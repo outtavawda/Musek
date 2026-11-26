@@ -64,7 +64,7 @@ export default function BuyCoinsPage() {
       style={{
         minHeight: "100vh",
         background: "#ffffff",
-        color: "white",
+        color: "#24211b",
         padding: "48px 20px",
       }}
     >
@@ -130,7 +130,7 @@ export default function BuyCoinsPage() {
                   maxWidth: "260px",
                   minWidth: "0",
                   background: "#fffaf0",
-                  color: "white",
+                  color: "#24211b",
                   border: selected
                     ? "2px solid #c69a35"
                     : "1px solid #e9e1d2",
@@ -181,7 +181,7 @@ export default function BuyCoinsPage() {
                   style={{
                     fontSize: "19px",
                     fontWeight: 800,
-                    color: "#fff",
+                    color: "#24211b",
                   }}
                 >
                   {item.price} CAD
