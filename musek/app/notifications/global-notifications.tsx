@@ -53,7 +53,8 @@ export default function GlobalNotifications() {
   if (!userId) return null;
 
   return (
-    <div className="fixed left-4 top-3 z-[120] flex items-center gap-3 sm:left-6 sm:top-5">\n      {pathname !== "/" && <Link href="/" aria-label="YASUH home" className="text-[23px] font-black tracking-[-0.08em] text-stone-900 drop-shadow-none">YASUH<span className="text-amber-700">.</span></Link>}
+    <div className="fixed left-4 top-3 z-[120] flex items-center gap-3 sm:left-6 sm:top-5">
+      {pathname !== "/" && <Link href="/" aria-label="YASUH home" className="text-[23px] font-black tracking-[-0.08em] text-stone-900 drop-shadow-none">YASUH<span className="text-amber-700">.</span></Link>}
       <button type="button" onClick={() => setOpen((value) => !value)}
         aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
         aria-expanded={open}
