@@ -799,3 +799,17 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 :where(header, nav, [role="dialog"], [role="menu"]) {
   --yasuh-header-border: var(--yasuh-line);
 }
+
+
+/* Explicit legacy page-shell colours found in route components. */
+:where(
+ [class~="bg-[#080811]"], [class~="bg-[#0d0c18]"], [class~="bg-[#141321]"],
+ [class~="bg-[#11101e]"], [class~="bg-[#171326]"], [class~="bg-[#10101a]"],
+ [class~="bg-[#101019]"], [class~="bg-[#19152a]"], [class~="bg-[#1b1530]"],
+ [class~="bg-[#171321]"], [class~="bg-[#0b0a14]"]
+) { background-color: #ffffff !important; color: #24211b !important; }
+:where([class*="border-white/"], [class*="border-white["]) { border-color: #e9e1d2 !important; }
+:where([class*="text-gray-4"], [class*="text-gray-5"], [class*="text-gray-6"],
+ [class*="text-slate-4"], [class*="text-slate-5"], [class*="text-zinc-4"],
+ [class*="text-zinc-5"]) { color: #70695d !important; }
+:where([class*="hover:text-white"]:hover) { color: #8f6818 !important; }
