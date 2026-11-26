@@ -50,8 +50,6 @@ export default function GlobalNotifications() {
     await supabase.from("user_notifications").update({ read_at: readAt }).eq("id", item.id).eq("user_id", userId);
   }
 
-  if (!userId) return null;
-
   return (
     <div className="fixed left-4 top-3 z-[120] flex items-center gap-2 sm:left-6 sm:top-5">
       <Link href="/" aria-label="YASUH home" className="text-[23px] font-black tracking-[-0.08em] text-stone-900 drop-shadow-none">YASUH<span className="text-amber-700">.</span></Link>
