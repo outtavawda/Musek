@@ -14,7 +14,6 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#ffffff",
     orientation: "portrait-primary",
     icons: [
-      { src: "/icon", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/musek-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }
     ]
   };
