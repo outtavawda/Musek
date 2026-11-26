@@ -15,7 +15,7 @@ export default async function DiscoverMusicPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[#080711] px-6 py-12 text-white">
+      <main className="yasuh-music-discover-theme min-h-screen bg-[#080711] px-6 py-12 text-white">
         <div className="mx-auto max-w-5xl rounded-2xl border border-red-500/30 bg-red-500/10 p-6">
           <h1 className="text-2xl font-bold">Unable to load music</h1>
           <p className="mt-2 text-sm text-red-200">{error.message}</p>
@@ -65,7 +65,7 @@ export default async function DiscoverMusicPage() {
   ).size;
 
   return (
-    <main className="min-h-screen bg-[#080711] px-4 pb-40 pt-6 text-white sm:px-6 lg:px-8">
+    <main className="yasuh-music-discover-theme min-h-screen bg-[#080711] px-4 pb-40 pt-6 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
           <Link href="/" className="text-2xl font-black tracking-[0.18em] text-white">
