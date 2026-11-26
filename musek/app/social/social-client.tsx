@@ -62,7 +62,17 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
     }
   }, [liveCameraControl]);
   useEffect(() => {
-    if (selected) setGuestLiveKitEnabled(true);
+    if (!selected) return;
+    setGuestLiveKitEnabled(true);
+
+    // iOS Safari can fail to open a second camera capture while the private
+    // camera-check preview still owns the device. Release that preview before
+    // LiveKit requests its own camera track for the room.
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setCameraOn(false);
+    setMicOn(false);
   }, [selected?.id]);
   const loadRooms = useCallback(async () => {
     const { data, error } = await supabase.from("social_live_rooms")
