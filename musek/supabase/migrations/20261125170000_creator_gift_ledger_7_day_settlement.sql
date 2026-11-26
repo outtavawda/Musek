@@ -195,6 +195,54 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.admin_set_creator_payout_eligibility(uuid, boolean, boolean, numeric) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_set_creator_payout_eligibility(uuid, boolean, boolean, numeric) TO authenticated;
+
+-- Current payout-verification UI uses this balance-independent RPC. The legacy
+-- signature above remains available for older clients but cannot edit balances.
+CREATE OR REPLACE FUNCTION public.admin_update_creator_payout_eligibility(
+  p_creator_id uuid, p_verified boolean, p_eligible boolean
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $
+DECLARE
+  v_reserved numeric(12,2);
+  v_settled numeric(12,2);
+BEGIN
+  IF auth.uid() IS NULL OR NOT EXISTS (
+    SELECT 1 FROM public.admin_users WHERE user_id = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'Unauthorized: admin access required';
+  END IF;
+  IF p_creator_id IS NULL OR p_verified IS NULL OR p_eligible IS NULL THEN
+    RAISE EXCEPTION 'Invalid payout eligibility details';
+  END IF;
+  IF p_eligible AND NOT p_verified THEN
+    RAISE EXCEPTION 'A creator must be verified before becoming payout eligible';
+  END IF;
+
+  SELECT settled_balance_cad INTO v_settled
+  FROM public.creator_wallets WHERE user_id = p_creator_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Creator wallet not found'; END IF;
+
+  SELECT COALESCE(sum(amount_cad), 0) INTO v_reserved
+  FROM public.creator_withdrawals
+  WHERE user_id = p_creator_id AND status IN ('pending','approved','processing');
+  IF v_settled < v_reserved THEN
+    RAISE EXCEPTION 'Settled balance is below existing reserved withdrawals ($%).', v_reserved;
+  END IF;
+
+  UPDATE public.creator_wallets
+  SET payout_verified = p_verified, payout_eligible = p_eligible, updated_at = now()
+  WHERE user_id = p_creator_id;
+END;
+$;
+REVOKE ALL ON FUNCTION public.admin_update_creator_payout_eligibility(uuid, boolean, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_update_creator_payout_eligibility(uuid, boolean, boolean) TO authenticated;
+
 -- Backfill already-paid withdrawals so the ledger starts with the same net
 -- settled cash as the existing wallet. This is idempotent and does not touch balances.
 INSERT INTO public.creator_earning_ledger (
