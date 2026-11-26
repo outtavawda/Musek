@@ -49,11 +49,21 @@ CREATE TABLE IF NOT EXISTS public.creator_settlement_batches (
   status text NOT NULL DEFAULT 'completed' CHECK (status IN ('completed'))
 );
 
-ALTER TABLE public.creator_earning_ledger
-  ADD CONSTRAINT creator_earning_ledger_settlement_batch_fk
-  FOREIGN KEY (settlement_batch_id)
-  REFERENCES public.creator_settlement_batches(id)
-  ON DELETE RESTRICT;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'creator_earning_ledger_settlement_batch_fk'
+      AND conrelid = 'public.creator_earning_ledger'::regclass
+  ) THEN
+    ALTER TABLE public.creator_earning_ledger
+      ADD CONSTRAINT creator_earning_ledger_settlement_batch_fk
+      FOREIGN KEY (settlement_batch_id)
+      REFERENCES public.creator_settlement_batches(id)
+      ON DELETE RESTRICT;
+  END IF;
+END;
+$$;
 
 ALTER TABLE public.creator_earning_ledger ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.creator_settlement_batches ENABLE ROW LEVEL SECURITY;
@@ -207,7 +217,7 @@ RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   v_reserved numeric(12,2);
   v_settled numeric(12,2);
@@ -239,7 +249,7 @@ BEGIN
   SET payout_verified = p_verified, payout_eligible = p_eligible, updated_at = now()
   WHERE user_id = p_creator_id;
 END;
-$;
+$$;
 REVOKE ALL ON FUNCTION public.admin_update_creator_payout_eligibility(uuid, boolean, boolean) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_update_creator_payout_eligibility(uuid, boolean, boolean) TO authenticated;
 
