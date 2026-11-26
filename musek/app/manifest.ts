@@ -10,9 +10,12 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     display_override: ["standalone", "minimal-ui"],
-    background_color: "#080711",
-    theme_color: "#080711",
+    background_color: "#fbf8f0",
+    theme_color: "#ffffff",
     orientation: "portrait-primary",
-    icons: [{ src: "/musek-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }]
+    icons: [
+      { src: "/icon", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/musek-icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }
+    ]
   };
 }
