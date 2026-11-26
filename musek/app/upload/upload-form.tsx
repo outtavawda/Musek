@@ -68,7 +68,7 @@ export default function UploadForm({ userId }: { userId: string }) {
         coverArt.name.split(".").pop()?.toLowerCase() || "";
 
       if (
-        !allowedImageTypes.includes(coverArt.type) ||
+        !allowedImageTypes.includes(coverArt.type) &&
         !allowedImageExtensions.includes(coverExtension)
       ) {
         setMessage("Cover art must be a JPG, PNG or WebP image.");
@@ -119,7 +119,10 @@ export default function UploadForm({ userId }: { userId: string }) {
         const { error: coverUploadError } = await supabase.storage
           .from("song-cover-art")
           .upload(coverArtPath, coverArt, {
-            contentType: coverArt.type,
+            contentType:
+              coverExtension === "jpg" || coverExtension === "jpeg" ? "image/jpeg" :
+              coverExtension === "png" ? "image/png" :
+              coverExtension === "webp" ? "image/webp" : coverArt.type,
             upsert: false
           });
 
