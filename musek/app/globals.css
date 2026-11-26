@@ -923,3 +923,32 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 .yasuh-music-discover-theme [class*="bg-pink-"]{background:rgba(198,154,53,.10)!important;color:#805f19!important;border-color:#e5d4ad!important}
 .yasuh-music-discover-theme [class*="text-pink-"]{color:#805f19!important}
 .yasuh-music-discover-theme [class*="bg-black/"]{background:rgba(36,33,27,.35)!important}
+
+/* Artist profile contrast pass: readable text on every light card, including
+   legacy muted/button classes used by Follow Artist and Send Gift controls. */
+.yasuh-artist-theme [class*="text-gray-500"],
+.yasuh-artist-theme [class*="text-gray-600"],
+.yasuh-artist-theme [class*="text-gray-700"],
+.yasuh-artist-theme .muted,
+.yasuh-artist-theme label,
+.yasuh-artist-theme select,
+.yasuh-artist-theme option,
+.yasuh-artist-theme input,
+.yasuh-artist-theme textarea { color:#24211b!important; }
+.yasuh-artist-theme .muted { color:#625b50!important; }
+.yasuh-artist-theme a:not([class*="bg-"]) { color:#805f19; }
+.yasuh-artist-theme a:not([class*="bg-"]):hover { color:#5f4510; }
+.yasuh-artist-theme .primaryButton {
+  background:linear-gradient(135deg,#e4c477,#b88b2b)!important;
+  color:#fff!important;
+  border:1px solid #d8bd79!important;
+  box-shadow:0 3px 10px rgba(133,99,29,.16);
+}
+.yasuh-artist-theme .eyebrow { color:#805f19!important; }
+.yasuh-artist-theme [class*="bg-black/"] { background:#fbf8f0!important; }
+.yasuh-artist-theme [class*="border-white/"] { border-color:#e9e1d2!important; }
+.yasuh-artist-theme [class*="text-fuchsia-100"],
+.yasuh-artist-theme [class*="text-fuchsia-200"],
+.yasuh-artist-theme [class*="text-fuchsia-300"],
+.yasuh-artist-theme [class*="text-purple-"] { color:#805f19!important; }
+.yasuh-artist-theme [class*="text-red-"] { color:#b42318!important; }
