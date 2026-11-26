@@ -893,3 +893,12 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 .yasuh-wallet-theme [class*="border-white/"],.yasuh-wallet-theme [class*="border-purple-"],.yasuh-wallet-theme [class*="border-fuchsia-"]{border-color:#e9e1d2!important}
 .yasuh-wallet-theme [class*="bg-purple-"],.yasuh-wallet-theme [class*="bg-fuchsia-"]{background-color:#c69a35!important;color:#fff!important}
 .yasuh-wallet-theme a[class*="bg-"],.yasuh-wallet-theme button[class*="bg-"]{color:#fff!important}
+
+
+/* Social composer action buttons retain their shape but use the gold CTA finish. */
+.yasuh-social-theme button[class*="bg-gradient-to-r"]{background:linear-gradient(100deg,#e4c477,#c69a35 55%,#9b741e)!important;color:#fff!important;border-color:#e7d09a!important}
+.yasuh-social-theme form[class*="bg-gradient-to-"]{background:linear-gradient(145deg,#fffaf0,#fff)!important;border-color:#e5d4ad!important}
+.yasuh-social-theme [class*="bg-[#11111d]"],.yasuh-social-theme [class*="bg-[#11101b]"]{background:#fff!important;color:#24211b!important}
+.yasuh-social-theme [class*="text-purple-"],.yasuh-social-theme [class*="text-fuchsia-"]{color:#8f6818!important}
+
+/* The coin purchase page is part of the wallet flow and follows the same palette. */
