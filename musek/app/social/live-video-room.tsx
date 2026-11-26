@@ -32,7 +32,7 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
 
   const toggle = useCallback(async () => {
     if (!canPublish) return;
-    await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution });
+    await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution, facingMode: "user" });
   }, [canPublish, isCameraEnabled, localParticipant]);
   const toggleMicrophone = useCallback(async () => {
     if (!canPublish) return;
@@ -191,7 +191,7 @@ export default function LiveVideoRoom({ roomId, hostId, displayName, hostName, o
 
   return (
     <div className="h-full min-h-[100dvh] w-full overflow-hidden bg-black">
-      <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={canPublish} video={false} onError={handleError}>
+      <LiveKitRoom token={token} serverUrl={serverUrl} connect audio={false} video={false} onError={handleError}>
         <CameraControlBridge canPublish={canPublish} onCameraControl={onCameraControl} />
         <RoomAudioRenderer />
         <HostFirstStage roomId={roomId} hostId={hostId} hostName={hostName} />
