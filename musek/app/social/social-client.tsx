@@ -308,7 +308,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
   };
 
   return (
-    <div className="relative min-h-[100dvh] w-full bg-[#080811] pb-24 text-white">
+    <div className="yasuh-social-theme relative min-h-[100dvh] w-full bg-[#080811] pb-24 text-white">
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-[#080811]/95 px-4 py-3 backdrop-blur-xl sm:rounded-b-2xl">
         <div className="flex items-center gap-2"><span className="text-xl font-black tracking-tight">YASUH<span className="text-fuchsia-400">.</span></span><span className="rounded-full bg-fuchsia-500/15 px-2 py-1 text-[9px] font-black tracking-widest text-fuchsia-200">LIVE</span></div>
         <div className="flex items-center gap-3 text-xs"><Link href="/feed" className="text-gray-400 hover:text-white">Music</Link><Link href="/profile" className="rounded-full border border-white/10 px-3 py-2 font-semibold">Profile</Link></div>
