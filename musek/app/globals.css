@@ -902,3 +902,15 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 .yasuh-social-theme [class*="text-purple-"],.yasuh-social-theme [class*="text-fuchsia-"]{color:#8f6818!important}
 
 /* The coin purchase page is part of the wallet flow and follows the same palette. */
+
+
+/* Final contrast tuning for playlist rows and wallet navigation. */
+.yasuh-home-theme [class*="border-fuchsia-400/40"]{border-color:#c69a35!important;background:linear-gradient(100deg,rgba(228,196,119,.20),rgba(198,154,53,.07))!important}
+.yasuh-home-theme [class*="border-white/"]{border-color:#e9e1d2!important}
+.yasuh-wallet-theme a[class*="bg-gradient-to-"]{background:linear-gradient(100deg,#e4c477,#b88b2b)!important;color:#fff!important}
+.yasuh-wallet-theme button[class*="bg-gradient-to-"]{background:linear-gradient(100deg,#e4c477,#b88b2b)!important;color:#fff!important}
+
+/* The open LIVE video stage is media, so retain its dark overlay and white controls. */
+.yasuh-social-theme>div[class*="fixed"][class*="bg-[#05040a]"],
+.yasuh-social-theme>div[class*="fixed"][class*="bg-[#05040a]"] [class*="text-white"]{color:#fff!important}
+.yasuh-social-theme>div[class*="fixed"][class*="bg-[#05040a]"] [class*="bg-gradient-to-b"]{--tw-gradient-from:rgba(0,0,0,.65)!important;--tw-gradient-to:rgba(0,0,0,.90)!important;--tw-gradient-stops:var(--tw-gradient-from),transparent,var(--tw-gradient-to)!important}
