@@ -67,7 +67,7 @@ export default function GlobalSocialButton() {
   return (
     <div className="fixed bottom-5 right-5 z-[90]">
       {open && (
-        <div className="mb-3 w-[min(calc(100vw-2.5rem),360px)] overflow-hidden rounded-2xl border border-amber-500/40 bg-[#fffaf0] shadow-[0_0_22px_rgba(198,154,53,.18),0_18px_60px_rgba(0,0,0,.6)]">
+        <div className="yasuh-live-popover mb-3 w-[min(calc(100vw-2.5rem),360px)] overflow-hidden rounded-2xl border border-amber-500/40 bg-[#fffaf0] shadow-[0_0_22px_rgba(198,154,53,.18),0_18px_60px_rgba(0,0,0,.6)]">
           <div className="flex items-center justify-between border-b border-amber-500/15 px-4 py-3">
             <div>
               <p className="text-[10px] font-black tracking-[.22em] text-amber-500">MUSEK SOCIAL</p>
