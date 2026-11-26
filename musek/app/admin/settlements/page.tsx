@@ -37,7 +37,7 @@ export default async function AdminSettlementsPage() {
       <Link href="/admin/withdrawals" style={{ color: "#d8b4fe" }}>← Back to withdrawals</Link>
       <h1 style={{ fontSize: "36px", fontWeight: 900, marginTop: "24px" }}>Creator gift settlements</h1>
       <p style={{ color: "#999", maxWidth: "760px" }}>Gift earnings mature after seven full days. Only creators whose identity and payout eligibility are approved can receive a settlement into their withdrawable CAD balance.</p>
-      <SettlementActions disabled={Boolean(error) || mismatches > 0} />
+      <SettlementActions disabled={Boolean(error) || rows.length === 0 || mismatches > 0} />
       {error ? (
         <p role="alert" style={{ color: "#fca5a5" }}>Could not reconcile creator wallets: {error.message}</p>
       ) : (
