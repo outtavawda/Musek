@@ -708,3 +708,94 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 :where(a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible) {
   outline-color: var(--yasuh-gold);
 }
+
+
+/* YASUH SITE-WIDE GOLD + WHITE NORMALIZATION
+   Applies to every App Router page, including dashboards, social, wallet,
+   creator, admin, mobile navigation and overlays. Keep media/content imagery intact. */
+:root {
+  color-scheme: light;
+  --yasuh-gold: #c69a35;
+  --yasuh-gold-dark: #8f6818;
+  --yasuh-ink: #24211b;
+  --yasuh-muted: #70695d;
+  --yasuh-white: #ffffff;
+  --yasuh-cream: #fbf8f0;
+  --yasuh-line: #e9e1d2;
+}
+
+/* Convert legacy near-black page shells and panels to white/cream. */
+:where(
+  [class~="bg-black"], [class~="bg-zinc-950"], [class~="bg-zinc-900"],
+  [class~="bg-neutral-950"], [class~="bg-neutral-900"],
+  [class~="bg-gray-950"], [class~="bg-gray-900"],
+  [class~="bg-slate-950"], [class~="bg-slate-900"],
+  [class~="bg-[#080711]"], [class~="bg-[#08090e]"],
+  [class~="bg-[#0b0a14]"], [class~="bg-[#0c0b15]"],
+  [class~="bg-[#0f0d18]"], [class~="bg-[#11101b]"],
+  [class~="bg-[#12101b]"], [class~="bg-[#171326]"],
+  [class~="bg-[#1a1424]"], [class~="bg-[#1b1428]"]
+) {
+  background-color: var(--yasuh-white) !important;
+  color: var(--yasuh-ink) !important;
+}
+
+/* Legacy purple surfaces become restrained gold/cream surfaces. */
+:where(
+  [class~="bg-purple-950"], [class~="bg-purple-900"], [class~="bg-purple-800"],
+  [class~="bg-violet-950"], [class~="bg-violet-900"], [class~="bg-violet-800"],
+  [class~="bg-fuchsia-950"], [class~="bg-fuchsia-900"]
+) {
+  background-color: var(--yasuh-cream) !important;
+  color: var(--yasuh-ink) !important;
+}
+:where(
+  [class~="bg-purple-600"], [class~="bg-purple-700"],
+  [class~="bg-violet-600"], [class~="bg-violet-700"],
+  [class~="bg-fuchsia-600"], [class~="bg-fuchsia-700"]
+) {
+  background-color: var(--yasuh-gold) !important;
+  color: #ffffff !important;
+}
+
+/* Gold replaces purple/violet accent text, borders, rings and form focus. */
+:where(
+  [class*="text-purple-"], [class*="text-violet-"], [class*="text-fuchsia-"],
+  [class*="decoration-purple-"], [class*="decoration-violet-"]
+) { color: var(--yasuh-gold-dark) !important; }
+:where(
+  [class*="border-purple-"], [class*="border-violet-"], [class*="border-fuchsia-"],
+  [class*="ring-purple-"], [class*="ring-violet-"], [class*="ring-fuchsia-"]
+) { border-color: #e5d4ad !important; --tw-ring-color: rgba(198,154,53,.24) !important; }
+:where([class*="accent-purple-"], [class*="accent-violet-"]) { accent-color: var(--yasuh-gold) !important; }
+
+/* Dark text remains readable on converted light surfaces. */
+:where(
+  [class~="text-gray-100"], [class~="text-gray-200"], [class~="text-gray-300"],
+  [class~="text-slate-100"], [class~="text-slate-200"], [class~="text-slate-300"],
+  [class~="text-zinc-100"], [class~="text-zinc-200"], [class~="text-zinc-300"],
+  [class~="text-neutral-100"], [class~="text-neutral-200"], [class~="text-neutral-300"]
+) { color: var(--yasuh-ink) !important; }
+
+/* Shared interactive elements and panels. */
+:where(button, [role="button"], input[type="submit"]) { accent-color: var(--yasuh-gold); }
+:where(input, select, textarea) {
+  border-color: var(--yasuh-line);
+  accent-color: var(--yasuh-gold);
+}
+:where(input:focus, select:focus, textarea:focus, button:focus-visible) {
+  outline-color: var(--yasuh-gold);
+}
+:where([class*="shadow-"]) { --tw-shadow-color: rgba(70,55,25,.10); }
+:where([class*="from-purple-"], [class*="from-violet-"], [class*="from-fuchsia-"]) {
+  --tw-gradient-from: #fff8e8 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(255 248 232 / 0) var(--tw-gradient-to-position) !important;
+}
+:where([class*="to-purple-"], [class*="to-violet-"], [class*="to-fuchsia-"]) {
+  --tw-gradient-to: #ffffff var(--tw-gradient-to-position) !important;
+}
+
+/* Shared YASUH header and notification controls stay visible on every route. */
+:where(header, nav, [role="dialog"], [role="menu"]) {
+  --yasuh-header-border: var(--yasuh-line);
+}
