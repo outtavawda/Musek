@@ -244,9 +244,6 @@ export default async function DashboardPage() {
         <div className="min-w-0 flex-1">
           {/* TOP BAR */}
           <header className="flex items-center justify-between border-b border-white/10 bg-[#080811]/90 px-5 py-4 backdrop-blur-xl sm:px-8">
-            <Link href="/" className="text-xl font-black lg:hidden">
-              YASUH<span className="text-purple-500">.</span>
-            </Link>
 
             <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 sm:block">
               Artist Studio
