@@ -49,6 +49,12 @@ CREATE TABLE IF NOT EXISTS public.creator_settlement_batches (
   status text NOT NULL DEFAULT 'completed' CHECK (status IN ('completed'))
 );
 
+ALTER TABLE public.creator_earning_ledger
+  ADD CONSTRAINT creator_earning_ledger_settlement_batch_fk
+  FOREIGN KEY (settlement_batch_id)
+  REFERENCES public.creator_settlement_batches(id)
+  ON DELETE RESTRICT;
+
 ALTER TABLE public.creator_earning_ledger ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.creator_settlement_batches ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.creator_earning_ledger FROM PUBLIC, anon, authenticated;
