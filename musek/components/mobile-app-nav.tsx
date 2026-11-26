@@ -66,11 +66,11 @@ export default function MobileAppNav() {
             grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 2px;
             padding: 9px 8px calc(9px + env(safe-area-inset-bottom));
-            border-top: 1px solid rgba(192, 132, 252, .2);
-            background: rgba(10, 8, 17, .94);
+            border-top: 1px solid #e9e1d2;
+            background: rgba(255, 255, 255, .97);
             backdrop-filter: blur(22px);
             -webkit-backdrop-filter: blur(22px);
-            box-shadow: 0 -12px 35px rgba(0, 0, 0, .38);
+            box-shadow: 0 -8px 28px rgba(70, 55, 25, .12);
           }
           .musek-mobile-nav-item {
             min-width: 0;
@@ -82,7 +82,7 @@ export default function MobileAppNav() {
             gap: 3px;
             padding: 4px 2px;
             border-radius: 12px;
-            color: #898296;
+            color: #70695d;
             font-size: 10px;
             font-weight: 700;
             letter-spacing: .01em;
@@ -90,7 +90,7 @@ export default function MobileAppNav() {
             -webkit-tap-highlight-color: transparent;
           }
           .musek-mobile-nav-item.active {
-            color: #e9d5ff;
+            color: #8f6818;
           }
           .musek-mobile-nav-icon {
             display: grid;
@@ -101,8 +101,8 @@ export default function MobileAppNav() {
             line-height: 1;
           }
           .musek-mobile-nav-item.active .musek-mobile-nav-icon {
-            color: #d8b4fe;
-            filter: drop-shadow(0 0 8px rgba(192, 132, 252, .55));
+            color: #c69a35;
+            filter: drop-shadow(0 0 6px rgba(198, 154, 53, .28));
           }
         }
       `}</style>
