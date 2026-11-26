@@ -634,3 +634,77 @@ a, button, input, textarea, select {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+
+/* YASUH GOLD + WHITE THEME — shared visual foundation */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #fffdf8;
+  --text: #24211b;
+  --muted: #716b60;
+  --accent: #c69a35;
+  --yasuh-gold: #c69a35;
+  --yasuh-gold-dark: #9b741e;
+  --yasuh-ink: #24211b;
+  --yasuh-surface: #ffffff;
+  --yasuh-soft: #faf7ef;
+}
+body {
+  background: var(--yasuh-surface);
+  color: var(--yasuh-ink);
+}
+a { text-decoration-color: rgba(198,154,53,.45); }
+.navLinks { color: #625d54; }
+.navLinks a:hover { color: var(--yasuh-gold-dark); }
+.navButton, .secondaryButton { border-color: #e7dcc2; color: var(--yasuh-ink); }
+.primaryButton { background: var(--yasuh-gold); color: #fff; }
+.primaryButton:hover { background: var(--yasuh-gold-dark); }
+.eyebrow, .sectionLabel, .featureNumber, .brand span,
+.hero h1 span, .intro h2 em, .creatorBanner h2 em { color: var(--yasuh-gold-dark); }
+.pulse { background: var(--yasuh-gold); box-shadow: 0 0 12px rgba(198,154,53,.45); }
+.orbOne { background: radial-gradient(circle at 35% 35%, rgba(198,154,53,.16), rgba(198,154,53,.025) 55%, transparent 70%); border-color: rgba(198,154,53,.18); }
+.orbTwo { border-color: rgba(198,154,53,.24); box-shadow: 0 0 90px rgba(198,154,53,.07) inset; }
+.intro, footer { border-color: #eee8dc; }
+.feature { background: var(--yasuh-soft); border-color: #eee5d3; }
+.creatorBanner { background: linear-gradient(120deg, #fffaf0, #ffffff 75%); border-color: #e8d7ad; }
+.heroText, .intro > p, .creatorBanner > p, .feature p { color: #716b60; }
+.heroNote, footer { color: #81796d; }
+
+/* Authentication screens */
+.authWrap { background: radial-gradient(ellipse at 50% 0%, #fff8e8 0%, #ffffff 65%); }
+.authGlowOne { background: rgba(198,154,53,.16); }
+.authGlowTwo { background: rgba(225,190,111,.13); }
+.authCard { border-color: #eadbb9; background: rgba(255,255,255,.96); box-shadow: 0 24px 80px rgba(80,61,22,.10); }
+.authBrand { color: var(--yasuh-ink); }
+.authBrand span, .authIntro h1 span, .authEyebrow, .authForgot a { color: var(--yasuh-gold-dark); }
+.authEyebrowDot { background: var(--yasuh-gold); box-shadow: 0 0 12px rgba(198,154,53,.35); }
+.authIntro h1, .authForm label { color: var(--yasuh-ink); }
+.authDescription, .authFooter { color: #716b60; }
+.authForm input, .authForm select { background: #fff; border-color: #e6dfd1; color: var(--yasuh-ink); }
+.authForm input::placeholder { color: #999184; }
+.authForm input:focus, .authForm select:focus { border-color: var(--yasuh-gold); box-shadow: 0 0 0 3px rgba(198,154,53,.14); }
+.authSubmit { background: linear-gradient(100deg, #c69a35, #a77b22); color: #fff; }
+.authSubmit:focus-visible, .authSignup:focus-visible, .authBrand:focus-visible { outline-color: #c69a35; }
+.authDivider { color: #8a8173; }
+.authDivider::before, .authDivider::after { background: #eee6d8; }
+.authSignup { border-color: #e4d4af; color: #805f19; }
+.authSignup:hover { background: #fbf6e9; border-color: #c69a35; }
+.authForgot a:hover, .authFooter a:hover { color: #805f19; }
+.authMessage { border-color: #e8d7ad; background: #fffaf0; color: #604b20; }
+
+/* Persistent player */
+.musek-global-player { border-color: #e7dcc2; background: rgba(255,255,255,.98); color: var(--yasuh-ink); box-shadow: 0 -8px 30px rgba(60,48,22,.12); }
+.musek-player-art { background: #f4ead0; color: #805f19; }
+.musek-player-meta span { color: #716b60; }
+.musek-player-meta input { accent-color: var(--yasuh-gold); }
+.musek-player-control { color: #805f19; }
+.musek-player-control.primary { background: var(--yasuh-gold); color: #fff; }
+.musek-player-close { border-color: #e7dcc2; background: #fffaf0; color: #805f19; }
+
+/* Shared utility palette for app pages */
+:where(button, [role="button"], input[type="submit"]) { accent-color: var(--yasuh-gold); }
+:where(input, select, textarea) { accent-color: var(--yasuh-gold); }
+:where(a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible) {
+  outline-color: var(--yasuh-gold);
+}
