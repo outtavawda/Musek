@@ -310,7 +310,7 @@ export default async function FeedPage() {
   );
 
   return (
-    <main>
+    <main className="yasuh-feed-theme">
       <nav className="nav">
         <Link className="brand" href="/">
           YASUH<span>.</span>
