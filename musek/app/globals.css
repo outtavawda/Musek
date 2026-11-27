@@ -1078,3 +1078,71 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 .yasuh-music-discover-theme [class*="bg-fuchsia-"]{background:linear-gradient(135deg,#e4c477,#b88b2b)!important}
 .yasuh-music-discover-theme [class*="bg-fuchsia-"]{color:#fff!important}
 .yasuh-music-discover-theme h1,.yasuh-music-discover-theme h2,.yasuh-music-discover-theme h3{color:#24211b!important}
+
+
+/* Remaining YASUH pages: colour-only cleanup, preserving component layout. */
+.yasuh-artist-theme [class*="bg-[#08070d]"],
+.yasuh-artist-theme [class*="bg-[#130e1d]"],
+.yasuh-artist-theme [class*="bg-[#171020]"],
+.yasuh-artist-theme [class*="bg-[#100d17]"],
+.yasuh-artist-theme [class*="bg-[#1b1227]"]{background:#fffaf0!important}
+.yasuh-artist-theme [class*="text-fuchsia-"],
+.yasuh-artist-theme [class*="text-purple-"]{color:#805f19!important}
+.yasuh-artist-theme [class*="border-fuchsia-"],
+.yasuh-artist-theme [class*="border-white/"]{border-color:#e9e1d2!important}
+.yasuh-artist-theme [class*="text-gray-300"],
+.yasuh-artist-theme [class*="text-gray-400"],
+.yasuh-artist-theme [class*="text-gray-500"]{color:#625b50!important}
+
+.yasuh-library-theme{background:#fff!important;color:#24211b!important}
+.yasuh-library-theme [class*="bg-[#080811]"],
+.yasuh-library-theme [class*="bg-[#11101b]"],
+.yasuh-library-theme [class*="bg-[#0b0b17]"]{background:#fffaf0!important}
+.yasuh-library-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-library-theme [class*="text-gray-300"],
+.yasuh-library-theme [class*="text-gray-400"],
+.yasuh-library-theme [class*="text-gray-500"],
+.yasuh-library-theme [class*="text-gray-600"]{color:#625b50!important}
+.yasuh-library-theme [class*="text-purple-"],
+.yasuh-library-theme [class*="text-fuchsia-"]{color:#805f19!important}
+.yasuh-library-theme [class*="border-white/"],
+.yasuh-library-theme [class*="border-purple-"]{border-color:#e9e1d2!important}
+.yasuh-library-theme h1,.yasuh-library-theme h2,.yasuh-library-theme h3{color:#24211b!important}
+
+.yasuh-feed-theme{min-height:100vh;background:#fff!important;color:#24211b!important}
+.yasuh-feed-theme .nav{background:#fffaf0!important;border-color:#e9e1d2!important}
+.yasuh-feed-theme .brand{color:#24211b!important}
+.yasuh-feed-theme .brand span{color:#b88b2b!important}
+.yasuh-feed-theme .secondaryButton{background:#fbf6e9!important;color:#805f19!important;border-color:#e9e1d2!important}
+
+.yasuh-follow-theme{background:#fff!important;color:#24211b!important}
+.yasuh-follow-theme .authCard,.yasuh-follow-theme .contentPanel{background:#fffaf0!important;color:#24211b!important;border:1px solid #e9e1d2!important;box-shadow:0 16px 42px rgba(54,42,20,.08)!important}
+.yasuh-follow-theme h1,.yasuh-follow-theme h2,.yasuh-follow-theme h3{color:#24211b!important}
+.yasuh-follow-theme p,.yasuh-follow-theme .muted{color:#625b50!important}
+.yasuh-follow-theme a{color:#805f19!important}
+
+.yasuh-social-theme{background:#fff!important;color:#24211b!important}
+.yasuh-social-theme [class*="bg-[#"],
+.yasuh-social-theme [class*="bg-gray-900"],
+.yasuh-social-theme [class*="bg-black/"]{background:#fffaf0!important;color:#24211b!important}
+.yasuh-social-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-social-theme [class*="text-gray-300"],
+.yasuh-social-theme [class*="text-gray-400"],
+.yasuh-social-theme [class*="text-gray-500"]{color:#625b50!important}
+.yasuh-social-theme [class*="border-white/"],
+.yasuh-social-theme [class*="border-purple-"]{border-color:#e9e1d2!important}
+.yasuh-social-theme [class*="text-purple-"],
+.yasuh-social-theme [class*="text-fuchsia-"]{color:#805f19!important}
+
+.yasuh-profile-theme input,.yasuh-profile-theme textarea,.yasuh-profile-theme select{background:#fff!important;color:#24211b!important;border-color:#e9e1d2!important}
+.yasuh-profile-theme button[type="submit"]{background:linear-gradient(100deg,#e4c477,#b88b2b)!important;color:#fff!important}
+.yasuh-profile-theme a{color:#805f19!important}
+.yasuh-profile-theme [style*="color: rgb(141, 129, 155)"],
+.yasuh-profile-theme [style*="color: rgb(196, 164, 232)"]{color:#625b50!important}
+
+.yasuh-withdraw-theme{background:#fff!important;color:#24211b!important}
+.yasuh-withdraw-theme .contentPanel{background:#fffaf0!important;color:#24211b!important;border:1px solid #e9e1d2!important}
+.yasuh-withdraw-theme .eyebrow{color:#805f19!important}
+.yasuh-withdraw-theme .muted{color:#625b50!important}
+.yasuh-withdraw-theme h1,.yasuh-withdraw-theme h2,.yasuh-withdraw-theme h3{color:#24211b!important}
+.yasuh-withdraw-theme a{color:#805f19!important}
