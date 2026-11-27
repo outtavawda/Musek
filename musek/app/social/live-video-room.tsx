@@ -95,47 +95,44 @@ function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: 
   }));
 
   return (
-    <div className="absolute inset-0 overflow-y-auto bg-[#05040a] px-3 pb-40 pt-24 sm:px-5 sm:pb-32">
-      <div className={guestTiles.length ? "mx-auto grid w-full max-w-6xl grid-cols-2 items-start gap-2 sm:gap-3" : "mx-auto max-w-5xl"}>
-        <section className={guestTiles.length ? "min-w-0 w-full" : "w-full"}>
-          <div className="relative aspect-video overflow-hidden rounded-2xl border border-fuchsia-300/25 bg-[#171321] shadow-2xl shadow-black/40">
-            {hostTrack ? (
-              <div className="musek-stage-video"><VideoTrack trackRef={hostTrack} /></div>
-            ) : (
-              <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#352044] to-[#11101a]">
-                <div className="text-center">
-                  <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-white/20 bg-white/10 text-3xl font-black">{hostName.slice(0, 1).toUpperCase()}</div>
-                  <p className="mt-3 text-sm font-bold">{hostName}</p>
-                  <p className="mt-1 text-xs text-white/55">Host · camera off</p>
-                </div>
+    <div className="absolute inset-0 overflow-hidden bg-[#05040a] px-2 pb-36 pt-20 sm:px-4 sm:pb-28">
+      <div className="mx-auto flex h-full w-full max-w-6xl items-stretch gap-2 sm:gap-3">
+        <section className={guestTiles.length ? "relative min-w-0 flex-[2.1] overflow-hidden rounded-2xl border border-[#d6b65c]/70 bg-[#17130a] shadow-[0_8px_36px_rgba(0,0,0,.55)]" : "relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-[#d6b65c]/70 bg-[#17130a] shadow-[0_8px_36px_rgba(0,0,0,.55)]"}>
+          {hostTrack ? (
+            <div className="musek-stage-video"><VideoTrack trackRef={hostTrack} /></div>
+          ) : (
+            <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#3b2d0c] to-[#090909]">
+              <div className="text-center">
+                <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border border-[#e7c96f]/50 bg-[#d4af37]/15 text-3xl font-black text-[#f7e7ad]">{hostName.slice(0, 1).toUpperCase()}</div>
+                <p className="mt-3 text-sm font-bold text-white">{hostName}</p>
+                <p className="mt-1 text-xs text-white/65">Host · camera off</p>
               </div>
-            )}
-            <div className="pointer-events-none absolute bottom-3 left-3 rounded-full border border-white/15 bg-black/55 px-3 py-1.5 text-xs font-bold backdrop-blur">{hostName} · HOST</div>
-          </div>
+            </div>
+          )}
+          <div className="pointer-events-none absolute left-3 top-3 rounded-full border border-[#f4df9b]/70 bg-black/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#f6df9a] backdrop-blur">♛ Host · {hostName}</div>
         </section>
 
         {guestTiles.length > 0 && (
-          <section aria-label="Approved guests on stage" className="grid min-w-0 grid-cols-1 content-start gap-2">
+          <section aria-label="Approved guests on stage" className="flex w-[32%] min-w-0 max-w-[280px] flex-col gap-2">
             {guestTiles.map((guest) => (
-              <div key={guest.id} className="relative aspect-video min-w-0 overflow-hidden rounded-xl border border-fuchsia-300/25 bg-[#171321]">
+              <div key={guest.id} className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-[#d6b65c]/70 bg-[#17130a] shadow-lg">
                 {guest.track ? <div className="musek-stage-video"><VideoTrack trackRef={guest.track} /></div> : (
-                  <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#352044] to-[#11101a]">
-                    <div className="text-center">
-                      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-white/20 bg-white/10 text-2xl font-black">{guest.name.slice(0, 1).toUpperCase()}</div>
-                      <p className="mt-2 text-xs font-bold">{guest.name}</p>
-                      <p className="mt-1 text-[10px] text-white/55">{guest.connected ? "Approved · camera off" : "Approved · joining stage"}</p>
+                  <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#3b2d0c] to-[#090909]">
+                    <div className="px-1 text-center">
+                      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-[#e7c96f]/50 bg-[#d4af37]/15 text-xl font-black text-[#f7e7ad]">{guest.name.slice(0, 1).toUpperCase()}</div>
+                      <p className="mt-2 truncate text-[11px] font-bold text-white">{guest.name}</p>
+                      <p className="mt-1 text-[9px] text-white/60">{guest.connected ? "Approved · camera off" : "Approved · joining"}</p>
                     </div>
                   </div>
                 )}
-                <div className="pointer-events-none absolute bottom-2 left-2 max-w-[85%] truncate rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-[10px] font-bold backdrop-blur">{guest.name}</div>
+                <div className="pointer-events-none absolute bottom-2 left-2 right-2 truncate rounded-full border border-[#f4df9b]/40 bg-black/65 px-2 py-1 text-center text-[9px] font-bold text-[#fff2c4] backdrop-blur">{guest.name}</div>
               </div>
             ))}
           </section>
         )}
       </div>
-
-      <div className="mx-auto mt-3 max-w-6xl text-center text-[10px] text-white/45">
-        {guestTiles.length === 0 ? "The host is live. Approved guests will appear here when accepted." : guestTiles.length + " guest" + (guestTiles.length === 1 ? "" : "s") + " on stage"}
+      <div className="pointer-events-none absolute bottom-[calc(140px+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 rounded-full border border-[#d6b65c]/40 bg-black/55 px-3 py-1 text-center text-[9px] text-[#f4df9b]/80 backdrop-blur">
+        {guestTiles.length === 0 ? "The host is live · approved guests appear here when accepted" : guestTiles.length + " guest" + (guestTiles.length === 1 ? "" : "s") + " on stage"}
       </div>
     </div>
   );
