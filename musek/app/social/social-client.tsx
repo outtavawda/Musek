@@ -460,6 +460,16 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                         {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
                       </svg>
                     </button>
+                    <select
+                      aria-label="LIVE camera quality"
+                      value={liveCameraControl?.quality || "1080p"}
+                      disabled={!liveCameraControl?.canPublish}
+                      onChange={(event) => liveCameraControl?.setQuality(event.target.value as "1080p" | "4K").catch((error: unknown) => setNotice("Could not change LIVE quality: " + (error instanceof Error ? error.message : "This device may not support that resolution.")))}
+                      className="h-9 max-w-[76px] rounded-lg border border-[#d6b65c]/60 bg-[#17130a] px-1 text-[10px] font-bold text-[#f6df9a] disabled:opacity-45 sm:h-11 sm:max-w-[90px] sm:px-2 sm:text-xs"
+                    >
+                      <option value="1080p">1080p</option>
+                      <option value="4K">4K</option>
+                    </select>
                     <button
                       type="button"
                       disabled={!liveCameraControl?.canPublish}
