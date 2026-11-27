@@ -34,7 +34,7 @@ export default async function WithdrawalsPage() {
 
   if (walletError || !wallet) {
     return (
-      <main className="pageWrap">
+      <main className="yasuh-withdraw-theme pageWrap">
         <section className="contentPanel">
           <h1>Artist Withdrawals</h1>
           <p className="muted">Your artist wallet could not be loaded.</p>
