@@ -268,7 +268,7 @@ export default async function LabelDashboardPage() {
   };
 
   return (
-    <main className="labelDashboard min-h-screen bg-gray-950 text-white">
+    <main className="yasuh-label-theme labelDashboard min-h-screen bg-gray-950 text-white">
       <style>{`
         .labelDashboard{--label-purple:#b56af2;--label-lavender:#dec0ff;background:radial-gradient(ellipse at 80% 0%,rgba(107,33,168,.18),transparent 34%),#08070c!important}
         .labelDashboard>.mx-auto{max-width:1440px!important;padding-top:42px!important;padding-bottom:90px!important}
