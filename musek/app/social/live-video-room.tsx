@@ -29,7 +29,7 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
     facingMode: "user" as const,
   });
   const publishOptions = (requested: "1080p" | "4K") => requested === "4K"
-    ? { videoEncoding: VideoPresets.h2160.encoding, videoSimulcastLayers: [VideoPresets.h720, VideoPresets.h1080] }
+    ? { videoEncoding: VideoPresets.h2160.encoding, simulcast: false }
     : { videoEncoding: VideoPresets.h1080.encoding, videoSimulcastLayers: [VideoPresets.h360, VideoPresets.h720] };
 
   // Guests cannot publish camera video until the server confirms stage
