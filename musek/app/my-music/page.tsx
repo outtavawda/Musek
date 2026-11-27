@@ -28,7 +28,7 @@ export default async function MyMusicPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[#080811] px-5 py-12 text-white">
+      <main className="yasuh-library-theme min-h-screen bg-[#080811] px-5 py-12 text-white">
         <div className="mx-auto max-w-4xl rounded-2xl border border-red-500/20 bg-red-500/5 p-6">
           <p className="text-sm text-red-200">Unable to load your music: {error.message}</p>
           <Link href="/dashboard" className="mt-5 inline-block text-sm font-bold text-purple-300">← Back to dashboard</Link>
@@ -61,7 +61,7 @@ export default async function MyMusicPage() {
   const artistName = profile.artist_name || profile.display_name || "Artist";
 
   return (
-    <main className="min-h-screen bg-[#080811] text-white">
+    <main className="yasuh-library-theme min-h-screen bg-[#080811] text-white">
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-7 lg:px-10 lg:py-9">
         <nav className="mb-8 flex items-center justify-between">
           <Link href="/" className="text-2xl font-black tracking-tight">YASUH<span className="text-purple-500">.</span></Link>
