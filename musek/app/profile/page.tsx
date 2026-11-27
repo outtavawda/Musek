@@ -60,7 +60,7 @@ export default async function ProfilePage({
       : displayName;
 
   return (
-    <main style={{ minHeight: "100vh", padding: "0 24px 80px", color: "#24211b", background: "radial-gradient(ellipse at 18% 0%, rgba(198, 154, 53, .12), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(198, 154, 53, .08), transparent 30%), #ffffff" }}>
+    <main className="yasuh-profile-theme" style={{ minHeight: "100vh", padding: "0 24px 80px", color: "#24211b", background: "radial-gradient(ellipse at 18% 0%, rgba(198, 154, 53, .12), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(198, 154, 53, .08), transparent 30%), #ffffff" }}>
       <nav style={{ maxWidth: "1180px", height: "82px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #e9e1d2" }}>
         <div style={{ minWidth: "110px" }} aria-hidden="true" />
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
