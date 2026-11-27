@@ -350,7 +350,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
         <div className="flex items-center gap-3 text-xs"><Link href="/feed" className="text-gray-400 hover:text-white">Music</Link><Link href="/profile" className="rounded-full border border-white/10 px-3 py-2 font-semibold">Profile</Link></div>
       </header>
 
-      <main className="px-3 pt-5 sm:px-0 sm:pt-7">
+      <main className="yasuh-social-theme px-3 pt-5 sm:px-0 sm:pt-7">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div><p className="text-[10px] font-black tracking-[.24em] text-fuchsia-300">YOUR COMMUNITY, LIVE</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-4xl">Discover live</h1><p className="mt-1 text-xs text-gray-400 sm:text-sm">Music, conversations and creators in real time.</p></div>
           <button onClick={() => document.getElementById("start-room")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="yasuh-live-cta shrink-0 rounded-full bg-fuchsia-500 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-fuchsia-950/40">＋ Go LIVE</button>
