@@ -430,6 +430,18 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             }} aria-label={selected.host_id === userId ? "Leave live room (3-minute shutdown)" : "Leave live room"} title={selected.host_id === userId ? "Leave LIVE; it ends after 3 minutes if you do not return" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d6b65c]/70 bg-white text-lg text-[#17130a] shadow-sm">✕</button>
           </div>
 
+          <div className="absolute right-3 top-[calc(68px+env(safe-area-inset-top))] z-[125] flex items-center gap-2 rounded-2xl border border-[#d6b65c]/65 bg-black/65 p-2 shadow-xl backdrop-blur-xl" aria-label="LIVE camera and microphone controls">
+            <button type="button" disabled={!liveCameraControl?.canPublish} onClick={() => liveCameraControl?.toggle().catch((error: unknown) => setNotice("Could not start your LIVE camera: " + (error instanceof Error ? error.message : "Check camera permission and try again.")))} aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"} aria-pressed={Boolean(liveCameraControl?.enabled)} title={liveCameraControl?.canPublish ? (liveCameraControl.enabled ? "Turn camera off" : "Turn camera on") : "Camera unlocks after the host approves your stage request"} className={"grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition disabled:cursor-not-allowed disabled:opacity-60 " + (liveCameraControl?.enabled ? "border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-[#241a05]" : "border-[#d6b65c]/70 bg-[#17130a] text-[#f6df9a] hover:bg-[#3b2d0c]")}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>{!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}</svg>
+            </button>
+            <select aria-label="LIVE camera quality" value={liveCameraControl?.quality || "4K"} disabled={!liveCameraControl?.canPublish} onChange={(event) => liveCameraControl?.setQuality(event.target.value as "1080p" | "4K").catch((error: unknown) => setNotice("Could not change LIVE quality: " + (error instanceof Error ? error.message : "This device may not support that resolution.")))} className="h-10 max-w-[72px] rounded-xl border border-[#d6b65c]/70 bg-[#17130a] px-1 text-[10px] font-bold text-[#f6df9a] disabled:opacity-60">
+              <option value="4K">4K</option><option value="1080p">1080p</option>
+            </select>
+            <button type="button" disabled={!liveCameraControl?.canPublish} onClick={() => liveCameraControl?.toggleMicrophone().catch((error: unknown) => setNotice("Could not change your LIVE microphone: " + (error instanceof Error ? error.message : "Check microphone permission and try again.")))} aria-label={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Unmute microphone"} aria-pressed={Boolean(liveCameraControl?.microphoneEnabled)} title={liveCameraControl?.canPublish ? (liveCameraControl.microphoneEnabled ? "Mute microphone" : "Turn microphone on") : "Microphone unlocks after the host approves your stage request"} className={"grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition disabled:cursor-not-allowed disabled:opacity-60 " + (liveCameraControl?.microphoneEnabled ? "border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-[#241a05]" : "border-[#d6b65c]/70 bg-[#17130a] text-[#f6df9a] hover:bg-[#3b2d0c]")}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>{!liveCameraControl?.microphoneEnabled && <path d="m4 4 16 16"/>}</svg>
+            </button>
+          </div>
+
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
             <div className="min-w-0 flex-1">
               <div className="mb-3 max-h-[31dvh] space-y-2 overflow-y-auto pr-2 [mask-image:linear-gradient(to_bottom,transparent,black_12%)]">
@@ -446,44 +458,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                 <div className="relative z-[130] flex shrink-0 items-center gap-0.5 sm:gap-1">
                   <LiveGifts roomId={selected.id} creatorId={selected.host_id} accountType={accountType} userId={userId}/>
                   {selected.host_id !== userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={handleGuestStageApproved} onStageClosed={handleGuestStageClosed}/>} 
-                  <button
-                      type="button"
-                      disabled={!liveCameraControl?.canPublish}
-                      onClick={() => liveCameraControl?.toggle().catch((error: unknown) => setNotice("Could not start your LIVE camera: " + (error instanceof Error ? error.message : "Check camera permission and try again.")))}
-                      aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
-                      aria-pressed={Boolean(liveCameraControl?.enabled)}
-                      title={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
-                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.enabled ? "border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-[#241a05] shadow-[#8d6410]/30" : "border-[#d6b65c]/60 bg-[#17130a] text-[#f6df9a] hover:bg-[#3b2d0c]")}
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>
-                        {!liveCameraControl?.enabled && <path d="m4 4 16 16"/>}
-                      </svg>
-                    </button>
-                    <select
-                      aria-label="LIVE camera quality"
-                      value={liveCameraControl?.quality || "1080p"}
-                      disabled={!liveCameraControl?.canPublish}
-                      onChange={(event) => liveCameraControl?.setQuality(event.target.value as "1080p" | "4K").catch((error: unknown) => setNotice("Could not change LIVE quality: " + (error instanceof Error ? error.message : "This device may not support that resolution.")))}
-                      className="h-9 max-w-[76px] rounded-lg border border-[#d6b65c]/60 bg-[#17130a] px-1 text-[10px] font-bold text-[#f6df9a] disabled:opacity-45 sm:h-11 sm:max-w-[90px] sm:px-2 sm:text-xs"
-                    >
-                      <option value="1080p">1080p</option>
-                      <option value="4K">4K</option>
-                    </select>
-                    <button
-                      type="button"
-                      disabled={!liveCameraControl?.canPublish}
-                      onClick={() => liveCameraControl?.toggleMicrophone().catch((error: unknown) => setNotice("Could not change your LIVE microphone: " + (error instanceof Error ? error.message : "Check microphone permission and try again.")))}
-                      aria-label={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Unmute microphone"}
-                      aria-pressed={Boolean(liveCameraControl?.microphoneEnabled)}
-                      title={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Turn microphone on"}
-                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.microphoneEnabled ? "border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-[#241a05] shadow-[#8d6410]/30" : "border-[#d6b65c]/60 bg-[#17130a] text-[#f6df9a] hover:bg-[#3b2d0c]")}
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>
-                        {!liveCameraControl?.microphoneEnabled && <path d="m4 4 16 16"/>}
-                      </svg>
-                    </button>
+
                 </div>
               </form>
             </div>
