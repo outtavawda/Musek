@@ -16,7 +16,7 @@ export default async function DiscoverPage() {
     .order("display_name", { ascending: true });
 
   return (
-    <main className="pageWrap" style={{ width: "100%", minHeight: "100vh", padding: "0 clamp(16px, 3vw, 48px) 48px", boxSizing: "border-box" }}>
+    <main className="pageWrap yasuh-discover-theme" style={{ width: "100%", minHeight: "100vh", padding: "0 clamp(16px, 3vw, 48px) 48px", boxSizing: "border-box" }}>
       <nav className="nav">
         <Link className="brand" href="/">
           YASUH<span>.</span>
