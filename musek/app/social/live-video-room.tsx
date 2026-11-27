@@ -22,7 +22,7 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   onCameraControl?: (control: LiveCameraControl | null) => void;
 }) {
   const { localParticipant, isCameraEnabled, isMicrophoneEnabled } = useLocalParticipant();
-  const [quality, setQualityState] = useState<"1080p" | "4K">("1080p");
+  const [quality, setQualityState] = useState<"1080p" | "4K">("4K");
 
   const captureOptions = (requested: "1080p" | "4K") => ({
     resolution: requested === "4K" ? VideoPresets.h2160.resolution : VideoPresets.h1080.resolution,
@@ -136,8 +136,8 @@ function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: 
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#05040a] px-2 pb-36 pt-20 sm:px-4 sm:pb-28">
-      <div className="mx-auto flex h-full w-full max-w-6xl items-stretch gap-2 sm:gap-3">
-        <section className={guestTiles.length ? "relative min-w-0 flex-[2.1] overflow-hidden rounded-2xl border border-[#d6b65c]/70 bg-[#17130a] shadow-[0_8px_36px_rgba(0,0,0,.55)]" : "relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-[#d6b65c]/70 bg-[#17130a] shadow-[0_8px_36px_rgba(0,0,0,.55)]"}>
+      <div className="relative mx-auto h-full w-full max-w-6xl">
+        <section className="relative h-full w-full overflow-hidden rounded-2xl border border-[#d6b65c]/70 bg-[#17130a] shadow-[0_8px_36px_rgba(0,0,0,.55)]">
           {hostTrack ? (
             <div className="musek-stage-video"><VideoTrack trackRef={hostTrack} /></div>
           ) : (
@@ -153,19 +153,19 @@ function HostFirstStage({ roomId, hostId, hostName }: { roomId: string; hostId: 
         </section>
 
         {guestTiles.length > 0 && (
-          <section aria-label="Approved guests on stage" className="flex w-[32%] min-w-0 max-w-[280px] flex-col gap-2">
+          <section aria-label="Approved guests on stage" className="absolute right-2 top-16 z-20 flex w-[28%] max-w-[142px] flex-col gap-2 sm:right-4 sm:top-20 sm:w-[22%] sm:max-w-[190px]">
             {guestTiles.map((guest) => (
-              <div key={guest.id} className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-[#d6b65c]/70 bg-[#17130a] shadow-lg">
+              <div key={guest.id} className="relative aspect-[3/4] max-h-[30dvh] min-h-0 w-full overflow-hidden rounded-xl border border-[#d6b65c]/80 bg-[#17130a] shadow-[0_8px_28px_rgba(0,0,0,.55)]">
                 {guest.track ? <div className="musek-stage-video"><VideoTrack trackRef={guest.track} /></div> : (
                   <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#3b2d0c] to-[#090909]">
                     <div className="px-1 text-center">
-                      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full border border-[#e7c96f]/50 bg-[#d4af37]/15 text-xl font-black text-[#f7e7ad]">{guest.name.slice(0, 1).toUpperCase()}</div>
-                      <p className="mt-2 truncate text-[11px] font-bold text-white">{guest.name}</p>
-                      <p className="mt-1 text-[9px] text-white/60">{guest.connected ? "Approved · camera off" : "Approved · joining"}</p>
+                      <div className="mx-auto grid h-10 w-10 place-items-center rounded-full border border-[#e7c96f]/50 bg-[#d4af37]/15 text-lg font-black text-[#f7e7ad]">{guest.name.slice(0, 1).toUpperCase()}</div>
+                      <p className="mt-2 truncate text-[10px] font-bold text-white">{guest.name}</p>
+                      <p className="mt-1 text-[8px] text-white/60">{guest.connected ? "Camera off" : "Joining…"}</p>
                     </div>
                   </div>
                 )}
-                <div className="pointer-events-none absolute bottom-2 left-2 right-2 truncate rounded-full border border-[#f4df9b]/40 bg-black/65 px-2 py-1 text-center text-[9px] font-bold text-[#fff2c4] backdrop-blur">{guest.name}</div>
+                <div className="pointer-events-none absolute bottom-1 left-1 right-1 truncate rounded-full border border-[#f4df9b]/40 bg-black/65 px-1.5 py-1 text-center text-[8px] font-bold text-[#fff2c4] backdrop-blur">{guest.name}</div>
               </div>
             ))}
           </section>
