@@ -574,6 +574,9 @@ footer {
   max-width: none !important;
   max-height: none !important;
   object-fit: cover !important;
+  /* YASUH LIVE uses the front-facing camera: keep every viewer's stage
+     orientation consistent with the host's natural left/right perspective. */
+  transform: scaleX(-1) !important;
 }
 
 
