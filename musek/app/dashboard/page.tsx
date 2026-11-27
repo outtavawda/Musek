@@ -307,7 +307,7 @@ export default async function DashboardPage() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/social"
-                    className="group relative inline-flex items-center gap-2 rounded-full border border-fuchsia-200/70 bg-[linear-gradient(110deg,#f5eaff_0%,#c084fc_18%,#7c3aed_42%,#e9d5ff_68%,#9333ea_100%)] px-6 py-3 text-sm font-black tracking-wide text-[#160b25] shadow-[0_0_10px_rgba(216,180,254,.75),0_0_28px_rgba(168,85,247,.45),inset_0_1px_0_rgba(255,255,255,.9)] transition duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_0_16px_rgba(216,180,254,.95),0_0_38px_rgba(168,85,247,.65)]"
+                    className="group relative inline-flex items-center gap-2 rounded-full border border-[#f8e5a2] bg-[linear-gradient(110deg,#fff4c2_0%,#e7c45b_16%,#b8860b_38%,#f8e7a0_54%,#c99a24_72%,#8d6410_100%)] px-6 py-3 text-sm font-black tracking-wide text-white shadow-[0_0_10px_rgba(212,175,55,.55),0_0_28px_rgba(184,134,11,.35),inset_0_1px_0_rgba(255,255,255,.9)] transition duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_0_16px_rgba(212,175,55,.75),0_0_38px_rgba(184,134,11,.5)]"
                   >
                     <span aria-hidden="true">◉</span> YASUH Social · Live <span aria-hidden="true">→</span>
                   </Link>
