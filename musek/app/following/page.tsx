@@ -23,7 +23,7 @@ export default async function FollowingPage() {
 
   if (profile?.account_type !== "fan") {
     return (
-      <main className="pageWrap">
+      <main className="yasuh-follow-theme pageWrap">
         <section className="authCard">
           <h1>Following</h1>
           <p>This music feed is available to Fan accounts.</p>
