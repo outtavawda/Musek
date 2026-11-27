@@ -353,7 +353,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       <main className="yasuh-social-theme px-3 pt-5 sm:px-0 sm:pt-7">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div><p className="text-[10px] font-black tracking-[.24em] text-fuchsia-300">YOUR COMMUNITY, LIVE</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-4xl">Discover live</h1><p className="mt-1 text-xs text-gray-400 sm:text-sm">Music, conversations and creators in real time.</p></div>
-          <button onClick={() => document.getElementById("start-room")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="yasuh-live-cta shrink-0 rounded-full bg-fuchsia-500 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-fuchsia-950/40">＋ Go LIVE</button>
+          <button onClick={() => document.getElementById("start-room")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="yasuh-live-cta shrink-0 rounded-full px-4 py-2.5 text-xs font-black border border-[#f5df9b] bg-[linear-gradient(110deg,#fff4c2_0%,#e7c45b_16%,#b8860b_38%,#f8e7a0_54%,#c99a24_72%,#8d6410_100%)] text-white shadow-[0_3px_14px_rgba(184,134,11,.28),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:-translate-y-0.5 hover:brightness-110">＋ Go LIVE</button>
         </div>
 
         {notice && <div role="status" className="mb-4 rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/10 px-4 py-3 text-xs leading-5 text-fuchsia-100">{notice}</div>}
@@ -393,7 +393,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={90} placeholder="What are we doing today?" className="mt-2 w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-fuchsia-400"/>
           <label className="mt-3 block text-[10px] font-bold text-gray-400">DESCRIPTION (OPTIONAL)</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={300} rows={2} placeholder="Tell viewers what your LIVE is about…" className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm outline-none focus:border-fuchsia-400"/>
-          <button disabled={busy} onClick={startRoom} className="yasuh-live-cta mt-4 w-full rounded-xl bg-gradient-to-r from-fuchsia-500 to-rose-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-fuchsia-950/40 disabled:opacity-50">{busy ? "Starting your LIVE…" : "＋ Start LIVE"}</button>
+          <button disabled={busy} onClick={startRoom} className="yasuh-live-cta mt-4 w-full rounded-xl px-5 py-3.5 text-sm font-black border border-[#f5df9b] bg-[linear-gradient(110deg,#fff4c2_0%,#e7c45b_16%,#b8860b_38%,#f8e7a0_54%,#c99a24_72%,#8d6410_100%)] text-white shadow-[0_3px_14px_rgba(184,134,11,.28),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-50">{busy ? "Starting your LIVE…" : "＋ Start LIVE"}</button>
           <p className="mt-3 text-center text-[10px] leading-4 text-gray-500">Every signed-in fan, artist and creator can host a live room.</p>
         </section>
 
@@ -502,7 +502,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-white/10 bg-[#0b0a12]/95 px-2 py-3 backdrop-blur-xl sm:hidden">
         <Link href="/feed" className="flex flex-col items-center gap-1 text-[9px] text-gray-400"><span className="text-lg">♫</span>Music</Link>
         <a href="#live-rooms" className="flex flex-col items-center gap-1 text-[9px] font-bold text-fuchsia-300"><span className="text-lg">◉</span>Discover</a>
-        <button onClick={() => document.getElementById("start-room")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="yasuh-live-cta flex flex-col items-center gap-1 text-[9px] font-bold text-white"><span className="grid h-8 w-10 place-items-center rounded-lg bg-gradient-to-r from-fuchsia-500 to-rose-500 text-xl">＋</span>Go LIVE</button>
+        <button onClick={() => document.getElementById("start-room")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="yasuh-live-cta flex flex-col items-center gap-1 rounded-lg px-2 py-1 text-[9px] font-bold border border-[#f5df9b] bg-[linear-gradient(110deg,#fff4c2_0%,#e7c45b_16%,#b8860b_38%,#f8e7a0_54%,#c99a24_72%,#8d6410_100%)] text-white shadow-[0_3px_14px_rgba(184,134,11,.28),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:-translate-y-0.5 hover:brightness-110"><span className="grid h-8 w-10 place-items-center rounded-lg border border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-xl text-white shadow-[inset_0_1px_0_rgba(255,255,255,.8)]">＋</span>Go LIVE</button>
         <Link href="/profile" className="flex flex-col items-center gap-1 text-[9px] text-gray-400"><span className="text-lg">●</span>Profile</Link>
       </nav>
     </div>
