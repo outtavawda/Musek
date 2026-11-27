@@ -1122,17 +1122,19 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 .yasuh-follow-theme a{color:#805f19!important}
 
 .yasuh-social-theme{background:#fff!important;color:#24211b!important}
-.yasuh-social-theme [class*="bg-[#"],
-.yasuh-social-theme [class*="bg-gray-900"],
-.yasuh-social-theme [class*="bg-black/"]{background:#fffaf0!important;color:#24211b!important}
-.yasuh-social-theme [class*="text-white"]{color:#24211b!important}
-.yasuh-social-theme [class*="text-gray-300"],
-.yasuh-social-theme [class*="text-gray-400"],
-.yasuh-social-theme [class*="text-gray-500"]{color:#625b50!important}
-.yasuh-social-theme [class*="border-white/"],
-.yasuh-social-theme [class*="border-purple-"]{border-color:#e9e1d2!important}
-.yasuh-social-theme [class*="text-purple-"],
-.yasuh-social-theme [class*="text-fuchsia-"]{color:#805f19!important}
+/* Keep the full-screen LIVE stage dark and preserve its video/chat overlay contrast.
+   Exclude the stage itself and every descendant from page-level theme overrides. */
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="bg-[#"],
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="bg-gray-900"],
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="bg-black/"]{background:#fffaf0!important;color:#24211b!important}
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="text-white"]{color:#24211b!important}
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="text-gray-300"],
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="text-gray-400"],
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="text-gray-500"]{color:#625b50!important}
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="border-white/"],
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="border-purple-"]{border-color:#e9e1d2!important}
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="text-purple-"],
+.yasuh-social-theme :not(.yasuh-live-stage):not(.yasuh-live-stage *)[class*="text-fuchsia-"]{color:#805f19!important}
 
 .yasuh-profile-theme input,.yasuh-profile-theme textarea,.yasuh-profile-theme select{background:#fff!important;color:#24211b!important;border-color:#e9e1d2!important}
 .yasuh-profile-theme button[type="submit"]{background:linear-gradient(100deg,#e4c477,#b88b2b)!important;color:#fff!important}
