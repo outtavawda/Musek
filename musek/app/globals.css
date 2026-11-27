@@ -1005,3 +1005,76 @@ a { text-decoration-color: rgba(198,154,53,.45); }
 }
 .yasuh-artist-theme .yasuh-live-cta [class*="text-purple-"],
 .yasuh-artist-theme .yasuh-live-cta [class*="text-fuchsia-"]{color:#805f19!important}
+
+
+/* YASUH contrast and surface consistency pass (fan, artist, label and music).
+   These are colour-only overrides: existing component geometry and spacing stay intact. */
+.yasuh-artist-theme{background:#fff!important;color:#24211b!important}
+.yasuh-artist-theme>div.pointer-events-none{opacity:.12!important}
+.yasuh-artist-theme [class*="bg-[#130e1d]"],
+.yasuh-artist-theme [class*="bg-[#171020]"],
+.yasuh-artist-theme [class*="bg-[#0d0b13]"],
+.yasuh-artist-theme [class*="bg-[#100d17]"],
+.yasuh-artist-theme [class*="bg-[#1b1227]"]{background:#fffaf0!important}
+.yasuh-artist-theme [class*="bg-gradient-to-br"]{background:linear-gradient(135deg,#fffaf0,#fff)!important}
+.yasuh-artist-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-artist-theme [class*="text-gray-300"],
+.yasuh-artist-theme [class*="text-gray-400"],
+.yasuh-artist-theme [class*="text-gray-500"]{color:#625b50!important}
+.yasuh-artist-theme [class*="border-fuchsia-"]{border-color:#e5d4ad!important}
+.yasuh-artist-theme [class*="bg-fuchsia-"]{background:#fbf6e9!important}
+.yasuh-artist-theme [class*="text-fuchsia-"]{color:#805f19!important}
+.yasuh-artist-theme h1,.yasuh-artist-theme h2,.yasuh-artist-theme h3{color:#24211b!important}
+.yasuh-artist-theme button[class*="bg-"],.yasuh-artist-theme a[class*="bg-"]{color:#fff!important}
+.yasuh-artist-theme [class*="border-white/"]{border-color:#e9e1d2!important}
+
+.yasuh-wallet-theme{background:#fff!important;color:#24211b!important}
+.yasuh-wallet-theme aside{background:#fffaf0!important;border-color:#e9e1d2!important}
+.yasuh-wallet-theme [class*="bg-[#080811]"],
+.yasuh-wallet-theme [class*="bg-[#0b0b17]"],
+.yasuh-wallet-theme [class*="bg-[#11111d]"],
+.yasuh-wallet-theme [class*="bg-[#11101b]"],
+.yasuh-wallet-theme [class*="bg-[#171326]"],
+.yasuh-wallet-theme [class*="bg-gray-900"]{background:#fffaf0!important}
+.yasuh-wallet-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-wallet-theme [class*="text-gray-300"],
+.yasuh-wallet-theme [class*="text-gray-400"],
+.yasuh-wallet-theme [class*="text-gray-500"],
+.yasuh-wallet-theme [class*="text-gray-600"]{color:#625b50!important}
+.yasuh-wallet-theme [class*="border-white/"],
+.yasuh-wallet-theme [class*="border-gray-800"],
+.yasuh-wallet-theme [class*="border-purple-"]{border-color:#e9e1d2!important}
+.yasuh-wallet-theme [class*="bg-purple-"],
+.yasuh-wallet-theme [class*="bg-fuchsia-"]{background:#fbf6e9!important}
+.yasuh-wallet-theme [class*="text-purple-"],
+.yasuh-wallet-theme [class*="text-fuchsia-"]{color:#805f19!important}
+.yasuh-wallet-theme button[class*="bg-"],.yasuh-wallet-theme a[class*="bg-"]{color:#805f19!important}
+.yasuh-wallet-theme h1,.yasuh-wallet-theme h2,.yasuh-wallet-theme h3,.yasuh-wallet-theme h4{color:#24211b!important}
+
+.yasuh-label-theme{background:#fff!important;color:#24211b!important}
+.yasuh-label-theme [class*="bg-gray-900"],
+.yasuh-label-theme [class*="bg-gray-950"],
+.yasuh-label-theme [class*="bg-[#"]{background:#fffaf0!important}
+.yasuh-label-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-label-theme [class*="text-gray-300"],
+.yasuh-label-theme [class*="text-gray-400"],
+.yasuh-label-theme [class*="text-gray-500"]{color:#625b50!important}
+.yasuh-label-theme [class*="border-gray-800"],
+.yasuh-label-theme [class*="border-white/"]{border-color:#e9e1d2!important}
+.yasuh-label-theme [class*="text-purple-"]{color:#805f19!important}
+.yasuh-label-theme [class*="bg-purple-"]{background:#fbf6e9!important}
+.yasuh-label-theme h1,.yasuh-label-theme h2,.yasuh-label-theme h3,.yasuh-label-theme h4{color:#24211b!important}
+
+.yasuh-music-discover-theme{background:#fff!important;color:#24211b!important}
+.yasuh-music-discover-theme [class*="bg-[#080711]"],
+.yasuh-music-discover-theme [class*="bg-[#11101b]"]{background:#fffaf0!important}
+.yasuh-music-discover-theme [class*="bg-gradient-to-br"]{background:linear-gradient(120deg,#fffaf0,#fff)!important}
+.yasuh-music-discover-theme [class*="text-white"]{color:#24211b!important}
+.yasuh-music-discover-theme [class*="text-gray-300"],
+.yasuh-music-discover-theme [class*="text-gray-400"],
+.yasuh-music-discover-theme [class*="text-gray-500"]{color:#625b50!important}
+.yasuh-music-discover-theme [class*="text-fuchsia-"]{color:#805f19!important}
+.yasuh-music-discover-theme [class*="border-white/"]{border-color:#e9e1d2!important}
+.yasuh-music-discover-theme [class*="bg-fuchsia-"]{background:linear-gradient(135deg,#e4c477,#b88b2b)!important}
+.yasuh-music-discover-theme [class*="bg-fuchsia-"]{color:#fff!important}
+.yasuh-music-discover-theme h1,.yasuh-music-discover-theme h2,.yasuh-music-discover-theme h3{color:#24211b!important}
