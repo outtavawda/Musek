@@ -399,7 +399,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-[#13121d]">
           <div className="flex items-center justify-between p-4"><div><p className="text-[10px] font-black tracking-[.2em] text-fuchsia-300">CAMERA CHECK</p><h2 className="mt-1 text-sm font-bold">Your camera & microphone</h2></div><span className="rounded-full bg-white/5 px-2 py-1 text-[9px] text-gray-400">Private preview</span></div>
-          <div className="relative aspect-video bg-black"><video ref={videoRef} autoPlay muted playsInline className={cameraOn ? "h-full w-full object-cover" : "hidden"}/>{!cameraOn && <div className="absolute inset-0 grid place-items-center text-center"><div><div className="text-3xl">◉</div><p className="mt-2 text-xs text-gray-400">Camera is currently off</p></div></div>}</div>
+          <div className="relative aspect-video bg-black"><video ref={videoRef} autoPlay muted playsInline className={cameraOn ? "h-full w-full -scale-x-100 object-cover" : "hidden"}/>{!cameraOn && <div className="absolute inset-0 grid place-items-center text-center"><div><div className="text-3xl">◉</div><p className="mt-2 text-xs text-gray-400">Camera is currently off</p></div></div>}</div>
           <div className="flex items-center justify-between gap-3 p-3"><span className="text-[10px] text-gray-400">Camera {cameraOn ? "on" : "off"} · Mic {micOn ? "on" : "off"}</span>{!cameraOn ? <button onClick={enableMedia} className="rounded-lg bg-white px-3 py-2 text-[11px] font-bold text-black">Enable camera</button> : <button onClick={stopMedia} className="rounded-lg border border-white/15 px-3 py-2 text-[11px] font-bold">Turn off</button>}</div>
         </section>
 
