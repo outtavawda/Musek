@@ -313,7 +313,7 @@ export default async function LabelDashboardPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Link href="/social" className="rounded-lg border border-purple-400/30 bg-purple-500/10 px-5 py-3 text-sm font-semibold text-purple-200">
+            <Link href="/social" className="rounded-lg px-5 py-3 text-sm font-semibold border border-[#f5df9b] bg-[linear-gradient(110deg,#fff4c2_0%,#e7c45b_16%,#b8860b_38%,#f8e7a0_54%,#c99a24_72%,#8d6410_100%)] text-white shadow-[0_3px_14px_rgba(184,134,11,.28),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:-translate-y-0.5 hover:brightness-110">
               YASUH Social
             </Link>
             <Link
