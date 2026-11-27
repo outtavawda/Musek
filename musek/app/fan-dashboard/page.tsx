@@ -251,7 +251,7 @@ export default async function FanDashboardPage() {
                 <Link href="/discover-music" className="rounded-xl border border-white/20 px-5 py-3 text-sm font-bold text-white hover:bg-white/10">
                   Discover Music
                 </Link>
-                <Link href="/social" className="rounded-xl border border-fuchsia-300/30 bg-fuchsia-500/15 px-5 py-3 text-sm font-bold text-white hover:bg-fuchsia-500/25">
+                <Link href="/social" className={`rounded-xl px-5 py-3 text-sm font-bold border border-[#f5df9b] bg-[linear-gradient(110deg,#fff4c2_0%,#e7c45b_16%,#b8860b_38%,#f8e7a0_54%,#c99a24_72%,#8d6410_100%)] text-white shadow-[0_3px_14px_rgba(184,134,11,.28),inset_0_1px_0_rgba(255,255,255,.8)] transition hover:-translate-y-0.5 hover:brightness-110`}>
                   YASUH Social · Live
                 </Link>
               </div>
