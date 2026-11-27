@@ -411,10 +411,10 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
             {selected.host_id !== userId && hostSecondsLeft !== null && <div role="status" className="absolute left-1/2 top-20 z-20 -translate-x-1/2 rounded-full border border-amber-300/30 bg-black/75 px-4 py-2 text-center text-xs font-bold text-amber-100 shadow-xl backdrop-blur">Host is away · LIVE ends in {Math.floor(hostSecondsLeft / 60)}:{String(hostSecondsLeft % 60).padStart(2, "0")} unless they return</div>}
           </div>
 
-          <div className="relative z-10 flex items-start justify-between gap-3 px-4 pt-[max(14px,env(safe-area-inset-top))]">
-            <div className="flex min-w-0 items-center gap-3 rounded-full border border-white/15 bg-black/35 p-2 pr-4 backdrop-blur-xl">
+          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-[#d6b65c]/70 bg-[#fffdf6] px-4 pb-3 pt-[max(14px,env(safe-area-inset-top))] text-[#17130a] shadow-[0_3px_18px_rgba(0,0,0,.28)]">
+            <div className="flex min-w-0 items-center gap-3 rounded-full border border-[#d6b65c]/50 bg-white p-1.5 pr-3">
               {selected.avatar_url ? <img src={selected.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover"/> : <span className="grid h-10 w-10 place-items-center rounded-full bg-fuchsia-500/30 font-black">{selected.host_name.slice(0,1).toUpperCase()}</span>}
-              <div className="min-w-0"><p className="max-w-[170px] truncate text-xs font-black">{selected.host_name}</p><p className="text-[10px] text-white/70">YASUH LIVE · {messages.length} messages</p></div>
+              <div className="min-w-0"><p className="text-[10px] font-black tracking-[.2em] text-[#9a7418]">YASUH LIVE</p><p className="max-w-[170px] truncate text-xs font-black text-[#17130a]">{selected.host_name} · {messages.length} messages</p></div>
               <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] font-black tracking-widest">● LIVE</span>
             </div>
             <button onClick={async () => {
@@ -427,7 +427,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
               setLiveCameraControl(null);
               setSelected(null);
               stopMedia();
-            }} aria-label={selected.host_id === userId ? "Leave live room (3-minute shutdown)" : "Leave live room"} title={selected.host_id === userId ? "Leave LIVE; it ends after 3 minutes if you do not return" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/20 bg-black/40 text-lg backdrop-blur-xl">✕</button>
+            }} aria-label={selected.host_id === userId ? "Leave live room (3-minute shutdown)" : "Leave live room"} title={selected.host_id === userId ? "Leave LIVE; it ends after 3 minutes if you do not return" : "Leave live"} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#d6b65c]/70 bg-white text-lg text-[#17130a] shadow-sm">✕</button>
           </div>
 
           <div className="relative z-10 mt-auto flex items-end gap-3 px-3 pb-[calc(104px+env(safe-area-inset-bottom))] sm:pb-6">
@@ -453,7 +453,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                       aria-label={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
                       aria-pressed={Boolean(liveCameraControl?.enabled)}
                       title={liveCameraControl?.enabled ? "Turn camera off" : "Turn camera on"}
-                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.enabled ? "border-fuchsia-200 bg-fuchsia-600 shadow-fuchsia-950/40" : "border-fuchsia-300/35 bg-[#21152e] hover:bg-fuchsia-600/30")}
+                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.enabled ? "border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-[#241a05] shadow-[#8d6410]/30" : "border-[#d6b65c]/60 bg-[#17130a] text-[#f6df9a] hover:bg-[#3b2d0c]")}
                     >
                       <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/>
@@ -467,7 +467,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
                       aria-label={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Unmute microphone"}
                       aria-pressed={Boolean(liveCameraControl?.microphoneEnabled)}
                       title={liveCameraControl?.microphoneEnabled ? "Mute microphone" : "Turn microphone on"}
-                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.microphoneEnabled ? "border-emerald-200 bg-emerald-600 shadow-emerald-950/40" : "border-rose-300/35 bg-[#21152e] hover:bg-rose-600/30")}
+                      className={"grid h-9 w-9 shrink-0 place-items-center rounded-lg border text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11 " + (liveCameraControl?.microphoneEnabled ? "border-[#f5df9b] bg-gradient-to-b from-[#fff4c2] via-[#c99a24] to-[#8d6410] text-[#241a05] shadow-[#8d6410]/30" : "border-[#d6b65c]/60 bg-[#17130a] text-[#f6df9a] hover:bg-[#3b2d0c]")}
                     >
                       <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>
