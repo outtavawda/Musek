@@ -403,7 +403,7 @@ export default function SocialClient({ userId, displayName, accountType, avatarU
           <div className="flex items-center justify-between gap-3 p-3"><span className="text-[10px] text-gray-400">Camera {cameraOn ? "on" : "off"} · Mic {micOn ? "on" : "off"}</span>{!cameraOn ? <button onClick={enableMedia} className="rounded-lg bg-white px-3 py-2 text-[11px] font-bold text-black">Enable camera</button> : <button onClick={stopMedia} className="rounded-lg border border-white/15 px-3 py-2 text-[11px] font-bold">Turn off</button>}</div>
         </section>
 
-        {selected && <section className="fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
+        {selected && <section className="yasuh-live-stage fixed inset-0 z-[100] flex h-[100dvh] flex-col overflow-hidden bg-[#05040a] text-white">
           <div className="absolute inset-0">
             {(selected.host_id === userId || guestLiveKitEnabled) && <LiveVideoRoom key={videoSessionKey} roomId={selected.id} hostId={selected.host_id} displayName={displayName} hostName={selected.host_name} onCameraControl={handleLiveCameraControl}/>} 
             {selected.host_id === userId && <LiveRoomJoinRequests roomId={selected.id} hostId={selected.host_id} userId={userId} onApproved={() => setVideoSessionKey((key) => key + 1)}/>}
