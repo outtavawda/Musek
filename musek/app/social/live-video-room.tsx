@@ -13,6 +13,8 @@ export type LiveCameraControl = {
   enabled: boolean;
   microphoneEnabled: boolean;
   canPublish: boolean;
+  quality: "1080p" | "4K";
+  setQuality: (quality: "1080p" | "4K") => Promise<void>;
 };
 
 function CameraControlBridge({ canPublish, onCameraControl }: {
@@ -20,6 +22,15 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   onCameraControl?: (control: LiveCameraControl | null) => void;
 }) {
   const { localParticipant, isCameraEnabled, isMicrophoneEnabled } = useLocalParticipant();
+  const [quality, setQualityState] = useState<"1080p" | "4K">("1080p");
+
+  const captureOptions = (requested: "1080p" | "4K") => ({
+    resolution: requested === "4K" ? VideoPresets.h2160.resolution : VideoPresets.h1080.resolution,
+    facingMode: "user" as const,
+  });
+  const publishOptions = (requested: "1080p" | "4K") => requested === "4K"
+    ? { videoEncoding: VideoPresets.h2160.encoding, videoSimulcastLayers: [VideoPresets.h720, VideoPresets.h1080] }
+    : { videoEncoding: VideoPresets.h1080.encoding, videoSimulcastLayers: [VideoPresets.h360, VideoPresets.h720] };
 
   // Guests cannot publish camera video until the server confirms stage
   // approval. Keep the camera off even if a device/browser restores a
@@ -32,7 +43,36 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
 
   const toggle = useCallback(async () => {
     if (!canPublish) return;
-    await localParticipant.setCameraEnabled(!isCameraEnabled, { resolution: VideoPresets.h720.resolution, facingMode: "user" });
+    if (isCameraEnabled) {
+      await localParticipant.setCameraEnabled(false);
+      return;
+    }
+    try {
+      await localParticipant.setCameraEnabled(true, captureOptions(quality), publishOptions(quality));
+    } catch (error) {
+      if (quality !== "4K") throw error;
+      // Some phones and mobile browsers cannot capture 4K through WebRTC.
+      // Retry at Full HD rather than leaving the camera unavailable.
+      setQualityState("1080p");
+      await localParticipant.setCameraEnabled(true, captureOptions("1080p"), publishOptions("1080p"));
+    }
+  }, [canPublish, isCameraEnabled, localParticipant, quality]);
+
+  const setQuality = useCallback(async (requested: "1080p" | "4K") => {
+    if (!canPublish) return;
+    if (!isCameraEnabled) {
+      setQualityState(requested);
+      return;
+    }
+    await localParticipant.setCameraEnabled(false);
+    try {
+      await localParticipant.setCameraEnabled(true, captureOptions(requested), publishOptions(requested));
+      setQualityState(requested);
+    } catch (error) {
+      if (requested !== "4K") throw error;
+      await localParticipant.setCameraEnabled(true, captureOptions("1080p"), publishOptions("1080p"));
+      setQualityState("1080p");
+    }
   }, [canPublish, isCameraEnabled, localParticipant]);
   const toggleMicrophone = useCallback(async () => {
     if (!canPublish) return;
@@ -47,9 +87,9 @@ function CameraControlBridge({ canPublish, onCameraControl }: {
   }, [canPublish, localParticipant]);
 
   useEffect(() => {
-    onCameraControl?.({ toggle, toggleMicrophone, disableMedia, enabled: isCameraEnabled, microphoneEnabled: isMicrophoneEnabled, canPublish });
+    onCameraControl?.({ toggle, toggleMicrophone, disableMedia, enabled: isCameraEnabled, microphoneEnabled: isMicrophoneEnabled, canPublish, quality, setQuality });
     return () => onCameraControl?.(null);
-  }, [toggle, toggleMicrophone, disableMedia, isCameraEnabled, isMicrophoneEnabled, canPublish, onCameraControl]);
+  }, [toggle, toggleMicrophone, disableMedia, isCameraEnabled, isMicrophoneEnabled, canPublish, quality, setQuality, onCameraControl]);
 
   return null;
 }
