@@ -45,7 +45,14 @@ export default function LiveRoomJoinRequests({ roomId, hostId, userId, onApprove
     const channel = supabase.channel("musek-live-join-requests-" + roomId)
       .on("postgres_changes", { event: "*", schema: "public", table: "social_live_join_requests", filter: "room_id=eq." + roomId }, load)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    // Realtime can be delayed or missed on mobile browsers/background tabs.
+    // Poll the caller's own request as a fallback so host approval always
+    // refreshes the guest state and triggers a fresh LiveKit publish token.
+    const refreshId = window.setInterval(() => { void load(); }, 2000);
+    return () => {
+      window.clearInterval(refreshId);
+      supabase.removeChannel(channel);
+    };
   }, [load, roomId, supabase]);
 
   const requestToJoin = async () => {
